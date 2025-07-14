@@ -1,7 +1,7 @@
 
 "use server";
 
-import { parseDialogue } from "@/ai/flows/parse-dialogue";
+import { parseDialogue, type ParseDialogueOutput } from "@/ai/flows/parse-dialogue";
 import { generateEmotionalTTS } from "@/ai/flows/generate-emotional-tts";
 import { z } from "zod";
 
@@ -11,7 +11,9 @@ const StorySegmentSchema = z.object({
 });
 
 const StorySegmentWithAudioSchema = StorySegmentSchema.extend({
-  audioUri: z.string(),
+  audioUri: z.string().optional(),
+  start: z.number().optional(),
+  end: z.number().optional(),
 });
 
 export type StorySegment = z.infer<typeof StorySegmentSchema>;
@@ -24,23 +26,33 @@ export async function processStory(
     throw new Error("Story text cannot be empty.");
   }
   
-  const parsedSegments = await parseDialogue({ storyText });
+  const parsedSegments: ParseDialogueOutput = await parseDialogue({ storyText });
 
   if (!parsedSegments || parsedSegments.length === 0) {
     throw new Error("Could not parse any dialogue from the provided text. Please ensure it has standard dialogue formatting.");
   }
 
   try {
-    const segmentsWithAudio = await Promise.all(
-      parsedSegments.map(async (segment) => {
-        const textForTTS = `${segment.character}: ${segment.dialogue}`;
-        const { audioDataUri } = await generateEmotionalTTS({ storyText: textForTTS });
-        return {
-          ...segment,
-          audioUri: audioDataUri,
-        };
-      })
-    );
+    // Reconstruct the story text with explicit speaker tags for the TTS model.
+    const storyForTTS = parsedSegments
+      .map(segment => `${segment.character}: ${segment.dialogue}`)
+      .join('\n');
+      
+    // Generate a single audio file for the entire story.
+    const { audioDataUri } = await generateEmotionalTTS({ storyText: storyForTTS });
+
+    // For simplicity in this step, we'll return the segments with the main audio URI on the first segment.
+    // A more advanced implementation would include timestamps for each segment.
+    const segmentsWithAudio: StorySegmentWithAudio[] = parsedSegments.map((segment, index) => {
+        if (index === 0) {
+            return {
+                ...segment,
+                audioUri: audioDataUri,
+            };
+        }
+        return segment;
+    });
+
     return segmentsWithAudio;
 
   } catch (error) {
