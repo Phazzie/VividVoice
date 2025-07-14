@@ -38,32 +38,43 @@ const generateEmotionalTTSFlow = ai.defineFlow(
   },
   async input => {
     const {storyText} = input;
+    const availableVoices = ['Algenib', 'Achernar', 'Enif', 'Hadar', 'Izar', 'Mirfak', 'Regulus'];
 
     // Regular expression to match speaker and dialogue
     const speakerRegex = /^\s*([\w\s]+):\s*(.+)$/gm;
     let match;
     const speakerVoiceConfigs: any[] = [];
     let prompt = '';
-    let speakerCounter = 1;
+    let speakerCounter = 0;
     const speakerMap: {[key: string]: string} = {};
+    const assignedVoices: {[key: string]: string} = {};
+
 
     while ((match = speakerRegex.exec(storyText)) !== null) {
-      const speaker = match[1].trim();
+      const speakerName = match[1].trim();
       const dialogue = match[2].trim();
 
-      // Assign a unique speaker ID if not already assigned
-      if (!speakerMap[speaker]) {
-        speakerMap[speaker] = `Speaker${speakerCounter++}`;
-        // You can customize voice configurations here based on speaker names
+      let speakerId = speakerMap[speakerName];
+
+      // Assign a unique speaker ID and voice if not already assigned
+      if (!speakerId) {
+        speakerCounter++;
+        speakerId = `Speaker${speakerCounter}`;
+        speakerMap[speakerName] = speakerId;
+        
+        // Cycle through available voices
+        const voiceName = availableVoices[(speakerCounter - 1) % availableVoices.length];
+        assignedVoices[speakerId] = voiceName;
+
         speakerVoiceConfigs.push({
-          speaker: speakerMap[speaker],
+          speaker: speakerId,
           voiceConfig: {
-            prebuiltVoiceConfig: {voiceName: speakerCounter % 2 === 0 ? 'Algenib' : 'Achernar'},
+            prebuiltVoiceConfig: {voiceName: voiceName},
           },
         });
       }
 
-      prompt += `${speakerMap[speaker]}: ${dialogue}\n`;
+      prompt += `${speakerId}: ${dialogue}\n`;
     }
 
     const {media} = await ai.generate({
