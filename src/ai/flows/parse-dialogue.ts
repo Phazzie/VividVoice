@@ -1,34 +1,28 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for parsing dialogue from a story text and assigning it to characters, including inferring the emotion of each line.
+ * @fileOverview This file defines a Genkit flow for parsing dialogue from a story text and assigning it to characters, including inferring emotion and physical descriptions.
  *
- * - parseDialogue - A function that takes story text as input and returns a list of dialogue segments with character and emotion assignments.
+ * - parseDialogue - A function that takes story text as input and returns dialogue segments, character descriptions, and emotions.
  * - ParseDialogueInput - The input type for the parseDialogue function (story text).
- * - ParseDialogueOutput - The return type for the parseDialogue function (list of dialogue segments with emotions).
+ * - ParseDialogueOutput - The return type for the parseDialogue function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { CharacterSchema, DialogueSegmentSchema } from '@/ai/schemas';
+
 
 const ParseDialogueInputSchema = z.object({
   storyText: z.string().describe('The complete text of the story to parse.'),
 });
 export type ParseDialogueInput = z.infer<typeof ParseDialogueInputSchema>;
 
-const DialogueSegmentSchema = z.object({
-  character: z
-    .string()
-    .describe('The name of the character speaking, or "Narrator" for narrative text.'),
-  dialogue: z
-    .string()
-    .describe('The dialogue spoken by the character, or narrative text.'),
-  emotion: z
-    .string()
-    .describe('The primary emotion conveyed by the dialogue (e.g., Happy, Sad, Angry, Intrigued, Worried). For the Narrator, this can be "Neutral" or reflect the scene\'s mood.'),
+const ParseDialogueOutputSchema = z.object({
+    segments: z.array(DialogueSegmentSchema),
+    characters: z.array(CharacterSchema)
 });
 
-const ParseDialogueOutputSchema = z.array(DialogueSegmentSchema);
 export type ParseDialogueOutput = z.infer<typeof ParseDialogueOutputSchema>;
 export type DialogueSegment = z.infer<typeof DialogueSegmentSchema>;
 
@@ -40,14 +34,16 @@ const parseDialoguePrompt = ai.definePrompt({
   name: 'parseDialoguePrompt',
   input: {schema: ParseDialogueInputSchema},
   output: {schema: ParseDialogueOutputSchema},
-  prompt: `You are an expert in literary analysis. Your task is to parse story text, identify dialogue, and assign it to the correct character or the narrator.
+  prompt: `You are an expert in literary analysis. Your task is to parse story text into dialogue segments and extract character information.
 
-  For each segment of dialogue or narration, you must also determine the primary emotion being conveyed.
+  First, go through the entire story and compile a list of all unique characters. For each character (except the 'Narrator'), provide a detailed physical description based on any details mentioned in the text.
 
-  Analyze the following story text. Return a JSON array where each object contains:
-  1.  A 'character' field (the character's name or 'Narrator').
-  2.  A 'dialogue' field (the corresponding text).
-  3.  An 'emotion' field (a single word describing the emotion, e.g., 'Anxious', 'Excited', 'Somber', 'Neutral').
+  Second, break down the story into an array of segments. For each segment, provide:
+  1.  The 'character' speaking (or 'Narrator').
+  2.  The 'dialogue' or narrative text.
+  3.  The inferred 'emotion' for that line.
+
+  Return a single JSON object with two keys: 'characters' (an array of character objects with names and descriptions) and 'segments' (an array of dialogue segment objects).
 
   Here is the story text:
   {{{storyText}}}`,

@@ -5,7 +5,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, type StorySegmentWithAudio, parseStory, generateStoryAudio } from "@/lib/actions";
+import { type DialogueSegment, type StorySegmentWithAudio, parseStory, generateStoryAudio, type CharacterPortrait } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ type AppState = 'initial' | 'parsing' | 'editing' | 'generating' | 'displaying';
 export default function VividVoicePage() {
   const [appState, setAppState] = useState<AppState>('initial');
   const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
+  const [characterPortraits, setCharacterPortraits] = useState<CharacterPortrait[]>([]);
   const [finalSegments, setFinalSegments] = useState<StorySegmentWithAudio[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -22,13 +23,15 @@ export default function VividVoicePage() {
     setAppState('parsing');
     setError(null);
     setParsedSegments([]);
+    setCharacterPortraits([]);
 
     try {
       const result = await parseStory(storyText);
-      if (!result || result.length === 0) {
+      if (!result || !result.segments || result.segments.length === 0) {
         throw new Error("Failed to parse the story. Please check the text format.");
       }
-      setParsedSegments(result);
+      setParsedSegments(result.segments);
+      setCharacterPortraits(result.portraits);
       setAppState('editing');
     } catch (e: any) {
       const errorMessage = e.message || "An unexpected error occurred during parsing.";
@@ -104,7 +107,7 @@ export default function VividVoicePage() {
                    </div>
                   <p className="font-headline text-3xl mt-4 text-glow-accent">Your Story Awaits</p>
                   <p className="max-w-md font-serif text-lg">
-                    Paste your narrative into the box to begin. The AI will parse it, then you can edit the emotions before generating the final audio.
+                    Paste your narrative into the box to begin. The AI will parse it, generate character portraits, and then you can edit emotions before generating the final audio.
                   </p>
                 </div>
               )}
@@ -115,7 +118,7 @@ export default function VividVoicePage() {
                       <Sparkles className="w-16 h-16 text-primary"/>
                    </div>
                   <p className="font-headline text-3xl mt-4 text-glow-primary">
-                    {appState === 'parsing' ? 'Analyzing Story...' : 'Generating Audio...'}
+                    {appState === 'parsing' ? 'Analyzing Story & Characters...' : 'Generating Audio...'}
                   </p>
                 </div>
               )}
@@ -123,7 +126,8 @@ export default function VividVoicePage() {
               {appState === 'editing' && (
                 <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
                   <DialogueEditor 
-                    initialSegments={parsedSegments} 
+                    initialSegments={parsedSegments}
+                    characterPortraits={characterPortraits}
                     onGenerateAudio={handleGenerateAudio}
                     isLoading={appState === 'generating'}
                   />
@@ -132,7 +136,11 @@ export default function VividVoicePage() {
               
               {appState === 'displaying' && finalSegments.length > 0 && (
                  <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
-                   <StoryDisplay segments={finalSegments} onBack={handleBackToEditor}/>
+                   <StoryDisplay 
+                    segments={finalSegments} 
+                    characterPortraits={characterPortraits}
+                    onBack={handleBackToEditor}
+                  />
                  </div>
               )}
             </div>

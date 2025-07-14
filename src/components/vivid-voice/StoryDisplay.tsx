@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, FastForward, User, Rewind, BookText, PersonStanding, Edit } from 'lucide-react';
-import { type StorySegmentWithAudio } from '@/lib/actions';
+import { Play, Pause, FastForward, Rewind, BookText, Edit } from 'lucide-react';
+import { type StorySegmentWithAudio, type CharacterPortrait } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -14,10 +14,11 @@ import { Progress } from '@/components/ui/progress';
 
 type StoryDisplayProps = {
   segments: StorySegmentWithAudio[];
+  characterPortraits: CharacterPortrait[];
   onBack: () => void;
 };
 
-export function StoryDisplay({ segments, onBack }: StoryDisplayProps) {
+export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
@@ -123,6 +124,10 @@ export function StoryDisplay({ segments, onBack }: StoryDisplayProps) {
     setProgress(100);
   };
 
+  const getPortrait = (characterName: string) => {
+    return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
+  }
+
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-secondary/50 card-glow-accent overflow-hidden">
       <CardHeader className="flex-row items-center justify-between border-b-2 border-secondary/20 p-4 bg-gradient-to-r from-secondary/10 via-card/70 to-card/70">
@@ -154,10 +159,11 @@ export function StoryDisplay({ segments, onBack }: StoryDisplayProps) {
                   : "bg-muted/50 border-transparent"
               )}
             >
-              <Avatar className="h-12 w-12 border-2 shrink-0" style={{ borderColor: characterColors[segment.character] }}>
+              <Avatar className="h-16 w-16 border-2 shrink-0" style={{ borderColor: characterColors[segment.character] }}>
+                 <AvatarImage src={getPortrait(segment.character)} alt={`Portrait of ${segment.character}`} />
                  <AvatarFallback className="text-xl font-bold text-white" style={{ backgroundColor: characterColors[segment.character] }}>
                   {segment.character.toLowerCase() === 'narrator' 
-                    ? <BookText size={24}/> 
+                    ? <BookText size={28}/> 
                     : segment.character.includes(' ')
                       ? `${segment.character.split(' ')[0][0]}${segment.character.split(' ')[1][0]}`
                       : segment.character.charAt(0).toUpperCase()}

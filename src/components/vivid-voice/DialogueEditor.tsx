@@ -7,19 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment } from '@/lib/actions';
-import { Wand2, Loader2, Edit, Save } from 'lucide-react';
+import { type DialogueSegment, type CharacterPortrait } from '@/lib/actions';
+import { Wand2, Loader2, Edit, BookText } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { BookText } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 type DialogueEditorProps = {
   initialSegments: DialogueSegment[];
+  characterPortraits: CharacterPortrait[];
   onGenerateAudio: (segments: DialogueSegment[]) => void;
   isLoading: boolean;
 };
 
-export function DialogueEditor({ initialSegments, onGenerateAudio, isLoading }: DialogueEditorProps) {
+export function DialogueEditor({ initialSegments, characterPortraits, onGenerateAudio, isLoading }: DialogueEditorProps) {
   const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments);
 
   const handleDialogueChange = (index: number, value: string) => {
@@ -38,6 +39,10 @@ export function DialogueEditor({ initialSegments, onGenerateAudio, isLoading }: 
     onGenerateAudio(segments);
   };
 
+  const getPortrait = (characterName: string) => {
+    return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
+  }
+
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-primary/50 card-glow-primary overflow-hidden">
       <CardHeader className="border-b-2 border-primary/20 p-4 bg-gradient-to-r from-primary/10 via-card/70 to-card/70">
@@ -49,10 +54,11 @@ export function DialogueEditor({ initialSegments, onGenerateAudio, isLoading }: 
       <CardContent className="p-4 md:p-6 space-y-4 max-h-[60vh] overflow-y-auto bg-grid bg-[length:30px_30px] bg-card/10">
         {segments.map((segment, index) => (
           <div key={index} className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
-             <Avatar className="h-12 w-12 border-2 shrink-0" style={{ borderColor: getCharacterColor(segment.character) }}>
+             <Avatar className="h-16 w-16 border-2 shrink-0" style={{ borderColor: getCharacterColor(segment.character) }}>
+                 <AvatarImage src={getPortrait(segment.character)} alt={`Portrait of ${segment.character}`} />
                  <AvatarFallback className="text-xl font-bold text-white" style={{ backgroundColor: getCharacterColor(segment.character) }}>
                   {segment.character.toLowerCase() === 'narrator' 
-                    ? <BookText size={24}/> 
+                    ? <BookText size={28}/> 
                     : segment.character.includes(' ')
                       ? `${segment.character.split(' ')[0][0]}${segment.character.split(' ')[1][0]}`
                       : segment.character.charAt(0).toUpperCase()}
