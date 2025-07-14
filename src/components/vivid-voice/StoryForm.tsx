@@ -20,8 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const formSchema = z.object({
   storyText: z.string().min(50, {
     message: "Story text must be at least 50 characters.",
-  }).max(5000, {
-    message: "Story text cannot exceed 5000 characters.",
   }),
 });
 
