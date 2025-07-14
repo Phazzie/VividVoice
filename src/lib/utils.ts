@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getCharacterColor(characterName: string): string {
   if (characterName.toLowerCase() === 'narrator') {
-    // A cool, ethereal blue/cyan for the narrator
-    return 'hsl(190, 80%, 70%)';
+    // A cool, ethereal but bright cyan for the narrator
+    return 'hsl(190, 100%, 75%)';
   }
   let hash = 0;
   for (let i = 0; i < characterName.length; i++) {
@@ -17,9 +17,9 @@ export function getCharacterColor(characterName: string): string {
   }
 
   const hue = Math.abs(hash % 360);
-  // Using high saturation and lightness for vibrant, almost neon pastel colors
-  const saturation = 90; 
-  const lightness = 75;
+  // Using high saturation and lightness for vibrant, neon pastel colors
+  const saturation = 100; 
+  const lightness = 78;
   
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
