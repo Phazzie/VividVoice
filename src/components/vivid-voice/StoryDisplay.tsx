@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, FastForward, User, Rewind } from 'lucide-react';
+import { Play, Pause, FastForward, User, Rewind, BookText, PersonStanding } from 'lucide-react';
 import { type StorySegmentWithAudio } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -34,7 +34,6 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
     }, {} as Record<string, string>);
   }, [segments]);
   
-  // Effect for handling play/pause and source changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !mainAudioUri) return;
@@ -44,14 +43,15 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
       audio.load();
     }
     
-    if (isPlaying) {
-      audio.play().catch(e => console.error("Audio play failed:", e));
-    } else {
-      audio.pause();
+    const playPromise = isPlaying ? audio.play() : audio.pause();
+    if (playPromise !== undefined && !isPlaying) {
+      playPromise.then(_ => audio.pause()).catch(e => console.error("Audio handling failed:", e));
+    } else if (playPromise !== undefined && isPlaying) {
+      playPromise.catch(e => console.error("Audio play failed:", e));
     }
+
   }, [isPlaying, mainAudioUri]);
 
-  // Effect for setting playback speed
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) {
@@ -59,14 +59,21 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
     }
   }, [playbackSpeed]);
   
-  // Effect for scrolling to the current segment
   useEffect(() => {
     const currentSegmentElement = document.getElementById(`segment-${currentSegmentIndex}`);
     if (currentSegmentElement && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: currentSegmentElement.offsetTop - scrollContainerRef.current.offsetTop - 20,
-        behavior: 'smooth',
-      });
+      const container = scrollContainerRef.current;
+      const elementTop = currentSegmentElement.offsetTop;
+      const elementHeight = currentSegmentElement.offsetHeight;
+      const containerTop = container.scrollTop;
+      const containerHeight = container.clientHeight;
+
+      if (elementTop < containerTop || (elementTop + elementHeight) > (containerTop + containerHeight)) {
+          container.scrollTo({
+            top: elementTop - container.offsetTop - (containerHeight / 4),
+            behavior: 'smooth',
+          });
+      }
     }
   }, [currentSegmentIndex]);
 
@@ -94,8 +101,6 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
         setProgress((audio.currentTime / duration) * 100);
     }
 
-    // A simple approximation to advance segments. 
-    // This could be improved with precise timestamps from the TTS service.
     const segmentDurationApproximation = duration / segments.length;
     const estimatedIndex = Math.floor(audio.currentTime / segmentDurationApproximation);
     setCurrentSegmentIndex(Math.min(estimatedIndex, segments.length - 1));
@@ -103,23 +108,20 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
   
   const handleAudioEnded = () => {
     setIsPlaying(false);
-    setCurrentSegmentIndex(0);
-    setProgress(0);
-    if(audioRef.current) {
-      audioRef.current.currentTime = 0;
-    }
+    setCurrentSegmentIndex(segments.length - 1); // Stay on last segment
+    setProgress(100);
   };
 
   return (
-    <Card className="bg-card/80 backdrop-blur-sm border-2 border-primary/20 shadow-lg shadow-primary/10 overflow-hidden">
-      <CardHeader className="flex-row items-center justify-between border-b-2 border-primary/10">
-        <CardTitle className="font-headline text-2xl">Your Vivid Story</CardTitle>
+    <Card className="bg-card/90 backdrop-blur-lg border-2 border-primary/20 shadow-2xl shadow-primary/10 overflow-hidden">
+      <CardHeader className="flex-row items-center justify-between border-b-2 border-primary/10 p-4 bg-gradient-to-r from-primary/10 via-card to-card">
+        <CardTitle className="font-headline text-2xl text-gradient bg-gradient-to-r from-primary to-accent">Your Vivid Story</CardTitle>
         <div className="flex items-center gap-2">
-          <Button onClick={handleRestart} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-primary">
+          <Button onClick={handleRestart} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-primary hover:bg-primary/20 hover:text-primary">
             <Rewind className="w-5 h-5" />
           </Button>
-          <Button onClick={handlePlayPause} size="icon" className="rounded-full w-12 h-12 bg-primary/90 hover:bg-primary text-primary-foreground">
-            {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+          <Button onClick={handlePlayPause} size="icon" className="rounded-full w-14 h-14 bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:scale-110 transition-transform">
+            {isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7 fill-current" />}
           </Button>
         </div>
       </CardHeader>
@@ -130,13 +132,17 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
               key={index}
               id={`segment-${index}`}
               className={cn(
-                "flex gap-4 p-4 rounded-lg transition-all duration-300",
-                index === currentSegmentIndex && isPlaying ? "bg-primary/20 scale-[1.02] shadow-lg" : "bg-muted/50"
+                "flex gap-4 p-4 rounded-xl transition-all duration-300 ease-in-out transform",
+                index === currentSegmentIndex && isPlaying ? "bg-primary/20 scale-[1.03] shadow-lg shadow-primary/20" : "bg-muted/50"
               )}
             >
-              <Avatar className="h-12 w-12 border-2" style={{ borderColor: characterColors[segment.character] }}>
-                <AvatarFallback className="text-xl font-bold text-white" style={{ backgroundColor: characterColors[segment.character] }}>
-                  {segment.character.toLowerCase() === 'narrator' ? <User /> : segment.character.charAt(0).toUpperCase()}
+              <Avatar className="h-12 w-12 border-2 shrink-0" style={{ borderColor: characterColors[segment.character] }}>
+                 <AvatarFallback className="text-xl font-bold text-white" style={{ backgroundColor: characterColors[segment.character] }}>
+                  {segment.character.toLowerCase() === 'narrator' 
+                    ? <BookText size={24}/> 
+                    : segment.character.includes(' ')
+                      ? `${segment.character.split(' ')[0][0]}${segment.character.split(' ')[1][0]}`
+                      : segment.character.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -147,10 +153,10 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
           ))}
         </div>
         <div className="p-4 md:p-6 border-t-2 border-primary/10 bg-muted/30 space-y-4">
-             <Progress value={progress} className="h-2" />
+             <Progress value={progress} className="h-2 bg-primary/20" />
             <div className="flex items-center gap-4">
               <Label htmlFor="playback-speed" className="flex items-center gap-2 text-muted-foreground font-headline">
-                <FastForward className="w-5 h-5" /> Speed:
+                <FastForward className="w-5 h-5" /> Speed
               </Label>
               <Slider
                 id="playback-speed"
@@ -161,7 +167,7 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
                 onValueChange={(value) => setPlaybackSpeed(value[0])}
                 className="max-w-xs"
               />
-               <span className="font-mono text-sm text-muted-foreground w-12 text-center">{playbackSpeed.toFixed(1)}x</span>
+               <span className="font-mono text-sm text-muted-foreground w-12 text-center bg-background/50 rounded-md py-1">{playbackSpeed.toFixed(1)}x</span>
             </div>
         </div>
       </CardContent>

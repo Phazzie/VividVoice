@@ -14,10 +14,10 @@ export function getCharacterColor(characterName: string): string {
     hash = characterName.charCodeAt(i) + ((hash << 5) - hash);
     hash |= 0; // Convert to 32bit integer
   }
-  // Use a fixed saturation and lightness for color consistency
+
   const hue = Math.abs(hash % 360);
-  const saturation = 70;
-  const lightness = 40;
+  const saturation = 60; // Slightly desaturated for a more pleasant look
+  const lightness = 55; // Brighter for better contrast
   
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }

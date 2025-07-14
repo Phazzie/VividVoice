@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Wand2, Loader2 } from "lucide-react";
+import { Wand2, Loader2, FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,11 @@ export function StoryForm({ onSubmit, isLoading }: StoryFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      storyText: "",
+      storyText: `Narrator: The old house stood on a hill overlooking the town, its windows like vacant eyes. A cool breeze whispered through the tall grass, carrying with it the scent of rain and decay.
+Alice: It looks a bit spooky. Are you sure about this, Bob?
+Bob: Don't be silly, it's just an old house. Think of the adventure! We'll be famous!
+Alice: I'd rather be safe than famous.
+Narrator: Bob, ever the optimist, was already marching towards the creaking porch steps. Alice hesitated, pulling her shawl tighter around her shoulders.`,
     },
   });
 
@@ -43,11 +47,11 @@ export function StoryForm({ onSubmit, isLoading }: StoryFormProps) {
   }
 
   return (
-    <Card className="bg-card/80 backdrop-blur-sm border-2 border-primary/20 shadow-lg shadow-primary/10">
+    <Card className="bg-card/90 backdrop-blur-lg border-2 border-primary/20 shadow-2xl shadow-primary/10">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl flex items-center gap-2">
-          <Wand2 className="w-6 h-6 text-primary" />
-          Enter Your Story
+        <CardTitle className="font-headline text-2xl flex items-center gap-3">
+          <FileText className="w-6 h-6 text-primary" />
+          Import Your Story
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -61,12 +65,8 @@ export function StoryForm({ onSubmit, isLoading }: StoryFormProps) {
                   <FormLabel className="sr-only">Story Text</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Paste your story here... for example:
-
-Narrator: The old house stood on a hill overlooking the town.
-Alice: It looks a bit spooky.
-Bob: Don't be silly, it's just an old house."
-                      className="min-h-[200px] bg-background/50 text-base font-serif"
+                      placeholder="Paste your story here..."
+                      className="min-h-[250px] bg-input text-base font-serif leading-relaxed"
                       {...field}
                     />
                   </FormControl>
@@ -77,7 +77,8 @@ Bob: Don't be silly, it's just an old house."
             <Button 
               type="submit" 
               disabled={isLoading} 
-              className="w-full font-headline text-lg bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity"
+              size="lg"
+              className="w-full font-headline text-lg py-6 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
             >
               {isLoading ? (
                 <>
@@ -87,7 +88,7 @@ Bob: Don't be silly, it's just an old house."
               ) : (
                 <>
                   <Wand2 className="mr-2 h-5 w-5" />
-                  Create Story
+                  Generate Vivid Narration
                 </>
               )}
             </Button>
