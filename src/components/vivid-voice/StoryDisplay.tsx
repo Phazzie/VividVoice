@@ -101,9 +101,14 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
         setProgress((audio.currentTime / duration) * 100);
     }
 
-    const segmentDurationApproximation = duration / segments.length;
+    // This is an estimation. For precise sync, timestamps from the model would be needed.
+    const segmentDurationApproximation = duration > 0 ? duration / segments.length : 1;
     const estimatedIndex = Math.floor(audio.currentTime / segmentDurationApproximation);
-    setCurrentSegmentIndex(Math.min(estimatedIndex, segments.length - 1));
+    const newIndex = Math.min(estimatedIndex, segments.length - 1);
+    
+    if (newIndex !== currentSegmentIndex) {
+      setCurrentSegmentIndex(newIndex);
+    }
   };
   
   const handleAudioEnded = () => {
@@ -113,27 +118,29 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
   };
 
   return (
-    <Card className="bg-card/90 backdrop-blur-lg border-2 border-primary/20 shadow-2xl shadow-primary/10 overflow-hidden">
-      <CardHeader className="flex-row items-center justify-between border-b-2 border-primary/10 p-4 bg-gradient-to-r from-primary/10 via-card to-card">
-        <CardTitle className="font-headline text-2xl text-gradient bg-gradient-to-r from-primary to-accent">Your Vivid Story</CardTitle>
+    <Card className="bg-card/70 backdrop-blur-xl border-2 border-secondary/50 card-glow-accent overflow-hidden">
+      <CardHeader className="flex-row items-center justify-between border-b-2 border-secondary/20 p-4 bg-gradient-to-r from-secondary/10 via-card/70 to-card/70">
+        <CardTitle className="font-headline text-2xl text-gradient bg-gradient-to-r from-secondary to-accent text-glow-accent">Your Vivid Story</CardTitle>
         <div className="flex items-center gap-2">
-          <Button onClick={handleRestart} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-primary hover:bg-primary/20 hover:text-primary">
+          <Button onClick={handleRestart} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary">
             <Rewind className="w-5 h-5" />
           </Button>
-          <Button onClick={handlePlayPause} size="icon" className="rounded-full w-14 h-14 bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:scale-110 transition-transform">
+          <Button onClick={handlePlayPause} size="icon" className="rounded-full w-14 h-14 bg-gradient-to-br from-secondary to-accent text-primary-foreground shadow-lg shadow-secondary/40 hover:scale-110 transition-transform">
             {isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7 fill-current" />}
           </Button>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div ref={scrollContainerRef} className="max-h-[50vh] overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+        <div ref={scrollContainerRef} className="max-h-[50vh] overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth bg-grid bg-[length:30px_30px] bg-card/10">
           {segments.map((segment, index) => (
             <div
               key={index}
               id={`segment-${index}`}
               className={cn(
-                "flex gap-4 p-4 rounded-xl transition-all duration-300 ease-in-out transform",
-                index === currentSegmentIndex && isPlaying ? "bg-primary/20 scale-[1.03] shadow-lg shadow-primary/20" : "bg-muted/50"
+                "flex gap-4 p-4 rounded-xl transition-all duration-300 ease-in-out transform border",
+                index === currentSegmentIndex && isPlaying 
+                  ? "bg-secondary/20 scale-[1.03] shadow-lg shadow-secondary/20 border-secondary" 
+                  : "bg-muted/50 border-transparent"
               )}
             >
               <Avatar className="h-12 w-12 border-2 shrink-0" style={{ borderColor: characterColors[segment.character] }}>
@@ -146,17 +153,17 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p className="font-headline text-lg font-bold" style={{ color: characterColors[segment.character] }}>{segment.character}</p>
+                <p className="font-headline text-lg font-bold" style={{ color: characterColors[segment.character], textShadow: `0 0 8px ${characterColors[segment.character]}70` }}>{segment.character}</p>
                 <p className="font-serif text-lg text-foreground/90 leading-relaxed">{segment.dialogue}</p>
               </div>
             </div>
           ))}
         </div>
-        <div className="p-4 md:p-6 border-t-2 border-primary/10 bg-muted/30 space-y-4">
-             <Progress value={progress} className="h-2 bg-primary/20" />
+        <div className="p-4 md:p-6 border-t-2 border-secondary/20 bg-muted/30 backdrop-blur-sm space-y-4">
+             <Progress value={progress} className="h-2 [&>div]:bg-secondary" />
             <div className="flex items-center gap-4">
               <Label htmlFor="playback-speed" className="flex items-center gap-2 text-muted-foreground font-headline">
-                <FastForward className="w-5 h-5" /> Speed
+                <FastForward className="w-5 h-5 text-secondary" /> Speed
               </Label>
               <Slider
                 id="playback-speed"

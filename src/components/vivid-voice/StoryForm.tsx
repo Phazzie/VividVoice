@@ -47,9 +47,9 @@ Narrator: Bob, ever the optimist, was already marching towards the creaking porc
   }
 
   return (
-    <Card className="bg-card/90 backdrop-blur-lg border-2 border-primary/20 shadow-2xl shadow-primary/10">
+    <Card className="bg-card/70 backdrop-blur-xl border card-glow-primary">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl flex items-center gap-3">
+        <CardTitle className="font-headline text-2xl flex items-center gap-3 text-glow-primary">
           <FileText className="w-6 h-6 text-primary" />
           Import Your Story
         </CardTitle>
@@ -66,7 +66,7 @@ Narrator: Bob, ever the optimist, was already marching towards the creaking porc
                   <FormControl>
                     <Textarea
                       placeholder="Paste your story here..."
-                      className="min-h-[250px] bg-input text-base font-serif leading-relaxed"
+                      className="min-h-[250px] bg-input/80 text-base font-serif leading-relaxed backdrop-blur-sm"
                       {...field}
                     />
                   </FormControl>
@@ -78,7 +78,7 @@ Narrator: Bob, ever the optimist, was already marching towards the creaking porc
               type="submit" 
               disabled={isLoading} 
               size="lg"
-              className="w-full font-headline text-lg py-6 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+              className="w-full font-headline text-lg py-6 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-accent/40 hover:scale-[1.02] transition-all duration-300"
             >
               {isLoading ? (
                 <>
