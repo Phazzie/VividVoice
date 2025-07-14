@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,8 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const formSchema = z.object({
-  storyText: z.string().min(50, {
-    message: "Story text must be at least 50 characters.",
+  storyText: z.string().min(1, {
+    message: "Story text cannot be empty.",
   }),
 });
 
