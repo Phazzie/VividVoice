@@ -11,11 +11,14 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
+import { type DialogueSegment } from './parse-dialogue';
 
 const GenerateEmotionalTTSInputSchema = z.object({
-  storyText: z
-    .string()
-    .describe('The story text to be converted to speech, with character names preceding their dialogue.'),
+  segments: z.array(z.object({
+    character: z.string(),
+    dialogue: z.string(),
+    emotion: z.string(),
+  })).describe('An array of dialogue segments, each with a character, dialogue, and an associated emotion.'),
 });
 export type GenerateEmotionalTTSInput = z.infer<typeof GenerateEmotionalTTSInputSchema>;
 
@@ -37,45 +40,38 @@ const generateEmotionalTTSFlow = ai.defineFlow(
     outputSchema: GenerateEmotionalTTSOutputSchema,
   },
   async input => {
-    const {storyText} = input;
+    const {segments} = input;
     const availableVoices = ['Algenib', 'Achernar', 'Enif', 'Hadar', 'Izar', 'Mirfak', 'Regulus'];
+    
+    // Reconstruct the story text with explicit speaker tags and emotion hints for the TTS model.
+    const storyForTTS = segments
+      .map(segment => `${segment.character} (${segment.emotion}): ${segment.dialogue}`)
+      .join('\n');
 
-    // Regular expression to match speaker and dialogue
-    const speakerRegex = /^\s*([\w\s]+):\s*(.+)$/gm;
-    let match;
+    const uniqueCharacters = [...new Set(segments.map(s => s.character))];
     const speakerVoiceConfigs: any[] = [];
-    let prompt = '';
-    let speakerCounter = 0;
     const speakerMap: {[key: string]: string} = {};
     const assignedVoices: {[key: string]: string} = {};
+    
+    uniqueCharacters.forEach((characterName, index) => {
+      const speakerId = `Speaker${index + 1}`;
+      const voiceName = availableVoices[index % availableVoices.length];
+      speakerMap[characterName] = speakerId;
+      assignedVoices[speakerId] = voiceName;
+      
+      speakerVoiceConfigs.push({
+        speaker: speakerId,
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName: voiceName },
+        },
+      });
+    });
 
-
-    while ((match = speakerRegex.exec(storyText)) !== null) {
-      const speakerName = match[1].trim();
-      const dialogue = match[2].trim();
-
-      let speakerId = speakerMap[speakerName];
-
-      // Assign a unique speaker ID and voice if not already assigned
-      if (!speakerId) {
-        speakerCounter++;
-        speakerId = `Speaker${speakerCounter}`;
-        speakerMap[speakerName] = speakerId;
-        
-        // Cycle through available voices
-        const voiceName = availableVoices[(speakerCounter - 1) % availableVoices.length];
-        assignedVoices[speakerId] = voiceName;
-
-        speakerVoiceConfigs.push({
-          speaker: speakerId,
-          voiceConfig: {
-            prebuiltVoiceConfig: {voiceName: voiceName},
-          },
-        });
-      }
-
-      prompt += `${speakerId}: ${dialogue}\n`;
-    }
+    let prompt = segments.map(segment => {
+      const speakerId = speakerMap[segment.character];
+      // The prompt provides the model with the emotional context.
+      return `${speakerId}: (${segment.emotion}) ${segment.dialogue}`;
+    }).join('\n');
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',

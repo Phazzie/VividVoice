@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, FastForward, User, Rewind, BookText, PersonStanding } from 'lucide-react';
+import { Play, Pause, FastForward, User, Rewind, BookText, PersonStanding, Edit } from 'lucide-react';
 import { type StorySegmentWithAudio } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -14,10 +14,11 @@ import { Progress } from '@/components/ui/progress';
 
 type StoryDisplayProps = {
   segments: StorySegmentWithAudio[];
+  onBack: () => void;
 };
 
-export function StoryDisplay({ segments }: StoryDisplayProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
+export function StoryDisplay({ segments, onBack }: StoryDisplayProps) {
+  const [isPlaying, setIsPlaying] = useState(true);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
@@ -47,7 +48,12 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
     if (playPromise !== undefined && !isPlaying) {
       playPromise.then(_ => audio.pause()).catch(e => console.error("Audio handling failed:", e));
     } else if (playPromise !== undefined && isPlaying) {
-      playPromise.catch(e => console.error("Audio play failed:", e));
+      // Autoplay is desired, so we start playing.
+      playPromise.catch(e => {
+        console.error("Audio play failed, user interaction may be required:", e);
+        // If autoplay fails, set isPlaying to false so the user can click play.
+        setIsPlaying(false);
+      });
     }
 
   }, [isPlaying, mainAudioUri]);
@@ -120,7 +126,12 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-secondary/50 card-glow-accent overflow-hidden">
       <CardHeader className="flex-row items-center justify-between border-b-2 border-secondary/20 p-4 bg-gradient-to-r from-secondary/10 via-card/70 to-card/70">
-        <CardTitle className="font-headline text-2xl text-gradient bg-gradient-to-r from-secondary to-accent text-glow-accent">Your Vivid Story</CardTitle>
+        <div className='flex items-center gap-2'>
+          <Button onClick={onBack} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary">
+            <Edit className="w-5 h-5" />
+          </Button>
+          <CardTitle className="font-headline text-2xl text-gradient bg-gradient-to-r from-secondary to-accent text-glow-accent">Your Vivid Story</CardTitle>
+        </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleRestart} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary">
             <Rewind className="w-5 h-5" />
@@ -178,7 +189,7 @@ export function StoryDisplay({ segments }: StoryDisplayProps) {
             </div>
         </div>
       </CardContent>
-      {mainAudioUri && <audio ref={audioRef} onTimeUpdate={handleTimeUpdate} onEnded={handleAudioEnded} />}
+      {mainAudioUri && <audio ref={audioRef} onTimeUpdate={handleTimeUpdate} onEnded={handleAudioEnded} autoPlay />}
     </Card>
   );
 }

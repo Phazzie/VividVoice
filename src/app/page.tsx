@@ -4,42 +4,69 @@ import { useState } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
-import { type StorySegmentWithAudio, processStory } from "@/lib/actions";
+import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
+import { type DialogueSegment, type StorySegmentWithAudio, parseStory, generateStoryAudio } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-export default function VividVoicePage() {
-  const [segments, setSegments] = useState<StorySegmentWithAudio[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showStory, setShowStory] = useState(false);
-  const { toast } = useToast();
+type AppState = 'initial' | 'parsing' | 'editing' | 'generating' | 'displaying';
 
-  const handleGenerateStory = async (storyText: string) => {
-    setIsLoading(true);
+export default function VividVoicePage() {
+  const [appState, setAppState] = useState<AppState>('initial');
+  const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
+  const [finalSegments, setFinalSegments] = useState<StorySegmentWithAudio[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  
+  const handleParseStory = async (storyText: string) => {
+    setAppState('parsing');
     setError(null);
-    setSegments([]);
+    setParsedSegments([]);
 
     try {
-      const result = await processStory(storyText);
+      const result = await parseStory(storyText);
       if (!result || result.length === 0) {
         throw new Error("Failed to parse the story. Please check the text format.");
       }
-      setSegments(result);
-      setShowStory(true);
+      setParsedSegments(result);
+      setAppState('editing');
     } catch (e: any) {
-      const errorMessage = e.message || "An unexpected error occurred.";
+      const errorMessage = e.message || "An unexpected error occurred during parsing.";
       setError(errorMessage);
-      setShowStory(false);
+      setAppState('initial');
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Parsing Error",
         description: errorMessage,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const handleGenerateAudio = async (editedSegments: DialogueSegment[]) => {
+    setAppState('generating');
+    setError(null);
+    
+    try {
+      const result = await generateStoryAudio(editedSegments);
+      setFinalSegments(result);
+      setAppState('displaying');
+    } catch (e: any) {
+       const errorMessage = e.message || "An unexpected error occurred during audio generation.";
+      setError(errorMessage);
+      setAppState('editing'); // Go back to editor if audio fails
+      toast({
+        variant: "destructive",
+        title: "Audio Generation Error",
+        description: errorMessage,
+      });
+    }
+  };
+
+  const handleBackToEditor = () => {
+    setAppState('editing');
+  }
+
+  const isLoading = appState === 'parsing' || appState === 'generating';
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -64,32 +91,49 @@ export default function VividVoicePage() {
           <main className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
             <div className={cn(
               "lg:col-span-2 lg:sticky lg:top-8 space-y-8 transition-all duration-700 animate-in fade-in slide-in-from-left-8",
+              (appState === 'editing' || appState === 'displaying') && "lg:opacity-50 lg:pointer-events-none"
             )}>
-              <StoryForm onSubmit={handleGenerateStory} isLoading={isLoading} />
-              {error && (
-                <div className="text-center p-4 rounded-lg bg-destructive/20 text-destructive-foreground font-semibold animate-in fade-in">
-                  <p>{error}</p>
-                </div>
-              )}
+              <StoryForm onSubmit={handleParseStory} isLoading={appState === 'parsing'} />
             </div>
             
             <div className="lg:col-span-3 min-h-[60vh]">
-              {showStory && segments.length > 0 && (
-                 <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
-                   <StoryDisplay segments={segments} />
-                 </div>
-              )}
-
-              {!isLoading && !showStory && (
+              {appState === 'initial' && !isLoading && (
                 <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
                    <div className="p-4 bg-accent/20 rounded-full text-glow-accent">
                       <Wand2 className="w-16 h-16 text-accent"/>
                    </div>
                   <p className="font-headline text-3xl mt-4 text-glow-accent">Your Story Awaits</p>
                   <p className="max-w-md font-serif text-lg">
-                    Paste your narrative into the box and let our AI create a unique audio experience for you.
+                    Paste your narrative into the box to begin. The AI will parse it, then you can edit the emotions before generating the final audio.
                   </p>
                 </div>
+              )}
+
+              {(appState === 'parsing' || appState === 'generating') && (
+                 <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
+                   <div className="p-4 bg-primary/20 rounded-full text-glow-primary animate-pulse">
+                      <Sparkles className="w-16 h-16 text-primary"/>
+                   </div>
+                  <p className="font-headline text-3xl mt-4 text-glow-primary">
+                    {appState === 'parsing' ? 'Analyzing Story...' : 'Generating Audio...'}
+                  </p>
+                </div>
+              )}
+
+              {appState === 'editing' && (
+                <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
+                  <DialogueEditor 
+                    initialSegments={parsedSegments} 
+                    onGenerateAudio={handleGenerateAudio}
+                    isLoading={appState === 'generating'}
+                  />
+                </div>
+              )}
+              
+              {appState === 'displaying' && finalSegments.length > 0 && (
+                 <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
+                   <StoryDisplay segments={finalSegments} onBack={handleBackToEditor}/>
+                 </div>
               )}
             </div>
           </main>

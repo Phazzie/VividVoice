@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const formSchema = z.object({
   storyText: z.string().min(1, {
@@ -52,6 +52,9 @@ Narrator: Bob, ever the optimist, was already marching towards the creaking porc
           <FileText className="w-6 h-6 text-primary" />
           Import Your Story
         </CardTitle>
+        <CardDescription className="font-serif">
+          Paste your story below. The AI will parse it and identify emotions, which you can then edit.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -82,12 +85,12 @@ Narrator: Bob, ever the optimist, was already marching towards the creaking porc
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Creating Magic...
+                  Analyzing...
                 </>
               ) : (
                 <>
                   <Wand2 className="mr-2 h-5 w-5" />
-                  Generate Vivid Narration
+                  Start Generation
                 </>
               )}
             </Button>
