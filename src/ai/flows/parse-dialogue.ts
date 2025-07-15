@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -34,14 +35,14 @@ const parseDialoguePrompt = ai.definePrompt({
   name: 'parseDialoguePrompt',
   input: {schema: ParseDialogueInputSchema},
   output: {schema: ParseDialogueOutputSchema},
-  prompt: `You are an expert in literary analysis. Your task is to parse story text into dialogue segments and extract character information.
+  prompt: `You are an expert in literary analysis. Your task is to parse a story into dialogue segments and extract detailed character information.
 
-  First, go through the entire story and compile a list of all unique characters. For each character (except the 'Narrator'), provide a detailed physical description based on any details mentioned in the text.
+  First, read the entire story text to understand the plot, characters, and overall tone. Based on this holistic understanding, compile a list of all unique characters. For each character (except the 'Narrator'), provide a detailed physical description based on any details mentioned in the text.
 
-  Second, break down the story into an array of segments. For each segment, provide:
-  1.  The 'character' speaking (or 'Narrator').
-  2.  The 'dialogue' or narrative text.
-  3.  The inferred 'emotion' for that line.
+  Second, break down the story into an array of dialogue or narrative segments. For each segment, provide:
+  1.  The 'character' speaking (or 'Narrator' for narrative text).
+  2.  The 'dialogue' or narrative text itself.
+  3.  The inferred 'emotion' for that line. To determine the emotion, carefully consider the context: what happened just before this line? What is the character's overall personality? What is the mood of the scene? The emotion should reflect these nuances.
 
   Return a single JSON object with two keys: 'characters' (an array of character objects with names and descriptions) and 'segments' (an array of dialogue segment objects).
 
