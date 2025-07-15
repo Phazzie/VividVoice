@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -41,23 +42,16 @@ const generateEmotionalTTSFlow = ai.defineFlow(
   },
   async input => {
     const {segments} = input;
-    const availableVoices = ['Algenib', 'Achernar', 'Enif', 'Hadar', 'Izar', 'Mirfak', 'Regulus'];
+    const availableVoices = ['Algenib', 'Achernar', 'Enif', 'Hadar', 'Izar', 'Mirfak', 'Regulus', 'Deneb', 'Capella', 'Vega'];
     
-    // Reconstruct the story text with explicit speaker tags and emotion hints for the TTS model.
-    const storyForTTS = segments
-      .map(segment => `${segment.character} (${segment.emotion}): ${segment.dialogue}`)
-      .join('\n');
-
     const uniqueCharacters = [...new Set(segments.map(s => s.character))];
     const speakerVoiceConfigs: any[] = [];
     const speakerMap: {[key: string]: string} = {};
-    const assignedVoices: {[key: string]: string} = {};
     
     uniqueCharacters.forEach((characterName, index) => {
       const speakerId = `Speaker${index + 1}`;
       const voiceName = availableVoices[index % availableVoices.length];
       speakerMap[characterName] = speakerId;
-      assignedVoices[speakerId] = voiceName;
       
       speakerVoiceConfigs.push({
         speaker: speakerId,
@@ -67,9 +61,11 @@ const generateEmotionalTTSFlow = ai.defineFlow(
       });
     });
 
+    // The prompt is crucial. It instructs the model on how to perform.
+    // By providing the emotion in parentheses, we guide the TTS model to deliver the line with the intended feeling.
     let prompt = segments.map(segment => {
       const speakerId = speakerMap[segment.character];
-      // The prompt provides the model with the emotional context.
+      // Format: SpeakerID: (Emotion) Dialogue
       return `${speakerId}: (${segment.emotion}) ${segment.dialogue}`;
     }).join('\n');
 
