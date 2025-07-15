@@ -51,7 +51,8 @@ export async function parseStory(
       parsedResult.segments.length === 0
     ) {
       console.error(
-        'Parsing Error: Could not parse any dialogue from the provided text.'
+        'Parsing Error: Could not parse any dialogue from the provided text. AI Output:',
+        parsedResult
       );
       throw new Error(
         'Could not parse dialogue. Please ensure it has standard dialogue formatting (e.g., Character: Dialogue).'
@@ -66,10 +67,19 @@ export async function parseStory(
     let portraits: CharacterPortrait[] = [];
     if (parsedResult.characters.length > 0) {
       console.log('Generating character portraits...');
-      portraits = await generateCharacterPortraits({
-        characters: parsedResult.characters,
-      });
-      console.log('Portrait generation successful.');
+      try {
+        portraits = await generateCharacterPortraits({
+          characters: parsedResult.characters,
+        });
+        console.log('Portrait generation successful.');
+      } catch (portraitError) {
+        console.error(
+          'AI Portrait Generation Error: Failed to generate character portraits.',
+          portraitError
+        );
+        // We can continue without portraits if this step fails, so we don't throw.
+        // The UI will handle the missing portraits gracefully.
+      }
     }
 
     return {
@@ -78,11 +88,11 @@ export async function parseStory(
     };
   } catch (error) {
     console.error(
-      'Error during story parsing and portrait generation flow:',
+      'Fatal Error during story parsing flow:',
       error
     );
     throw new Error(
-      'Failed to process the story. The AI model may be temporarily unavailable.'
+      'Failed to process the story. The AI model may have encountered an issue.'
     );
   }
 }
@@ -119,9 +129,9 @@ export async function generateStoryAudio(
     console.log('Story audio processing finished successfully.');
     return segmentsWithAudio;
   } catch (error) {
-    console.error('Error during TTS generation flow:', error);
+    console.error('Fatal Error during TTS generation flow:', error);
     throw new Error(
-      'There was an issue generating audio. The AI model may be temporarily unavailable, please try again.'
+      'There was an issue generating the audio. The AI model may be temporarily unavailable, please try again.'
     );
   }
 }
