@@ -2,15 +2,13 @@
 
 import {
   parseDialogue,
-  type ParseDialogueOutput,
 } from '@/ai/flows/parse-dialogue';
 import { generateEmotionalTTS } from '@/ai/flows/generate-emotional-tts';
 import {
   generateCharacterPortraits,
-  type GenerateCharacterPortraitsOutput,
 } from '@/ai/flows/generate-character-portraits';
 import { z } from 'zod';
-import { type DialogueSegment as ImportedDialogueSegment } from '@/ai/schemas';
+import { type DialogueSegment as ImportedDialogueSegment, type Character } from '@/ai/schemas';
 
 // Re-exporting for use in client components
 export type DialogueSegment = ImportedDialogueSegment;
@@ -60,7 +58,7 @@ export async function parseStory(
     }
     console.log(
       'Story parsing successful, found characters:',
-      parsedResult.characters.map((c) => c.name).join(', ')
+      parsedResult.characters.map((c: Character) => c.name).join(', ')
     );
 
     // Now, generate portraits for the extracted characters.
@@ -98,7 +96,7 @@ export async function parseStory(
 }
 
 /**
- * Step 2: Generates audio for the provided (and potentially edited) dialogue segments.
+ * Step 2: Generates audio for each provided dialogue segment individually.
  */
 export async function generateStoryAudio(
   segments: DialogueSegment[]
@@ -108,24 +106,26 @@ export async function generateStoryAudio(
     console.error('Validation Error: Segments for audio generation cannot be empty.');
     throw new Error('No dialogue segments provided for audio generation.');
   }
-
+  
   try {
-    const { audioDataUri } = await generateEmotionalTTS({ segments });
-    console.log('TTS generation successful.');
-
-    // Attach the single audio URI to the first segment for the player to use.
-    const segmentsWithAudio: StorySegmentWithAudio[] = segments.map(
-      (segment, index) => {
-        if (index === 0) {
-          return {
-            ...segment,
-            audioUri: audioDataUri,
-          };
+    const audioPromises = segments.map(async (segment) => {
+      // Don't generate audio for narrator segments that are just whitespace
+      if (segment.character === 'Narrator' && segment.dialogue.trim() === '') {
+        return {
+          ...segment,
+          audioUri: undefined,
         }
-        return segment;
       }
-    );
+      
+      const { audioDataUri } = await generateEmotionalTTS({ segments: [segment] });
+      return {
+        ...segment,
+        audioUri: audioDataUri,
+      };
+    });
 
+    const segmentsWithAudio = await Promise.all(audioPromises);
+    
     console.log('Story audio processing finished successfully.');
     return segmentsWithAudio;
   } catch (error) {

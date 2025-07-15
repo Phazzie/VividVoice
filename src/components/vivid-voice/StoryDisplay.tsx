@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, FastForward, Rewind, BookText, Edit } from 'lucide-react';
+import { Play, Pause, FastForward, Rewind, BookText, Edit, SkipForward, SkipBack } from 'lucide-react';
 import { type StorySegmentWithAudio, type CharacterPortrait } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,14 +19,13 @@ type StoryDisplayProps = {
 };
 
 export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisplayProps) {
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const mainAudioUri = useMemo(() => segments.find(s => s.audioUri)?.audioUri, [segments]);
 
   const characterColors = useMemo(() => {
     const uniqueCharacters = [...new Set(segments.map(s => s.character))];
@@ -35,30 +34,39 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
       return acc;
     }, {} as Record<string, string>);
   }, [segments]);
-  
+
+  // Effect to handle audio playback and source changes
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !mainAudioUri) return;
-
-    if (audio.src !== mainAudioUri) {
-      audio.src = mainAudioUri;
-      audio.load();
+    if (!audio) return;
+    
+    const currentSegment = segments[currentSegmentIndex];
+    
+    // Set the audio source if it has changed
+    if (currentSegment?.audioUri && audio.src !== currentSegment.audioUri) {
+        audio.src = currentSegment.audioUri;
+        audio.load();
     }
     
-    const playPromise = isPlaying ? audio.play() : audio.pause();
-    if (playPromise !== undefined && !isPlaying) {
-      playPromise.then(_ => audio.pause()).catch(e => console.error("Audio handling failed:", e));
-    } else if (playPromise !== undefined && isPlaying) {
-      // Autoplay is desired, so we start playing.
-      playPromise.catch(e => {
-        console.error("Audio play failed, user interaction may be required:", e);
-        // If autoplay fails, set isPlaying to false so the user can click play.
-        setIsPlaying(false);
-      });
+    // If there's no audio URI, skip to the next segment
+    if (!currentSegment?.audioUri && currentSegmentIndex < segments.length -1) {
+      if(isPlaying) {
+        setCurrentSegmentIndex(prev => prev + 1);
+      }
+      return;
     }
+    
+    // Play or pause based on isPlaying state
+    const playPromise = isPlaying ? audio.play() : Promise.resolve();
+    playPromise?.catch(e => {
+        console.error("Audio play failed, user interaction may be required:", e);
+        setIsPlaying(false); // Stop trying to play if it fails
+    });
 
-  }, [isPlaying, mainAudioUri]);
+  }, [currentSegmentIndex, segments, isPlaying]);
 
+
+  // Effect to manage playback speed
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) {
@@ -66,6 +74,7 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
     }
   }, [playbackSpeed]);
   
+  // Effect to scroll the currently playing segment into view
   useEffect(() => {
     const currentSegmentElement = document.getElementById(`segment-${currentSegmentIndex}`);
     if (currentSegmentElement && scrollContainerRef.current) {
@@ -85,48 +94,49 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
   }, [currentSegmentIndex]);
 
   const handlePlayPause = () => {
+    // If at the end, restart from the beginning when play is pressed
+    if (!isPlaying && currentSegmentIndex >= segments.length - 1) {
+      setCurrentSegmentIndex(0);
+    }
     setIsPlaying(prev => !prev);
   };
   
   const handleRestart = () => {
-    const audio = audioRef.current;
-    if (audio) {
-        audio.currentTime = 0;
-        setCurrentSegmentIndex(0);
-        if (!isPlaying) {
-          setIsPlaying(true);
-        }
+    setCurrentSegmentIndex(0);
+    if (!isPlaying) {
+      setIsPlaying(true);
     }
   };
+
+  const handleSkip = (direction: 'forward' | 'backward') => {
+    const nextIndex = direction === 'forward' ? currentSegmentIndex + 1 : currentSegmentIndex - 1;
+    if (nextIndex >= 0 && nextIndex < segments.length) {
+      setCurrentSegmentIndex(nextIndex);
+    }
+  }
 
   const handleTimeUpdate = () => {
     const audio = audioRef.current;
-    if (!audio) return;
-    
-    const duration = audio.duration;
-    if (duration > 0) {
-        setProgress((audio.currentTime / duration) * 100);
-    }
-
-    // This is an estimation. For precise sync, timestamps from the model would be needed.
-    const segmentDurationApproximation = duration > 0 ? duration / segments.length : 1;
-    const estimatedIndex = Math.floor(audio.currentTime / segmentDurationApproximation);
-    const newIndex = Math.min(estimatedIndex, segments.length - 1);
-    
-    if (newIndex !== currentSegmentIndex) {
-      setCurrentSegmentIndex(newIndex);
-    }
+    if (!audio || !audio.duration) return;
+    const currentProgress = (audio.currentTime / audio.duration) * 100;
+    const totalProgress = ((currentSegmentIndex + (currentProgress / 100)) / segments.length) * 100;
+    setProgress(totalProgress);
   };
   
   const handleAudioEnded = () => {
-    setIsPlaying(false);
-    setCurrentSegmentIndex(segments.length - 1); // Stay on last segment
-    setProgress(100);
+    if (currentSegmentIndex < segments.length - 1) {
+      setCurrentSegmentIndex(prevIndex => prevIndex + 1);
+    } else {
+      setIsPlaying(false);
+      setProgress(100);
+    }
   };
 
   const getPortrait = (characterName: string) => {
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
+  
+  const isLastSegment = currentSegmentIndex >= segments.length - 1;
 
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-secondary/50 card-glow-accent overflow-hidden">
@@ -138,11 +148,14 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
           <CardTitle className="font-headline text-2xl text-gradient bg-gradient-to-r from-secondary to-accent text-glow-accent">Your Vivid Story</CardTitle>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleRestart} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary">
-            <Rewind className="w-5 h-5" />
+           <Button onClick={() => handleSkip('backward')} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary" disabled={currentSegmentIndex === 0}>
+            <SkipBack className="w-5 h-5 fill-current" />
           </Button>
           <Button onClick={handlePlayPause} size="icon" className="rounded-full w-14 h-14 bg-gradient-to-br from-secondary to-accent text-primary-foreground shadow-lg shadow-secondary/40 hover:scale-110 transition-transform">
             {isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7 fill-current" />}
+          </Button>
+          <Button onClick={() => handleSkip('forward')} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary" disabled={isLastSegment}>
+            <SkipForward className="w-5 h-5 fill-current" />
           </Button>
         </div>
       </CardHeader>
@@ -195,7 +208,7 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
             </div>
         </div>
       </CardContent>
-      {mainAudioUri && <audio ref={audioRef} onTimeUpdate={handleTimeUpdate} onEnded={handleAudioEnded} autoPlay />}
+      <audio ref={audioRef} onTimeUpdate={handleTimeUpdate} onEnded={handleAudioEnded} />
     </Card>
   );
 }

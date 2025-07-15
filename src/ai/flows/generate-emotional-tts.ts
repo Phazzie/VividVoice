@@ -12,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
-import { type DialogueSegment } from './parse-dialogue';
+import { type DialogueSegment } from '@/ai/schemas';
 
 const GenerateEmotionalTTSInputSchema = z.object({
   segments: z.array(z.object({
@@ -42,40 +42,23 @@ const generateEmotionalTTSFlow = ai.defineFlow(
   },
   async input => {
     const {segments} = input;
-    const availableVoices = ['Algenib', 'Achernar', 'Enif', 'Hadar', 'Izar', 'Mirfak', 'Regulus', 'Deneb', 'Capella', 'Vega'];
     
-    const uniqueCharacters = [...new Set(segments.map(s => s.character))];
-    const speakerVoiceConfigs: any[] = [];
-    const speakerMap: {[key: string]: string} = {};
+    // We can use a consistent voice since we are generating segment by segment
+    const voice = 'Algenib';
     
-    uniqueCharacters.forEach((characterName, index) => {
-      const speakerId = `Speaker${index + 1}`;
-      const voiceName = availableVoices[index % availableVoices.length];
-      speakerMap[characterName] = speakerId;
-      
-      speakerVoiceConfigs.push({
-        speaker: speakerId,
-        voiceConfig: {
-          prebuiltVoiceConfig: { voiceName: voiceName },
-        },
-      });
-    });
-
     // The prompt is crucial. It instructs the model on how to perform.
     // By providing the emotion in parentheses, we guide the TTS model to deliver the line with the intended feeling.
-    let prompt = segments.map(segment => {
-      const speakerId = speakerMap[segment.character];
-      // Format: SpeakerID: (Emotion) Dialogue
-      return `${speakerId}: (${segment.emotion}) ${segment.dialogue}`;
-    }).join('\n');
+    // Since we are generating one segment at a time, we just need to format the first one.
+    const segment = segments[0];
+    const prompt = `(${segment.emotion}) ${segment.dialogue}`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
-          multiSpeakerVoiceConfig: {
-            speakerVoiceConfigs: speakerVoiceConfigs,
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: voice },
           },
         },
       },
