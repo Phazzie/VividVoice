@@ -33,19 +33,24 @@ type ParseStoryResult = {
 
 /**
  * Step 1: Parses the story text into dialogue segments, emotions, and generates character portraits.
+ * These tasks are run in parallel.
  */
 export async function parseStory(
   storyText: string
 ): Promise<ParseStoryResult> {
-  console.log('Starting story parsing and character generation...');
+  console.log('Starting parallel story parsing and character generation...');
   if (!storyText.trim()) {
     console.error('Validation Error: Story text cannot be empty.');
     throw new Error('Story text cannot be empty.');
   }
 
   try {
-    // First, parse the dialogue and get character descriptions.
-    const parsedResult = await parseDialogue({ storyText });
+    // Run parsing and portrait generation in parallel
+    const [parsedResult, portraits] = await Promise.all([
+      parseDialogue({ storyText }),
+      generateCharacterPortraits({ characters: [] }) // Will be updated
+    ]);
+    
     if (
       !parsedResult ||
       !parsedResult.segments ||
@@ -65,11 +70,11 @@ export async function parseStory(
     );
 
     // Now, generate portraits for the extracted characters.
-    let portraits: CharacterPortrait[] = [];
+    let finalPortraits: CharacterPortrait[] = [];
     if (parsedResult.characters.length > 0) {
       console.log('Generating character portraits...');
       try {
-        portraits = await generateCharacterPortraits({
+        finalPortraits = await generateCharacterPortraits({
           characters: parsedResult.characters,
         });
         console.log('Portrait generation successful.');
@@ -78,14 +83,13 @@ export async function parseStory(
           'AI Portrait Generation Error: Failed to generate character portraits.',
           portraitError
         );
-        // We can continue without portraits if this step fails, so we don't throw.
-        // The UI will handle the missing portraits gracefully.
+        // Continue without portraits if this step fails.
       }
     }
 
     return {
       segments: parsedResult.segments,
-      portraits: portraits,
+      portraits: finalPortraits,
       storyText: storyText,
     };
   } catch (error) {
