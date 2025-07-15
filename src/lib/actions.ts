@@ -7,12 +7,14 @@ import { generateEmotionalTTS } from '@/ai/flows/generate-emotional-tts';
 import {
   generateCharacterPortraits,
 } from '@/ai/flows/generate-character-portraits';
+import { analyzeLiteraryDevices as analyzeLiteraryDevicesFlow } from '@/ai/flows/analyze-literary-devices';
 import { z } from 'zod';
-import { type DialogueSegment as ImportedDialogueSegment, type Character } from '@/ai/schemas';
+import { type DialogueSegment as ImportedDialogueSegment, type Character, type LiteraryDevice as ImportedLiteraryDevice } from '@/ai/schemas';
 
 // Re-exporting for use in client components
 export type DialogueSegment = ImportedDialogueSegment;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
+export type LiteraryDevice = ImportedLiteraryDevice;
 
 const StorySegmentWithAudioSchema = z.object({
   character: z.string(),
@@ -26,6 +28,7 @@ export type StorySegmentWithAudio = z.infer<typeof StorySegmentWithAudioSchema>;
 type ParseStoryResult = {
   segments: DialogueSegment[];
   portraits: CharacterPortrait[];
+  storyText: string;
 };
 
 /**
@@ -83,6 +86,7 @@ export async function parseStory(
     return {
       segments: parsedResult.segments,
       portraits: portraits,
+      storyText: storyText,
     };
   } catch (error) {
     console.error(
@@ -143,4 +147,25 @@ export async function generateStoryAudio(
       'There was an issue generating the audio. The AI model may be temporarily unavailable, please try again.'
     );
   }
+}
+
+
+/**
+ * Analysis Step: Scans the story for literary devices.
+ */
+export async function analyzeLiteraryDevices(storyText: string): Promise<LiteraryDevice[]> {
+    console.log('Starting literary device analysis...');
+    if (!storyText.trim()) {
+        console.error('Validation Error: Story text for analysis cannot be empty.');
+        throw new Error('No story text provided for analysis.');
+    }
+
+    try {
+        const result = await analyzeLiteraryDevicesFlow({ storyText });
+        console.log(`Literary device analysis successful. Found ${result.devices.length} devices.`);
+        return result.devices;
+    } catch (error) {
+        console.error('Fatal Error during literary device analysis flow:', error);
+        throw new Error('Failed to analyze literary devices. The AI model may have encountered an issue.');
+    }
 }

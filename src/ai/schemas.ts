@@ -32,3 +32,11 @@ export const DialogueSegmentSchema = z.object({
     ),
 });
 export type DialogueSegment = z.infer<typeof DialogueSegmentSchema>;
+
+
+export const LiteraryDeviceSchema = z.object({
+    device: z.string().describe('The name of the literary device.'),
+    quote: z.string().describe('The specific quote from the text that uses the device.'),
+    explanation: z.string().describe('A brief explanation of how the quote uses the device.'),
+});
+export type LiteraryDevice = z.infer<typeof LiteraryDeviceSchema>;

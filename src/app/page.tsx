@@ -13,25 +13,28 @@ type AppState = 'initial' | 'parsing' | 'editing' | 'generating' | 'displaying';
 
 export default function VividVoicePage() {
   const [appState, setAppState] = useState<AppState>('initial');
+  const [storyText, setStoryText] = useState<string>('');
   const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
   const [characterPortraits, setCharacterPortraits] = useState<CharacterPortrait[]>([]);
   const [finalSegments, setFinalSegments] = useState<StorySegmentWithAudio[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
-  const handleParseStory = async (storyText: string) => {
+  const handleParseStory = async (newStoryText: string) => {
     setAppState('parsing');
     setError(null);
     setParsedSegments([]);
     setCharacterPortraits([]);
+    setStoryText('');
 
     try {
-      const result = await parseStory(storyText);
+      const result = await parseStory(newStoryText);
       if (!result || !result.segments || result.segments.length === 0) {
         throw new Error("Failed to parse the story. Please check the text format.");
       }
       setParsedSegments(result.segments);
       setCharacterPortraits(result.portraits);
+      setStoryText(result.storyText);
       setAppState('editing');
     } catch (e: any) {
       const errorMessage = e.message || "An unexpected error occurred during parsing.";
@@ -126,6 +129,7 @@ export default function VividVoicePage() {
               {appState === 'editing' && (
                 <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
                   <DialogueEditor 
+                    storyText={storyText}
                     initialSegments={parsedSegments}
                     characterPortraits={characterPortraits}
                     onGenerateAudio={handleGenerateAudio}
