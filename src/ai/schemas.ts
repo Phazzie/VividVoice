@@ -40,3 +40,25 @@ export const LiteraryDeviceSchema = z.object({
     explanation: z.string().describe('A brief explanation of how the quote uses the device.'),
 });
 export type LiteraryDevice = z.infer<typeof LiteraryDeviceSchema>;
+
+
+export const DialogueDynamicsSchema = z.object({
+  powerBalance: z.array(z.object({
+    character: z.string(),
+    metrics: z.object({
+      dialogueTurns: z.number().describe('Total number of times the character speaks.'),
+      wordCount: z.number().describe('Total number of words spoken by the character.'),
+      questionsAsked: z.number().describe('Number of questions the character asked.'),
+      assertionsMade: z.number().describe('Number of assertive or declarative statements made.'),
+    }),
+  })).describe('An analysis of the power balance between characters.'),
+  pacing: z.object({
+    overallWordsPerTurn: z.number().describe('The average number of words per turn for the entire dialogue.'),
+    characterPacing: z.array(z.object({
+        character: z.string(),
+        wordsPerTurn: z.number().describe('The average number of words per turn for this specific character.')
+    })),
+  }).describe('An analysis of the dialogue pacing.'),
+  summary: z.string().describe('A brief, insightful summary of the overall dialogue dynamics, including who is driving the conversation.'),
+});
+export type DialogueDynamics = z.infer<typeof DialogueDynamicsSchema>;
