@@ -109,19 +109,28 @@ export async function generateStoryAudio(
   
   try {
     const audioPromises = segments.map(async (segment) => {
-      // Don't generate audio for narrator segments that are just whitespace
-      if (segment.character === 'Narrator' && segment.dialogue.trim() === '') {
+      // Don't generate audio for narrator segments that are just whitespace or empty
+      if ((segment.character === 'Narrator' && segment.dialogue.trim() === '') || segment.dialogue.trim() === '') {
         return {
           ...segment,
           audioUri: undefined,
         }
       }
       
-      const { audioDataUri } = await generateEmotionalTTS({ segments: [segment] });
-      return {
-        ...segment,
-        audioUri: audioDataUri,
-      };
+      try {
+        const { audioDataUri } = await generateEmotionalTTS({ segments: [segment] });
+        return {
+          ...segment,
+          audioUri: audioDataUri,
+        };
+      } catch (ttsError) {
+        console.error(`TTS generation failed for segment: "${segment.dialogue.substring(0,30)}..."`, ttsError);
+        // Return segment without audio URI if an individual call fails
+        return {
+          ...segment,
+          audioUri: undefined,
+        }
+      }
     });
 
     const segmentsWithAudio = await Promise.all(audioPromises);
