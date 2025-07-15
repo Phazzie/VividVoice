@@ -6,14 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment, type CharacterPortrait, analyzeLiteraryDevices, type LiteraryDevice } from '@/lib/actions';
-import { Wand2, Loader2, Edit, BookText, FlaskConical, Quote } from 'lucide-react';
+import { type DialogueSegment, type CharacterPortrait } from '@/lib/actions';
+import { Wand2, Loader2, Edit } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { BookText } from 'lucide-react';
+import { LiteraryAnalysisTab } from '@/components/vivid-voice/LiteraryAnalysis';
+import { DialogueDynamicsAnalysis } from '@/components/vivid-voice/DialogueDynamicsAnalysis';
 
 type DialogueEditorProps = {
   storyText: string;
@@ -26,57 +28,6 @@ type DialogueEditorProps = {
 const emotionOptions = [
   "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
 ];
-
-function LiteraryAnalysisTab({ storyText }: { storyText: string }) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [devices, setDevices] = useState<LiteraryDevice[]>([]);
-    const { toast } = useToast();
-
-    const handleAnalyze = async () => {
-        setIsLoading(true);
-        setDevices([]);
-        try {
-            const result = await analyzeLiteraryDevices(storyText);
-            setDevices(result);
-            if (result.length === 0) {
-                 toast({ title: "Analysis Complete", description: "No specific literary devices were identified in the text." });
-            }
-        } catch (e: any) {
-            toast({
-                variant: "destructive",
-                title: "Analysis Error",
-                description: e.message || "An unexpected error occurred during analysis.",
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    return (
-        <div className="space-y-4">
-            <div className="flex justify-center">
-                <Button onClick={handleAnalyze} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FlaskConical className="mr-2 h-4 w-4" />}
-                    Analyze for Literary Devices
-                </Button>
-            </div>
-            {devices.length > 0 && (
-                <div className="space-y-4">
-                    {devices.map((device, index) => (
-                        <div key={index} className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                            <h3 className="font-headline text-lg text-primary">{device.device}</h3>
-                            <blockquote className="border-l-4 border-primary pl-4 my-2">
-                                <p className="font-serif italic">"{device.quote}"</p>
-                            </blockquote>
-                            <p className="text-sm text-muted-foreground">{device.explanation}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-}
-
 
 export function DialogueEditor({ storyText, initialSegments, characterPortraits, onGenerateAudio, isLoading }: DialogueEditorProps) {
   const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments);
@@ -109,10 +60,11 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
           Director's Room
         </CardTitle>
       </CardHeader>
-      <Tabs defaultValue="dialogue">
-        <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20">
+      <Tabs defaultValue="dialogue" className="w-full">
+        <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20 grid grid-cols-3">
             <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none">Dialogue Editor</TabsTrigger>
-            <TabsTrigger value="analysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none">Literary Analysis</TabsTrigger>
+            <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none">Literary Analysis</TabsTrigger>
+            <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none">Dialogue Dynamics</TabsTrigger>
         </TabsList>
         <ScrollArea className="h-[55vh]">
             <TabsContent value="dialogue" className="p-4 md:p-6 space-y-4 bg-grid bg-[length:30px_30px] bg-card/10">
@@ -152,8 +104,11 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
                 </div>
                 ))}
             </TabsContent>
-            <TabsContent value="analysis" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+            <TabsContent value="literaryAnalysis" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <LiteraryAnalysisTab storyText={storyText} />
+            </TabsContent>
+             <TabsContent value="dialogueDynamics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <DialogueDynamicsAnalysis storyText={storyText} />
             </TabsContent>
         </ScrollArea>
       </Tabs>

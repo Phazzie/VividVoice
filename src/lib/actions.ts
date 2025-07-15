@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -8,13 +9,16 @@ import {
   generateCharacterPortraits,
 } from '@/ai/flows/generate-character-portraits';
 import { analyzeLiteraryDevices as analyzeLiteraryDevicesFlow } from '@/ai/flows/analyze-literary-devices';
+import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flows/analyze-dialogue-dynamics';
+
 import { z } from 'zod';
-import { type DialogueSegment as ImportedDialogueSegment, type Character, type LiteraryDevice as ImportedLiteraryDevice } from '@/ai/schemas';
+import { type DialogueSegment as ImportedDialogueSegment, type Character, type LiteraryDevice as ImportedLiteraryDevice, type DialogueDynamics as ImportedDialogueDynamics } from '@/ai/schemas';
 
 // Re-exporting for use in client components
 export type DialogueSegment = ImportedDialogueSegment;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
+export type DialogueDynamics = ImportedDialogueDynamics;
 
 const StorySegmentWithAudioSchema = z.object({
   character: z.string(),
@@ -46,9 +50,9 @@ export async function parseStory(
 
   try {
     // Run parsing and portrait generation in parallel
-    const [parsedResult, portraits] = await Promise.all([
+    const [parsedResult] = await Promise.all([
       parseDialogue({ storyText }),
-      generateCharacterPortraits({ characters: [] }) // Will be updated
+      // generateCharacterPortraits is called subsequently with the parsed characters
     ]);
     
     if (
@@ -171,5 +175,25 @@ export async function analyzeLiteraryDevices(storyText: string): Promise<Literar
     } catch (error) {
         console.error('Fatal Error during literary device analysis flow:', error);
         throw new Error('Failed to analyze literary devices. The AI model may have encountered an issue.');
+    }
+}
+
+/**
+ * Analysis Step: Analyzes dialogue dynamics.
+ */
+export async function analyzeDialogueDynamics(storyText: string): Promise<DialogueDynamics> {
+    console.log('Starting dialogue dynamics analysis...');
+    if (!storyText.trim()) {
+        console.error('Validation Error: Story text for analysis cannot be empty.');
+        throw new Error('No story text provided for analysis.');
+    }
+
+    try {
+        const result = await analyzeDialogueDynamicsFlow({ storyText });
+        console.log(`Dialogue dynamics analysis successful.`);
+        return result;
+    } catch (error) {
+        console.error('Fatal Error during dialogue dynamics analysis flow:', error);
+        throw new Error('Failed to analyze dialogue dynamics. The AI model may have encountered an issue.');
     }
 }
