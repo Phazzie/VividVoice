@@ -80,6 +80,16 @@ const generateEmotionalTTSFlow = ai.defineFlow(
   }
 );
 
+/**
+ * Converts raw PCM audio data into a Base64-encoded WAV format string.
+ * This is necessary because the TTS model returns raw audio data, and the <audio>
+ * HTML element requires a proper container format like WAV.
+ * @param pcmData The raw PCM audio data from the TTS model.
+ * @param channels The number of audio channels (e.g., 1 for mono).
+ * @param rate The sample rate of the audio (e.g., 24000 Hz).
+ * @param sampleWidth The width of each audio sample in bytes (e.g., 2 for 16-bit).
+ * @returns A Promise that resolves to a Base64-encoded string of the WAV file.
+ */
 async function toWav(
   pcmData: Buffer,
   channels = 1,
