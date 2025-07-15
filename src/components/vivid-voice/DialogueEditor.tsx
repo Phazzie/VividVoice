@@ -4,14 +4,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { type DialogueSegment, type CharacterPortrait } from '@/lib/actions';
 import { Wand2, Loader2, Edit, BookText } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type DialogueEditorProps = {
   initialSegments: DialogueSegment[];
@@ -19,6 +18,10 @@ type DialogueEditorProps = {
   onGenerateAudio: (segments: DialogueSegment[]) => void;
   isLoading: boolean;
 };
+
+const emotionOptions = [
+  "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
+];
 
 export function DialogueEditor({ initialSegments, characterPortraits, onGenerateAudio, isLoading }: DialogueEditorProps) {
   const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments);
@@ -53,7 +56,7 @@ export function DialogueEditor({ initialSegments, characterPortraits, onGenerate
       </CardHeader>
       <CardContent className="p-4 md:p-6 space-y-4 max-h-[60vh] overflow-y-auto bg-grid bg-[length:30px_30px] bg-card/10">
         {segments.map((segment, index) => (
-          <div key={index} className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
+          <div key={index} className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-border/50 items-start">
              <Avatar className="h-16 w-16 border-2 shrink-0" style={{ borderColor: getCharacterColor(segment.character) }}>
                  <AvatarImage src={getPortrait(segment.character)} alt={`Portrait of ${segment.character}`} />
                  <AvatarFallback className="text-xl font-bold text-white" style={{ backgroundColor: getCharacterColor(segment.character) }}>
@@ -67,12 +70,16 @@ export function DialogueEditor({ initialSegments, characterPortraits, onGenerate
             <div className="flex-1 space-y-2">
               <div className='flex items-center justify-between'>
                  <Label className="font-headline text-lg" style={{ color: getCharacterColor(segment.character) }}>{segment.character}</Label>
-                 <Input
-                    value={segment.emotion}
-                    onChange={(e) => handleEmotionChange(index, e.target.value)}
-                    className="w-40 bg-background/70 h-8"
-                    placeholder="Emotion"
-                  />
+                 <Select value={segment.emotion} onValueChange={(value) => handleEmotionChange(index, value)}>
+                    <SelectTrigger className="w-40 bg-background/70 h-9">
+                        <SelectValue placeholder="Select emotion" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {emotionOptions.map(opt => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
               </div>
               <Textarea
                 value={segment.dialogue}
