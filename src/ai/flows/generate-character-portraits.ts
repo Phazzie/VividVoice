@@ -47,7 +47,7 @@ const generateCharacterPortraitsFlow = ai.defineFlow(
 
         const {media} = await ai.generate({
             model: 'googleai/gemini-2.0-flash-preview-image-generation',
-            prompt: `Generate a vibrant, artistic character portrait based on this description: "${character.description}". The style should be expressive and colorful, fitting a fantasy or sci-fi narrative. Focus on the face and shoulders.`,
+            prompt: `Generate a photorealistic, cinematic-style character portrait based on this description: "${character.description}". The lighting should be dramatic. Focus on the face and shoulders, capturing a realistic human expression.`,
             config: {
                 responseModalities: ['TEXT', 'IMAGE'],
             },
