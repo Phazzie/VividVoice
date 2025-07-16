@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, FastForward, Rewind, BookText, Edit, Wand2, RefreshCw, Loader2, X } from 'lucide-react';
-import { type StorySegmentWithAudio, type CharacterPortrait, regenerateSingleLineAudio, type Character } from '@/lib/actions';
+import { Play, Pause, FastForward, Rewind, BookText, Edit, Wand2, RefreshCw, Loader2, X, Music2 } from 'lucide-react';
+import { type StorySegmentWithAudio, type CharacterPortrait, regenerateSingleLineAudio, type Character, getSoundDesign, type SoundEffectWithUrl } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -27,10 +27,11 @@ type StoryDisplayProps = {
   segments: StorySegmentWithAudio[];
   characterPortraits: CharacterPortrait[];
   characters: Character[];
+  storyText: string;
   onBack: () => void;
 };
 
-export function StoryDisplay({ segments, characterPortraits, characters, onBack }: StoryDisplayProps) {
+export function StoryDisplay({ segments, characterPortraits, characters, storyText, onBack }: StoryDisplayProps) {
   const [storySegments, setStorySegments] = useState<StorySegmentWithAudio[]>(segments);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -43,7 +44,12 @@ export function StoryDisplay({ segments, characterPortraits, characters, onBack 
   const [tempEmotion, setTempEmotion] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
   
+  // State for sound design
+  const [soundEffects, setSoundEffects] = useState<SoundEffectWithUrl[]>([]);
+  const [activeSound, setActiveSound] = useState<string | null>(null);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
+  const soundEffectAudioRef = useRef<HTMLAudioElement>(null);
   const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { toast } = useToast();
 
@@ -58,6 +64,35 @@ export function StoryDisplay({ segments, characterPortraits, characters, onBack 
     map.set('Narrator', 'en-US-Standard-A');
     return map;
   }, [characters]);
+
+  // Fetch sound design on component mount
+  useEffect(() => {
+    getSoundDesign(storyText)
+      .then(effects => {
+        if (effects && effects.length > 0) {
+          setSoundEffects(effects);
+          toast({
+            title: "Sound Design Ready",
+            description: `AI has identified ${effects.length} sound effects to enhance your story.`,
+            action: <Music2 className="text-primary" />,
+          });
+        }
+      })
+      .catch(e => {
+        console.error("Failed to get sound design:", e);
+        // Don't bother the user with a toast for this non-critical feature
+      });
+  }, [storyText, toast]);
+  
+  // Effect to play sound effects when the segment changes
+  useEffect(() => {
+    const effect = soundEffects.find(sfx => sfx.segmentIndex === currentSegmentIndex);
+    if (effect && isPlaying) {
+      setActiveSound(effect.soundUrl);
+    } else {
+      setActiveSound(null);
+    }
+  }, [currentSegmentIndex, soundEffects, isPlaying]);
 
   useEffect(() => {
     segmentRefs.current[currentSegmentIndex]?.scrollIntoView({
@@ -251,6 +286,15 @@ export function StoryDisplay({ segments, characterPortraits, characters, onBack 
           onLoadedData={() => isPlaying && audioRef.current?.play()}
           onEnded={advanceToNextSegment}
           key={currentSegmentIndex}
+        />
+      )}
+       {activeSound && (
+        <audio
+          ref={soundEffectAudioRef}
+          src={activeSound}
+          autoPlay
+          onEnded={() => setActiveSound(null)}
+          key={activeSound}
         />
       )}
     </Card>

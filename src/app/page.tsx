@@ -159,6 +159,7 @@ export default function VividVoicePage() {
                     segments={finalSegments} 
                     characterPortraits={characterPortraits}
                     characters={characters}
+                    storyText={storyText}
                     onBack={handleBackToEditor}
                   />
                  </div>

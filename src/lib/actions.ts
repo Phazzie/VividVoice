@@ -25,6 +25,7 @@ import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/
 import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
+import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 
 import { z } from 'zod';
 import {
@@ -39,6 +40,7 @@ import {
   type ConsistencyIssue as ImportedConsistencyIssue,
   type SubtextAnalysis as ImportedSubtextAnalysis,
   type Perspective as ImportedPerspective,
+  type SoundEffect as ImportedSoundEffect,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
@@ -53,7 +55,13 @@ export type ShowDontTellSuggestion = ImportedShowDontTellSuggestion;
 export type ConsistencyIssue = ImportedConsistencyIssue;
 export type SubtextAnalysis = ImportedSubtextAnalysis;
 export type Perspective = ImportedPerspective;
+export type SoundEffect = ImportedSoundEffect;
 export type { ChatMessage, NarratorBias };
+
+/**
+ * Defines the shape of a sound effect after a URL has been found for it.
+ */
+export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
 
 
 /**
@@ -344,5 +352,35 @@ export async function shiftPerspective(storyText: string, characterName: string,
   } catch(e: any) {
     console.error('Error in shiftPerspective action:', e);
     throw new Error('Failed to shift perspective.');
+  }
+}
+
+/**
+ * Scans the story for sound effect cues and provides placeholder URLs.
+ * @param storyText The full text of the story.
+ * @returns A promise resolving to an array of sound effects with URLs.
+ */
+export async function getSoundDesign(storyText: string): Promise<SoundEffectWithUrl[]> {
+  console.log('Calling getSoundDesign action...');
+  try {
+    const { soundEffects } = await generateSoundDesignFlow({ storyText });
+
+    if (soundEffects.length === 0) {
+      return [];
+    }
+
+    // In a real application, you would use the `soundQuery` to search a
+    // licensed audio library API and get a real URL.
+    // For this demo, we will use a consistent, high-quality placeholder sound.
+    const placeholderSoundUrl = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg';
+
+    return soundEffects.map(effect => ({
+      ...effect,
+      soundUrl: placeholderSoundUrl,
+    }));
+  } catch (e: any) {
+    console.error('Error in getSoundDesign action:', e);
+    // Return empty array on failure as this is a non-critical enhancement.
+    return [];
   }
 }

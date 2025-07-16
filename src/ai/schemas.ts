@@ -166,3 +166,14 @@ export const PerspectiveSchema = z.object({
   summary: z.string().describe("The summary of the story, rewritten from the character's new perspective."),
 });
 export type Perspective = z.infer<typeof PerspectiveSchema>;
+
+
+/**
+ * Defines the schema for a single sound effect cue identified by the AI.
+ */
+export const SoundEffectSchema = z.object({
+  segmentIndex: z.number().describe("The zero-based index of the narrative segment where the sound occurs."),
+  description: z.string().describe("The description of the sound event from the text (e.g., 'a door creaked open')."),
+  soundQuery: z.string().describe("A short search query for a sound effects library (e.g., 'door creak')."),
+});
+export type SoundEffect = z.infer<typeof SoundEffectSchema>;

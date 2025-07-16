@@ -17,3 +17,4 @@ import '@/ai/flows/show-dont-tell.ts';
 import '@/ai/flows/consistency-guardian.ts';
 import '@/ai/flows/analyze-subtext.ts';
 import '@/ai/flows/shift-perspective.ts';
+import '@/ai/flows/generate-sound-design.ts';
