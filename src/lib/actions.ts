@@ -37,7 +37,7 @@ export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
 export type DialogueDynamics = ImportedDialogueDynamics;
 export type Trope = ImportedTrope;
-export type { ChatMessage, NarratorBias };
+export type { Character, ChatMessage, NarratorBias };
 
 
 /**
