@@ -14,7 +14,7 @@ import {
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
 } from '@/ai/flows/generate-character-portraits';
-import { generateEmotionalTTS } from '@/ai/flows/generate-emotional-tts';
+import { generateMultiVoiceTTS } from '@/ai/flows/generate-multi-voice-tts';
 import { analyzeLiteraryDevices as analyzeLiteraryDevicesFlow } from '@/ai/flows/analyze-literary-devices';
 import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flows/analyze-dialogue-dynamics';
 import { invertTropes as invertTropesFlow } from '@/ai/flows/trope-inverter';
@@ -62,19 +62,6 @@ export type { ChatMessage, NarratorBias };
  * Defines the shape of a sound effect after a URL has been found for it.
  */
 export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
-
-
-/**
- * Defines the shape of a story segment after audio has been generated,
- * including an optional URI for the audio data.
- */
-const StorySegmentWithAudioSchema = z.object({
-  character: z.string(),
-  dialogue: z.string(),
-  emotion: z.string(),
-  audioUri: z.string().optional(),
-});
-export type StorySegmentWithAudio = z.infer<typeof StorySegmentWithAudioSchema>;
 
 
 /**
@@ -127,18 +114,19 @@ export async function getCharacterPortraits(characters: Character[]): Promise<Ch
     }
 }
 
+
 /**
- * Generates audio for a story, using the AI-chosen voice for each character.
- * @param segments An array of DialogueSegment objects.
- * @param characters An array of Character objects which includes the AI-chosen voiceId.
- * @returns A Promise that resolves to an array of StorySegmentWithAudio, each containing its own audio URI.
+ * Generates a single, cohesive audio file for an entire scene using multiple AI voices.
+ * @param segments An array of DialogueSegment objects for the scene.
+ * @param characters An array of Character objects which includes AI-chosen voice IDs.
+ * @returns A Promise that resolves to an object containing the audio data URI.
  * @throws An error if the input segments array is empty.
  */
-export async function generateStoryAudio(
+export async function generateMultiVoiceSceneAudio(
   segments: DialogueSegment[],
   characters: Character[]
-): Promise<StorySegmentWithAudio[]> {
-  console.log('Starting per-segment TTS generation with AI-chosen voices...');
+): Promise<{ audioDataUri: string }> {
+  console.log('Starting multi-voice TTS scene generation...');
   if (!segments || segments.length === 0) {
     const errorMsg = 'Validation Error: Segments for audio generation cannot be empty.';
     console.error(errorMsg);
@@ -146,62 +134,14 @@ export async function generateStoryAudio(
   }
   
   try {
-    const characterVoiceMap = new Map<string, string>();
-    characters.forEach(char => {
-        if (char.voiceId) {
-            characterVoiceMap.set(char.name, char.voiceId);
-        }
-    });
-    // Add a default for the narrator
-    characterVoiceMap.set('Narrator', 'en-US-Standard-A');
-
-    const audioPromises = segments.map(async (segment) => {
-      // Use the AI-chosen voice, or a default if one isn't found (should not happen in normal flow).
-      const voice = characterVoiceMap.get(segment.character) || 'en-US-Standard-A';
-      
-      const { audioDataUri } = await generateEmotionalTTS({ 
-          dialogue: segment.dialogue, 
-          emotion: segment.emotion, 
-          voice 
-      });
-
-      return {
-        ...segment,
-        audioUri: audioDataUri,
-      };
-    });
-
-    const storyWithAudio = await Promise.all(audioPromises);
-    
-    console.log('Per-segment audio processing finished successfully.');
-    return storyWithAudio;
+    const result = await generateMultiVoiceTTS({ segments, characters });
+    console.log('Multi-voice scene audio generation finished successfully.');
+    return result;
 
   } catch (error) {
-    console.error('Fatal Error during per-segment TTS generation flow:', { error });
-    throw new Error('There was an issue generating the audio.');
+    console.error('Fatal Error during multi-voice TTS generation flow:', { error });
+    throw new Error('There was an issue generating the audio for the scene.');
   }
-}
-
-/**
- * Regenerates audio for a single dialogue segment with a specified voice.
- * @param segment The dialogue segment to regenerate.
- * @param voice The voice to use for the generation.
- * @returns A promise that resolves to the new audio data URI.
- */
-export async function regenerateSingleLineAudio(segment: DialogueSegment, voice: string): Promise<string> {
-    console.log(`Regenerating audio for: "${segment.dialogue}" with voice ${voice}`);
-    try {
-        const { audioDataUri } = await generateEmotionalTTS({
-            dialogue: segment.dialogue,
-            emotion: segment.emotion,
-            voice: voice,
-        });
-        console.log('Single line regeneration successful.');
-        return audioDataUri;
-    } catch (error) {
-        console.error('Fatal Error during single line regeneration flow:', { error });
-        throw new Error('There was an issue regenerating the audio for this line.');
-    }
 }
 
 

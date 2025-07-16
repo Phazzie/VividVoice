@@ -15,11 +15,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
 import SsmlBuilder from 'ssml-builder';
-import { DialogueSegmentSchema } from '@/ai/schemas';
+import { DialogueSegmentSchema, CharacterSchema } from '@/ai/schemas';
 
 const GenerateMultiVoiceTTSInputSchema = z.object({
   segments: z.array(DialogueSegmentSchema).describe('An array of dialogue segments for a scene.'),
-  characters: z.array(z.string()).describe('A list of unique character names in the scene to be assigned voices.'),
+  characters: z.array(CharacterSchema).describe('A list of unique character objects with voice assignments.'),
 });
 export type GenerateMultiVoiceTTSInput = z.infer<typeof GenerateMultiVoiceTTSInputSchema>;
 
@@ -34,13 +34,6 @@ export async function generateMultiVoiceTTS(input: GenerateMultiVoiceTTSInput): 
   return generateMultiVoiceTTSFlow(input);
 }
 
-// A predefined list of available high-quality voices.
-const availableVoices = [
-  'en-US-Standard-A', 'en-US-Standard-B', 'en-US-Standard-C', 
-  'en-US-Standard-D', 'en-US-Standard-E', 'en-US-Standard-F',
-  'en-US-Standard-G', 'en-US-Standard-H', 'en-US-Standard-I', 'en-US-Standard-J'
-];
-
 const generateMultiVoiceTTSFlow = ai.defineFlow(
   {
     name: 'generateMultiVoiceTTSFlow',
@@ -48,43 +41,47 @@ const generateMultiVoiceTTSFlow = ai.defineFlow(
     outputSchema: GenerateMultiVoiceTTSOutputSchema,
   },
   async ({ segments, characters }) => {
-    // Assign a unique, consistent voice to each character.
+    // Create a map of character names to their AI-assigned voice IDs.
     const characterVoiceMap = new Map<string, string>();
-    const nonNarratorCharacters = characters.filter(c => c.toLowerCase() !== 'narrator');
-    nonNarratorCharacters.forEach((char, index) => {
-      characterVoiceMap.set(char, availableVoices[index % availableVoices.length]);
+     characters.forEach(char => {
+        if (char.voiceId) {
+            characterVoiceMap.set(char.name, char.voiceId);
+        }
     });
+    // Ensure the narrator always has a voice.
+    if (!characterVoiceMap.has('Narrator')) {
+        characterVoiceMap.set('Narrator', 'en-US-Standard-A');
+    }
 
     // Use ssml-builder to construct the complex speech synthesis prompt.
-    let ssml = new SsmlBuilder();
+    // The root element must be <speak> for the TTS service.
+    let ssml = new SsmlBuilder({ root: true });
     segments.forEach(segment => {
       const voice = characterVoiceMap.get(segment.character);
       
-      // Add a slight pause for narrator segments to improve pacing.
-      if (segment.character.toLowerCase() === 'narrator') {
-        ssml.pause('300ms');
-      }
-      
-      let speech = ssml.ssml();
+      // If a character speaks multiple lines in a row, add a small pause for natural breath.
+      ssml.pause('150ms');
+
       if (voice) {
-        speech = speech.voice({name: voice});
-      }
-
-      // We add the emotion as a prosody instruction to guide the AI's performance.
-      speech.prosody({
-          rate: 'medium',
-          pitch: 'medium'
-      }, `(${segment.emotion}) ${segment.dialogue}`);
-
-
-      if (segment.character.toLowerCase() === 'narrator') {
-        ssml.pause('500ms');
+        // The <voice> tag changes the speaker for this segment of text.
+        const voiceElement = ssml.voice({name: voice});
+        // The <prosody> tag instructs the AI on the emotional delivery.
+        voiceElement.prosody({
+            rate: 'medium', // We can adjust this later if needed
+            pitch: 'medium' // We can adjust this later if needed
+        }, `(${segment.emotion}) ${segment.dialogue}`);
+      } else {
+         // This is a fallback for any text not assigned to a voiced character (e.g., narrator).
+         ssml.prosody({
+            rate: 'medium',
+            pitch: 'medium'
+        }, `(${segment.emotion}) ${segment.dialogue}`);
       }
     });
 
     const ssmlString = ssml.toString();
     
-    // Generate the audio using the constructed SSML string.
+    // Generate the audio using the single, comprehensive SSML string.
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',
       config: { responseModalities: ['AUDIO'] },

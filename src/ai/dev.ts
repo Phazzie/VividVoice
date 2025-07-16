@@ -4,7 +4,8 @@ config();
 
 import '@/ai/schemas.ts';
 import '@/ai/flows/parse-dialogue.ts';
-import '@/ai/flows/generate-emotional-tts.ts';
+// Removing the old emotional TTS flow as it's being replaced.
+// import '@/ai/flows/generate-emotional-tts.ts';
 import '@/ai/flows/generate-multi-voice-tts.ts';
 import '@/ai/flows/generate-character-portraits.ts';
 import '@/ai/flows/analyze-literary-devices.ts';

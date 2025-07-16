@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, type StorySegmentWithAudio, getParsedStory, getCharacterPortraits, generateStoryAudio, type CharacterPortrait, type Character } from "@/lib/actions";
+import { type DialogueSegment, getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +18,7 @@ export default function VividVoicePage() {
   const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [characterPortraits, setCharacterPortraits] = useState<CharacterPortrait[]>([]);
-  const [finalSegments, setFinalSegments] = useState<StorySegmentWithAudio[]>([]);
+  const [sceneAudioUri, setSceneAudioUri] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
@@ -30,18 +30,14 @@ export default function VividVoicePage() {
     setStoryText('');
 
     try {
-      // Step 1: Parse the story to get segments and character definitions (including AI-chosen voices).
       const { segments, characters } = await getParsedStory(newStoryText);
       setParsedSegments(segments);
       setCharacters(characters);
       setStoryText(newStoryText);
       
-      // Step 2 (in parallel): Generate character portraits. This is non-critical.
-      // We don't need to await this to show the editor. We can update the state when it's done.
       getCharacterPortraits(characters).then(portraits => {
         setCharacterPortraits(portraits);
       }).catch(e => {
-        // Log the error but don't block the user.
          console.error("Non-critical error: Failed to generate portraits.", e);
          toast({
             variant: "default",
@@ -68,13 +64,13 @@ export default function VividVoicePage() {
     setError(null);
     
     try {
-      const result = await generateStoryAudio(editedSegments, characters);
-      setFinalSegments(result);
+      const { audioDataUri } = await generateMultiVoiceSceneAudio(editedSegments, characters);
+      setSceneAudioUri(audioDataUri);
       setAppState('displaying');
     } catch (e: any) {
        const errorMessage = e.message || "An unexpected error occurred during audio generation.";
       setError(errorMessage);
-      setAppState('editing'); // Go back to editor if audio fails
+      setAppState('editing');
       toast({
         variant: "destructive",
         title: "Audio Generation Error",
@@ -85,6 +81,7 @@ export default function VividVoicePage() {
 
   const handleBackToEditor = () => {
     setAppState('editing');
+    setSceneAudioUri('');
   }
 
   const isLoading = appState === 'parsing' || appState === 'generating';
@@ -153,13 +150,14 @@ export default function VividVoicePage() {
                 </div>
               )}
               
-              {appState === 'displaying' && finalSegments.length > 0 && (
+              {appState === 'displaying' && sceneAudioUri && (
                  <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
                    <StoryDisplay 
-                    segments={finalSegments} 
+                    segments={parsedSegments} 
                     characterPortraits={characterPortraits}
                     characters={characters}
                     storyText={storyText}
+                    sceneAudioUri={sceneAudioUri}
                     onBack={handleBackToEditor}
                   />
                  </div>
