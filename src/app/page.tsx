@@ -102,7 +102,8 @@ export default function StagingStoriesPage() {
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);
       setAppState('displaying');
-    } catch (e: any)       const errorMessage = e.message || "An unexpected error occurred during audio generation.";
+    } catch (e: any) {
+      const errorMessage = e.message || "An unexpected error occurred during audio generation.";
       setError(errorMessage);
       setAppState('editing');
       toast({
