@@ -14,7 +14,7 @@ import {
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
 } from '@/ai/flows/generate-character-portraits';
-import { generateMultiVoiceTTS } from '@/ai/flows/generate-multi-voice-tts';
+import { generateEmotionalTTS } from '@/ai/flows/generate-emotional-tts';
 import { analyzeLiteraryDevices as analyzeLiteraryDevicesFlow } from '@/ai/flows/analyze-literary-devices';
 import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flows/analyze-dialogue-dynamics';
 import { invertTropes as invertTropesFlow } from '@/ai/flows/trope-inverter';
@@ -102,17 +102,26 @@ export async function getCharacterPortraits(characters: Character[]): Promise<Ch
     }
 }
 
+// A predefined list of available high-quality voices.
+const availableVoices = [
+  'en-US-Standard-A', 'en-US-Standard-B', 'en-US-Standard-C', 
+  'en-US-Standard-D', 'en-US-Standard-E', 'en-US-Standard-F',
+  'en-US-Standard-G', 'en-US-Standard-H', 'en-US-Standard-I', 'en-US-Standard-J',
+  'en-US-Wavenet-A', 'en-US-Wavenet-B', 'en-US-Wavenet-C', 'en-US-Wavenet-D',
+  'en-US-Wavenet-E', 'en-US-Wavenet-F', 'en-US-Wavenet-G', 'en-US-Wavenet-H',
+  'en-US-Wavenet-I', 'en-US-Wavenet-J'
+];
 
 /**
- * Generates a single, multi-voice audio file for an entire story.
+ * Generates audio for a story, assigning a unique voice to each character.
  * @param segments An array of DialogueSegment objects.
- * @returns A Promise that resolves to an array of StorySegmentWithAudio, where only the first segment contains the audio URI.
+ * @returns A Promise that resolves to an array of StorySegmentWithAudio, each containing its own audio URI.
  * @throws An error if the input segments array is empty.
  */
 export async function generateStoryAudio(
   segments: DialogueSegment[]
 ): Promise<StorySegmentWithAudio[]> {
-  console.log('Starting multi-voice TTS generation for the entire story...');
+  console.log('Starting per-segment TTS generation with unique voices...');
   if (!segments || segments.length === 0) {
     const errorMsg = 'Validation Error: Segments for audio generation cannot be empty.';
     console.error(errorMsg);
@@ -120,21 +129,37 @@ export async function generateStoryAudio(
   }
   
   try {
-    const characters = [...new Set(segments.map(s => s.character))];
-    const { audioDataUri } = await generateMultiVoiceTTS({ segments, characters });
+    const uniqueCharacters = [...new Set(segments.map(s => s.character))];
+    const characterVoiceMap = new Map<string, string>();
+    uniqueCharacters.forEach((char, index) => {
+        // We assign a consistent voice from our available list.
+        characterVoiceMap.set(char, availableVoices[index % availableVoices.length]);
+    });
 
-    // The audio URI is for the whole story. We'll attach it to the first segment
-    // and the UI will know to use it for the whole player.
-    const storyWithAudio: StorySegmentWithAudio[] = segments.map((segment, index) => ({
-      ...segment,
-      audioUri: index === 0 ? audioDataUri : undefined,
-    }));
+    const audioPromises = segments.map(async (segment) => {
+      // Narrator segments are handled differently, often with a more neutral voice.
+      // For now, we'll assign one from the map, but this could be customized.
+      const voice = characterVoiceMap.get(segment.character) || availableVoices[0];
+      
+      const { audioDataUri } = await generateEmotionalTTS({ 
+          dialogue: segment.dialogue, 
+          emotion: segment.emotion, 
+          voice 
+      });
+
+      return {
+        ...segment,
+        audioUri: audioDataUri,
+      };
+    });
+
+    const storyWithAudio = await Promise.all(audioPromises);
     
-    console.log('Multi-voice story audio processing finished successfully.');
+    console.log('Per-segment audio processing finished successfully.');
     return storyWithAudio;
 
   } catch (error) {
-    console.error('Fatal Error during multi-voice TTS generation flow:', { error });
+    console.error('Fatal Error during per-segment TTS generation flow:', { error });
     throw new Error('There was an issue generating the audio.');
   }
 }

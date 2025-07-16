@@ -3,8 +3,9 @@
 
 /**
  * @fileOverview Implements AI-driven text-to-speech for expressive voice acting in narratives.
+ * This flow is designed to generate a single audio clip for one line of dialogue.
  *
- * - generateEmotionalTTS - A function that generates expressive speech for a given story.
+ * - generateEmotionalTTS - A function that generates expressive speech for a given story segment.
  * - GenerateEmotionalTTSInput - The input type for the generateEmotionalTTS function.
  * - GenerateEmotionalTTSOutput - The return type for the generateEmotionalTTS function.
  */
@@ -12,14 +13,11 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import wav from 'wav';
-import { type DialogueSegment } from '@/ai/schemas';
 
 const GenerateEmotionalTTSInputSchema = z.object({
-  segments: z.array(z.object({
-    character: z.string(),
-    dialogue: z.string(),
-    emotion: z.string(),
-  })).describe('An array of dialogue segments, each with a character, dialogue, and an associated emotion.'),
+  dialogue: z.string(),
+  emotion: z.string(),
+  voice: z.string().describe("The specific voice to use for generation, e.g., 'en-US-Standard-A'"),
 });
 export type GenerateEmotionalTTSInput = z.infer<typeof GenerateEmotionalTTSInputSchema>;
 
@@ -41,16 +39,11 @@ const generateEmotionalTTSFlow = ai.defineFlow(
     outputSchema: GenerateEmotionalTTSOutputSchema,
   },
   async input => {
-    const {segments} = input;
-    
-    // We can use a consistent voice since we are generating segment by segment
-    const voice = 'Algenib';
+    const {dialogue, emotion, voice} = input;
     
     // The prompt is crucial. It instructs the model on how to perform.
     // By providing the emotion in parentheses, we guide the TTS model to deliver the line with the intended feeling.
-    // Since we are generating one segment at a time, we just need to format the first one.
-    const segment = segments[0];
-    const prompt = `(${segment.emotion}) ${segment.dialogue}`;
+    const prompt = `(${emotion}) ${dialogue}`;
 
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',

@@ -19,15 +19,13 @@ type StoryDisplayProps = {
 };
 
 export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisplayProps) {
+  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   
   const audioRef = useRef<HTMLAudioElement>(null);
-  
-  const audioUri = useMemo(() => segments.find(s => s.audioUri)?.audioUri, [segments]);
+  const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const characterColors = useMemo(() => {
     const uniqueCharacters = [...new Set(segments.map(s => s.character))];
@@ -36,6 +34,14 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
       return acc;
     }, {} as Record<string, string>);
   }, [segments]);
+
+  // Effect to scroll the currently playing segment into view
+  useEffect(() => {
+    segmentRefs.current[currentSegmentIndex]?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+  }, [currentSegmentIndex]);
 
   // Effect to handle playing and pausing the audio
   useEffect(() => {
@@ -47,7 +53,7 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
     } else {
       audio.pause();
     }
-  }, [isPlaying]);
+  }, [isPlaying, currentSegmentIndex]); // Re-run when segment changes
 
   // Effect to manage playback speed
   useEffect(() => {
@@ -60,37 +66,37 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
   const handlePlayPause = () => {
     setIsPlaying(prev => !prev);
   };
-  
+
+  const advanceToNextSegment = () => {
+    if (currentSegmentIndex < segments.length - 1) {
+      setCurrentSegmentIndex(prev => prev + 1);
+      setProgress(0);
+      setIsPlaying(true); // Autoplay next segment
+    } else {
+      setIsPlaying(false); // End of story
+    }
+  };
+
+  const goToPreviousSegment = () => {
+     if (currentSegmentIndex > 0) {
+      setCurrentSegmentIndex(prev => prev - 1);
+      setProgress(0);
+      setIsPlaying(true);
+    }
+  }
+
   const handleTimeUpdate = () => {
     const audio = audioRef.current;
-    if (!audio) return;
-    setProgress((audio.currentTime / audio.duration) * 100);
-    setCurrentTime(audio.currentTime);
+    if (audio) {
+      setProgress((audio.currentTime / audio.duration) * 100);
+    }
   };
-  
-  const handleLoadedMetadata = () => {
-     const audio = audioRef.current;
-     if (!audio) return;
-     setDuration(audio.duration);
-  }
-
-  const handleSeek = (value: number[]) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const newTime = (value[0] / 100) * duration;
-    audio.currentTime = newTime;
-    setProgress(value[0]);
-  }
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-  }
 
   const getPortrait = (characterName: string) => {
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
+
+  const currentAudioUri = segments[currentSegmentIndex]?.audioUri;
 
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-secondary/50 card-glow-accent overflow-hidden">
@@ -107,8 +113,14 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
           {segments.map((segment, index) => (
             <div
               key={index}
+              ref={el => segmentRefs.current[index] = el}
               id={`segment-${index}`}
-              className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-transparent"
+              className={cn(
+                "flex gap-4 p-4 rounded-xl border transition-all duration-300",
+                index === currentSegmentIndex && isPlaying
+                  ? 'bg-secondary/20 border-secondary'
+                  : 'bg-muted/50 border-transparent'
+              )}
             >
               <Avatar className="h-16 w-16 border-2 shrink-0" style={{ borderColor: characterColors[segment.character] }}>
                  <AvatarImage src={getPortrait(segment.character)} alt={`Portrait of ${segment.character}`} />
@@ -128,22 +140,17 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
           ))}
         </div>
         <div className="p-4 md:p-6 border-t-2 border-secondary/20 bg-muted/30 backdrop-blur-sm space-y-4">
-            <div className='space-y-2'>
-              <Slider
-                  value={[progress]}
-                  onValueChange={handleSeek}
-                  className="w-full"
-                  aria-label="Audio progress bar"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
-              </div>
-            </div>
+            <Progress value={progress} className="w-full h-2" />
 
             <div className="flex items-center justify-center gap-4">
+                 <Button onClick={goToPreviousSegment} size="icon" variant="ghost" className="rounded-full w-12 h-12 text-secondary hover:bg-secondary/20" disabled={currentSegmentIndex === 0}>
+                    <Rewind className="w-6 h-6 fill-current" />
+                </Button>
                  <Button onClick={handlePlayPause} size="icon" className="rounded-full w-16 h-16 bg-gradient-to-br from-secondary to-accent text-primary-foreground shadow-lg shadow-secondary/40 hover:scale-110 transition-transform">
                     {isPlaying ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current" />}
+                </Button>
+                 <Button onClick={advanceToNextSegment} size="icon" variant="ghost" className="rounded-full w-12 h-12 text-secondary hover:bg-secondary/20" disabled={currentSegmentIndex === segments.length - 1}>
+                    <FastForward className="w-6 h-6 fill-current" />
                 </Button>
             </div>
             
@@ -164,7 +171,16 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
             </div>
         </div>
       </CardContent>
-      {audioUri && <audio ref={audioRef} src={audioUri} onTimeUpdate={handleTimeUpdate} onLoadedMetadata={handleLoadedMetadata} onEnded={() => setIsPlaying(false)} />}
+      {currentAudioUri && (
+        <audio
+          ref={audioRef}
+          src={currentAudioUri}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedData={() => isPlaying && audioRef.current?.play()}
+          onEnded={advanceToNextSegment}
+          key={currentSegmentIndex} // Force re-render of audio element
+        />
+      )}
     </Card>
   );
 }
