@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
+import { type DialogueSegment, parseStory, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -32,24 +32,22 @@ export default function VividVoicePage() {
     setTranscript([]);
 
     try {
-      // The `getParsedStory` action now also handles the "AI Casting Director" logic,
-      // assigning voice IDs to each character.
-      const { segments, characters } = await getParsedStory(newStoryText);
+      // Use the new, unified `parseStory` action. It handles parsing, character creation,
+      // and portrait generation in a single, clean seam.
+      const { segments, characters, portraits } = await parseStory(newStoryText);
+      
       setParsedSegments(segments);
       setCharacters(characters);
+      setCharacterPortraits(portraits);
       setStoryText(newStoryText);
       
-      // We can kick off portrait generation in parallel. It's a non-critical enhancement.
-      getCharacterPortraits(characters).then(portraits => {
-        setCharacterPortraits(portraits);
-      }).catch(e => {
-         console.error("Non-critical error: Failed to generate portraits.", e);
+      if (portraits.length < (characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
             title: "Portrait Generation Note",
             description: "Could not generate all character portraits, but you can continue editing.",
           });
-      });
+      }
 
       setAppState('editing');
     } catch (e: any) {

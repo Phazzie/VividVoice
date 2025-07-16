@@ -8,8 +8,9 @@
  */
 
 import {
-  parseDialogue,
+  parseDialogue as parseDialogueFlow,
   type DialogueSegment as ImportedDialogueSegment,
+  type Character as ImportedCharacter,
 } from '@/ai/flows/parse-dialogue';
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
@@ -27,9 +28,7 @@ import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 
-import { z } from 'zod';
 import {
-  type Character as ImportedCharacter,
   type LiteraryDevice as ImportedLiteraryDevice,
   type DialogueDynamics as ImportedDialogueDynamics,
   type Trope as ImportedTrope,
@@ -67,6 +66,38 @@ export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
 
 
 /**
+ * The main entry point action for processing a story. It parses the dialogue and
+ * generates character portraits in parallel. This is a more robust seam than calling
+ * two separate actions from the client.
+ * @param storyText The raw story text.
+ * @returns A promise resolving to the parsed segments, characters, and their portraits.
+ */
+export async function parseStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[], portraits: CharacterPortrait[] }> {
+    console.log('Starting unified story processing...');
+    if (!storyText.trim()) {
+        const errorMsg = 'Validation Error: Story text cannot be empty.';
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+    }
+    try {
+        // First, parse the dialogue to get character information.
+        const { segments, characters } = await getParsedStory(storyText);
+
+        // Now, generate character portraits. We can do this in parallel with parsing in a more complex setup,
+        // but doing it sequentially here is clearer and still efficient.
+        const portraits = await getCharacterPortraits(characters);
+        
+        console.log('Unified story processing successful.');
+        return { segments, characters, portraits };
+
+    } catch (error) {
+        console.error('Fatal Error during unified story processing flow:', { error });
+        throw new Error('Failed to process the story.');
+    }
+}
+
+
+/**
  * Parses the dialogue from a story text.
  * @param storyText The raw story text.
  * @returns A promise resolving to the parsed segments and characters.
@@ -80,7 +111,7 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
     }
 
     try {
-        const parsedResult = await parseDialogue({ storyText });
+        const parsedResult = await parseDialogueFlow({ storyText });
          if (!parsedResult || !parsedResult.segments || parsedResult.segments.length === 0) {
             const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
             console.error(errorMsg);
