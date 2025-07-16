@@ -40,18 +40,20 @@ const getShowDontTellSuggestionsFlow = ai.defineFlow(
             name: 'showDontTellPrompt',
             input: {schema: GetShowDontTellSuggestionsInputSchema},
             output: {schema: GetShowDontTellSuggestionsOutputSchema},
-            prompt: `You are a creative writing instructor specializing in the "Show, Don't Tell" principle. Your task is to analyze the provided story text.
+            prompt: `You are a creative writing instructor specializing in the "Show, Don't Tell" principle. Your task is to analyze the provided story text from the narrator.
 
-First, identify any sentences that are "telling" the reader something instead of "showing" it. These are often sentences that state a character's emotion directly (e.g., "She was angry") or summarize an event without detail.
+First, identify any sentences in the **narrator's text** that are "telling" the reader something instead of "showing" it. These are often sentences that state a character's emotion directly (e.g., "She was angry") or summarize an event without providing sensory detail (e.g., "The room was messy").
 
 For each "telling" sentence you find, you must provide:
 1.  The original 'tellingSentence'.
-2.  A creative and descriptive 'showingSuggestion' that rewrites the sentence into a full paragraph, conveying the same information through actions, dialogue, internal thoughts, or sensory details.
+2.  A creative and descriptive 'showingSuggestion' that rewrites the sentence into a full paragraph. The suggestion should convey the same information through actions, dialogue, internal thoughts, or sensory details. Make it vivid and engaging.
 
-Return your findings as a JSON object with a 'suggestions' array.
+Return your findings as a JSON object with a 'suggestions' array. Focus only on the most clear-cut cases of "telling." If none are found, return an empty array.
 
-Story Text:
+**Story Text to Analyze:**
+\`\`\`
 {{{storyText}}}
+\`\`\`
 `,
         });
 

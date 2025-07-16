@@ -43,10 +43,11 @@ const shiftPerspectiveFlow = ai.defineFlow(
 
 **Instructions:**
 1.  Read the entire original story text to fully understand the plot, events, and all characters.
-2.  Adopt the voice and worldview of the specified character: '{{characterName}}'.
+2.  Adopt the voice, worldview, and knowledge of the specified character: '{{characterName}}'.
 3.  Rewrite a one-paragraph summary of the story's main events as if '{{characterName}}' were the '{{role}}' of the story.
-4.  The summary should reflect their biases, motivations, and interpretation of events. For example, if they are the 'Antagonist', they might see the original hero's actions as villainous or misguided. If they are the 'Protagonist', events will be framed around their struggles and goals.
-5.  Return a single JSON object containing the character's name, their new role, and the rewritten summary.
+4.  The summary must reflect their biases, motivations, and interpretation of events. For example, if they are the 'Antagonist', they might see the original hero's actions as villainous or misguided. If they are the 'Protagonist', events will be framed around their struggles and goals.
+5.  The summary should be compelling and written in a narrative style, not a dry list of events.
+6.  Return a single JSON object containing the character's name, their new role, and the rewritten summary.
 
 **Character to Embody:** {{characterName}}
 **New Role:** {{role}}

@@ -43,11 +43,11 @@ const analyzeLiteraryDevicesFlow = ai.defineFlow(
       prompt: `You are a literary expert with a deep understanding of rhetorical and literary devices. Your task is to meticulously analyze the following story text and identify all instances of literary devices.
 
 For each distinct device you find, you must provide:
-1.  The 'device' name (e.g., "Metaphor", "Simile", "Personification", "Foreshadowing", "Irony", "Alliteration").
-2.  The exact 'quote' from the text where the device is used. The quote must be verbatim from the provided text.
-3.  A brief but clear 'explanation' of how the quote exemplifies the literary device.
+1.  The 'device' name (e.g., "Metaphor", "Simile", "Personification", "Foreshadowing", "Irony", "Alliteration"). Be precise in your identification.
+2.  The exact 'quote' from the text where the device is used. The quote must be verbatim from the provided text and should be long enough to provide context.
+3.  A brief but clear 'explanation' of how the quote exemplifies the literary device. Explain the effect of the device in the context of the quote.
 
-Your goal is to be comprehensive and accurate. Return the results as a JSON object with a single key 'devices' containing an array of these objects. If no devices are found, return an empty array.
+Your goal is to be comprehensive and accurate. Search for a wide range of devices. Return the results as a JSON object with a single key 'devices' containing an array of these objects. If no devices are found, return an empty array.
 
 **Story Text to Analyze:**
 \`\`\`

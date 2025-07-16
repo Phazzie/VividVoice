@@ -45,12 +45,17 @@ Go through the text and identify contiguous blocks of 'Dialogue' and 'Narration'
 1.  The 'type' of the segment ('Dialogue' or 'Narration').
 2.  The 'wordCount' of that segment.
 
-Combine consecutive lines of the same type into a single segment. For example, if there are three lines of narration followed by two lines of dialogue, you should return two segments.
+**CRITICAL INSTRUCTIONS:**
+- Combine consecutive lines of the same type into a single segment. For example, if there are three lines of narration followed by two lines of dialogue, you should return two segments.
+- Dialogue is any line prefixed with a character name and a colon (e.g., "Alice:"). Everything else is Narration.
+- Your output must be an array of segments that covers the entire story from beginning to end.
 
-Return the results as a JSON object with a single key 'segments' containing an array of these objects.
+Return the results as a JSON object with a single key 'segments' containing an array of these segment objects.
 
-Story Text:
+**Story Text:**
+\`\`\`
 {{{storyText}}}
+\`\`\`
 `,
     });
     

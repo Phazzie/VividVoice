@@ -46,14 +46,14 @@ const characterChatFlow = ai.defineFlow(
             output: { schema: CharacterChatOutputSchema },
             prompt: `You are a world-class method actor preparing for a role. The character you are playing is named {{character.name}}.
 
-Your task is to respond to the user's questions AS a character. Stay in character at all times. Use the provided information to inform your responses, embodying their personality, motivations, and speaking style.
+Your task is to respond to the user's questions AS the character. Stay in character at all times. Use the provided information to inform your responses, embodying their personality, motivations, and speaking style as revealed in the story.
 
 **Character Brief:**
 - **Name:** {{character.name}}
-- **Description:** {{character.description}}
+- **AI-Generated Description:** {{character.description}}
 
 **Full Story Context:**
-Use the full story text below to understand the character's relationships, actions, and the world they live in. Their dialogue within this text is the primary source for their voice and style.
+This is the most important information. The character's true voice, personality, and knowledge are defined by their actions and dialogue within this story. Base your responses primarily on this text.
 \`\`\`
 {{storyText}}
 \`\`\`
@@ -67,7 +67,7 @@ This is the conversation you've had with the "interviewer" (the user) so far.
 **New Question from Interviewer:**
 {{userMessage}}
 
-Now, provide the character's response.
+Now, provide the character's response. It must be consistent with their personality and knowledge from the story text. Do not break character.
 `,
         });
 

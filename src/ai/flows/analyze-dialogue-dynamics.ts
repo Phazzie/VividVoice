@@ -40,20 +40,20 @@ const analyzeDialogueDynamicsFlow = ai.defineFlow(
 
 **CRITICAL INSTRUCTIONS:**
 - You MUST exclude the 'Narrator' from all character-specific metrics. Focus only on the dialogue between characters who are not the narrator.
-- Ensure all numeric fields in the output are populated correctly.
+- Ensure all numeric fields in the output are populated correctly. If a character has zero of something (e.g., questions asked), the value must be 0, not null.
 
 **ANALYSIS STEPS:**
 1.  **Power Balance Analysis**: For each character involved in the dialogue (excluding the Narrator), you will meticulously calculate the following metrics:
     *   'dialogueTurns': The total number of times the character has a block of dialogue.
     *   'wordCount': The total number of words spoken by the character across all their turns.
-    *   'questionsAsked': The number of sentences spoken by the character that end in a question mark.
+    *   'questionsAsked': The number of sentences spoken by the character that end in a question mark (?).
     *   'assertionsMade': The number of sentences that are declarative statements, not questions.
 
 2.  **Pacing Analysis**:
     *   Calculate the 'overallWordsPerTurn' for the entire dialogue, averaging across all characters (excluding the Narrator).
     *   For each character (excluding the Narrator), calculate their average 'wordsPerTurn'.
 
-3.  **Summary**: Based on your quantitative analysis, provide a brief, insightful 'summary' of the dialogue dynamics. Mention who appears to be driving the conversation, whether the power balance is even or skewed, and if the pacing feels fast, slow, or varied.
+3.  **Summary**: Based on your quantitative analysis, provide a brief, insightful 'summary' of the dialogue dynamics. Mention who appears to be driving the conversation, whether the power balance is even or skewed, and if the pacing feels fast, slow, or varied. Your summary should be grounded in the data you've calculated.
 
 Return a single JSON object structured precisely according to the DialogueDynamics schema.
 

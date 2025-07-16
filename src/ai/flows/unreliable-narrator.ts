@@ -43,11 +43,12 @@ const applyNarratorBiasFlow = ai.defineFlow(
             prompt: `You are a master storyteller and editor. Your task is to rewrite the provided story text by imbuing the narrator's voice with a specific bias.
 
 **CRITICAL INSTRUCTIONS:**
-1.  **Do NOT change the characters' dialogue.** The dialogue lines must remain exactly as they are in the original text.
+1.  **Do NOT change the characters' dialogue.** The dialogue lines must remain exactly as they are in the original text, including the character name prefixes (e.g., "Alice:").
 2.  **Only modify the narrator's text.** Subtly alter the descriptions, word choices, and sentence structures of the narrator's parts to reflect the specified bias.
-3.  The bias should be woven into the narrative, not explicitly stated. Show, don't tell.
+3.  The bias should be woven into the narrative subtly. Show, don't tell the bias. For example, if the bias is "Jealous of Main Character," describe the character's successes with a hint of sarcasm or downplay their achievements.
+4.  Preserve the original plot points. The sequence of events should remain the same.
 
-**Specified Bias:**
+**Specified Bias to Apply:**
 {{bias}}
 
 **Original Story Text:**
@@ -55,7 +56,7 @@ const applyNarratorBiasFlow = ai.defineFlow(
 {{storyText}}
 \`\`\`
 
-Now, return the rewritten story as a single JSON object with the key 'biasedStoryText'.
+Now, return the rewritten story as a single JSON object with the key 'biasedStoryText'. The entire story, including the unchanged dialogue, should be in this single string.
 `,
         });
 
