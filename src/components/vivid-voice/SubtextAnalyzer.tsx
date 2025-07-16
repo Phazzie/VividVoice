@@ -4,10 +4,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type SubtextAnalysis, analyzeSubtext } from '@/lib/actions';
-import { Loader2, MessageSquareQuote, AlertCircle } from 'lucide-react';
+import { Loader2, MessageSquareQuote, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { getCharacterColor } from '@/lib/utils';
 
@@ -42,9 +42,14 @@ export function SubtextAnalyzer({ storyText }: { storyText: string }) {
     
     return (
         <div className="space-y-6">
-            <div className="flex justify-center">
-                <Button onClick={handleAnalyze} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquareQuote className="mr-2 h-4 w-4" />}
+            <div className="flex flex-col items-center justify-center text-center gap-2 mb-6">
+                <MessageSquareQuote className="w-10 h-10 text-primary" />
+                <h3 className="text-xl font-headline">Subtext Analyzer</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                    Uncover the hidden meaning behind the words. This tool analyzes dialogue to reveal the unspoken emotions and motivations driving your characters.
+                </p>
+                <Button onClick={handleAnalyze} disabled={isLoading} className="mt-2">
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
                     Analyze for Subtext
                 </Button>
             </div>
@@ -66,7 +71,7 @@ export function SubtextAnalyzer({ storyText }: { storyText: string }) {
                                     <div className="w-2 h-8 rounded-full" style={{backgroundColor: getCharacterColor(analysis.character)}}></div>
                                     <h3 className="font-headline text-xl" style={{color: getCharacterColor(analysis.character)}}>{analysis.character} says:</h3>
                                 </div>
-                                <p className="font-serif text-lg italic text-foreground/90 pl-5">"{analysis.dialogue}"</p>
+                                <p className="font-body text-lg italic text-foreground/90 pl-5">"{analysis.dialogue}"</p>
                            </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>

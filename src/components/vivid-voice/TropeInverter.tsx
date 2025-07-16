@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type Trope, invertTropes } from '@/lib/actions';
-import { Loader2, Zap, AlertCircle } from 'lucide-react';
+import { Loader2, Zap, AlertCircle, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -40,8 +40,13 @@ export function TropeInverter({ storyText }: { storyText: string }) {
     
     return (
         <div className="space-y-6">
-            <div className="flex justify-center">
-                <Button onClick={handleAnalyze} disabled={isLoading}>
+            <div className="flex flex-col items-center justify-center text-center gap-2 mb-6">
+                <Wand2 className="w-10 h-10 text-primary" />
+                <h3 className="text-xl font-headline">Trope Inverter</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                   Stuck in a cliché? This tool identifies common literary tropes in your story and provides clever, insightful suggestions on how to subvert or invert them for a more original twist.
+                </p>
+                <Button onClick={handleAnalyze} disabled={isLoading} className="mt-2">
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
                     Analyze for Tropes to Invert
                 </Button>
@@ -63,7 +68,7 @@ export function TropeInverter({ storyText }: { storyText: string }) {
                         <Card key={index} className="bg-muted/30">
                             <CardHeader>
                                 <CardTitle className="text-accent">{trope.trope}</CardTitle>
-                                <CardDescription className="font-serif italic text-base pt-2">
+                                <CardDescription className="font-body italic text-base pt-2">
                                    "{trope.quote}"
                                 </CardDescription>
                             </CardHeader>

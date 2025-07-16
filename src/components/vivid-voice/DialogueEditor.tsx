@@ -7,13 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { type DialogueSegment, type CharacterPortrait, type Character } from '@/lib/actions';
-import { Wand2, Loader2, Edit } from 'lucide-react';
+import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BookText } from 'lucide-react';
 import { LiteraryAnalysisTab } from '@/components/vivid-voice/LiteraryAnalysis';
 import { DialogueDynamicsAnalysis } from '@/components/vivid-voice/DialogueDynamicsAnalysis';
 import { TropeInverter } from '@/components/vivid-voice/TropeInverter';
@@ -64,35 +63,38 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
     .filter(name => name.toLowerCase() !== 'narrator')
     .map(name => {
       const portrait = characterPortraits.find(p => p.name === name);
-      // This is a bit of a hack to get a description.
-      // In a real app, this would be more robust.
       const description = initialSegments.find(s => s.character === name)?.dialogue || '...';
-      return { name, description };
+      return { name, description, voiceId: 'unknown' };
     });
-
 
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-primary/50 card-glow-primary overflow-hidden">
       <CardHeader className="border-b-2 border-primary/20 p-4 bg-gradient-to-r from-primary/10 via-card/70 to-card/70">
-        <CardTitle className="font-headline text-2xl flex items-center gap-3 text-glow-primary">
-          <Edit className="w-6 h-6 text-primary" />
-          Director's Room
-        </CardTitle>
+        <div className="flex justify-between items-center">
+            <CardTitle className="font-headline text-2xl flex items-center gap-3 text-glow-primary">
+              <Edit className="w-6 h-6 text-primary" />
+              Director's Room
+            </CardTitle>
+            <Button variant="outline" size="sm">
+                <Save className="mr-2 h-4 w-4"/>
+                Save Story
+            </Button>
+        </div>
       </CardHeader>
       <Tabs defaultValue="dialogue" className="w-full">
         <ScrollArea>
-          <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20">
-              <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Editor</TabsTrigger>
-              <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Literary Devices</TabsTrigger>
-              <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Dynamics</TabsTrigger>
-               <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Pacing</TabsTrigger>
-              <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Trope Inverter</TabsTrigger>
-              <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Actor's Studio</TabsTrigger>
-              <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Unreliable Narrator</TabsTrigger>
-              <TabsTrigger value="showDontTell" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Show, Don't Tell</TabsTrigger>
-              <TabsTrigger value="consistency" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Consistency</TabsTrigger>
-              <TabsTrigger value="subtext" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Subtext</TabsTrigger>
-              <TabsTrigger value="perspective" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Perspective</TabsTrigger>
+         <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20">
+              <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Edit className="mr-2"/>Dialogue Editor</TabsTrigger>
+              <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><FlaskConical className="mr-2"/>Literary Devices</TabsTrigger>
+              <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BarChart3 className="mr-2"/>Dialogue Dynamics</TabsTrigger>
+              <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><AreaChart className="mr-2"/>Pacing</TabsTrigger>
+              <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Wand2 className="mr-2"/>Trope Inverter</TabsTrigger>
+              <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Users className="mr-2"/>Actor's Studio</TabsTrigger>
+              <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><VenetianMask className="mr-2"/>Unreliable Narrator</TabsTrigger>
+              <TabsTrigger value="showDontTell" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Eye className="mr-2"/>Show, Don't Tell</TabsTrigger>
+              <TabsTrigger value="consistency" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><ShieldCheck className="mr-2"/>Consistency</TabsTrigger>
+              <TabsTrigger value="subtext" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><MessageSquareQuote className="mr-2"/>Subtext</TabsTrigger>
+              <TabsTrigger value="perspective" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Shuffle className="mr-2"/>Perspective</TabsTrigger>
           </TabsList>
         </ScrollArea>
         <ScrollArea className="h-[55vh]">
@@ -126,7 +128,7 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
                     <Textarea
                         value={segment.dialogue}
                         onChange={(e) => handleDialogueChange(index, e.target.value)}
-                        className="w-full bg-background/70 font-serif text-base"
+                        className="w-full bg-background/70 font-body text-base"
                         rows={3}
                     />
                     </div>
@@ -180,7 +182,7 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
               ) : (
                 <>
                   <Wand2 className="mr-2 h-5 w-5" />
-                  Generate Vivid Narration
+                  Generate Expressive Narration
                 </>
               )}
             </Button>

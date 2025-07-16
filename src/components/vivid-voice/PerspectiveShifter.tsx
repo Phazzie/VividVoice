@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type Perspective, type Character, shiftPerspective } from '@/lib/actions';
-import { Loader2, Shuffle, AlertCircle } from 'lucide-react';
+import { Loader2, Shuffle, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -51,6 +51,13 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
     
     return (
         <div className="space-y-6">
+            <div className="flex flex-col items-center justify-center text-center gap-2 mb-2">
+                <Shuffle className="w-10 h-10 text-primary" />
+                <h3 className="text-xl font-headline">Perspective Shifter</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                    How would the story change if your villain was the hero? This tool rewrites a summary of your plot from the perspective of a different character, casting them in a new role.
+                </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                 <Select onValueChange={setSelectedCharacter} disabled={characters.length === 0}>
                     <SelectTrigger>
@@ -75,7 +82,7 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
                 </RadioGroup>
 
                 <Button onClick={handleAnalyze} disabled={isLoading || !selectedCharacter}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shuffle className="mr-2 h-4 w-4" />}
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
                     Shift Perspective
                 </Button>
             </div>
@@ -94,7 +101,7 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
                         The Story According to <span className="text-primary font-bold">{result.character}</span> (The {result.role})
                     </h3>
                    <div className="p-6 rounded-lg bg-muted/50 border border-border/50">
-                        <p className="font-serif text-lg leading-relaxed">{result.summary}</p>
+                        <p className="font-body text-lg leading-relaxed">{result.summary}</p>
                    </div>
                 </div>
             )}

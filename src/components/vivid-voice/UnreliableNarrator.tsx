@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { type NarratorBias, getBiasedStory } from '@/lib/actions';
-import { Loader2, VenetianMask } from 'lucide-react';
+import { Loader2, VenetianMask, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -47,6 +47,13 @@ export function UnreliableNarrator({ storyText }: { storyText: string }) {
     
     return (
         <div className="space-y-4">
+             <div className="flex flex-col items-center justify-center text-center gap-2 mb-2">
+                <VenetianMask className="w-10 h-10 text-primary" />
+                <h3 className="text-xl font-headline">Unreliable Narrator Mode</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Explore your story from a new angle. This experimental tool rewrites the narrative portions to reflect a specific bias you choose, while keeping all dialogue the same.
+                </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <Select onValueChange={(value) => setSelectedBias(value as NarratorBias)} defaultValue="Neutral">
                     <SelectTrigger className="flex-1">
@@ -59,7 +66,7 @@ export function UnreliableNarrator({ storyText }: { storyText: string }) {
                     </SelectContent>
                 </Select>
                 <Button onClick={handleGenerate} disabled={isLoading} className="w-full sm:w-auto">
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <VenetianMask className="mr-2 h-4 w-4" />}
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
                     Apply Bias
                 </Button>
             </div>
@@ -67,7 +74,7 @@ export function UnreliableNarrator({ storyText }: { storyText: string }) {
             <Textarea
                 value={biasedText}
                 readOnly
-                className="min-h-[40vh] font-serif text-base"
+                className="min-h-[40vh] font-body text-base"
              />
         </div>
     );

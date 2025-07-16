@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type ShowDontTellSuggestion, getShowDontTellSuggestions } from '@/lib/actions';
-import { Loader2, Eye, AlertCircle } from 'lucide-react';
+import { Loader2, Eye, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,9 +41,14 @@ export function ShowDontTell({ storyText }: { storyText: string }) {
     
     return (
         <div className="space-y-6">
-            <div className="flex justify-center">
-                <Button onClick={handleAnalyze} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
+            <div className="flex flex-col items-center justify-center text-center gap-2 mb-6">
+                <Eye className="w-10 h-10 text-primary" />
+                <h3 className="text-xl font-headline">"Show, Don't Tell" Converter</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                   Find "telling" sentences in your narration (e.g., "She was angry") and get detailed "showing" paragraphs that convey the same emotion through action and sensory detail.
+                </p>
+                <Button onClick={handleAnalyze} disabled={isLoading} className="mt-2">
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
                     Find "Telling" Sentences
                 </Button>
             </div>
@@ -64,14 +69,14 @@ export function ShowDontTell({ storyText }: { storyText: string }) {
                         <Card key={index} className="bg-muted/30">
                             <CardHeader>
                                 <CardDescription>Original "Telling" Sentence:</CardDescription>
-                                <CardTitle className="text-accent font-normal text-lg font-serif italic">
+                                <CardTitle className="text-accent font-normal text-lg font-body italic">
                                    "{suggestion.tellingSentence}"
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <Separator className="my-4"/>
                                 <p className="font-headline text-lg text-primary">"Showing" Suggestion:</p>
-                                <p className="font-serif text-base">{suggestion.showingSuggestion}</p>
+                                <p className="font-body text-base">{suggestion.showingSuggestion}</p>
                             </CardContent>
                         </Card>
                     ))}

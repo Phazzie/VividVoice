@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { type Character, type ChatMessage, getCharacterResponse } from '@/lib/actions';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
@@ -50,6 +50,8 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
                 title: "Chat Error",
                 description: e.message || "Could not get a response from the character.",
             });
+            // remove the user message on error to allow retry
+            setChatHistory(prev => prev.slice(0, prev.length -1));
         } finally {
             setIsLoading(false);
         }
@@ -57,6 +59,14 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
 
     return (
         <div className="space-y-4 h-full flex flex-col">
+            <div className="flex flex-col items-center justify-center text-center gap-2 mb-2">
+                <Users className="w-10 h-10 text-primary" />
+                <h3 className="text-xl font-headline">AI Actor's Studio</h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Need to flesh out a character? Interview them directly. The AI adopts your character's persona based on their dialogue and actions, allowing you to discover their true voice.
+                </p>
+            </div>
+
             <Select onValueChange={handleCharacterChange} disabled={characters.length === 0}>
                 <SelectTrigger>
                     <SelectValue placeholder="Select a character to interview..." />
@@ -99,7 +109,7 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
                                 placeholder={`Ask ${selectedCharacter.name} a question...`}
                                 disabled={isLoading}
                             />
-                            <Button type="submit" disabled={isLoading}>
+                            <Button type="submit" disabled={isLoading || !userMessage.trim()}>
                                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                             </Button>
                         </form>
