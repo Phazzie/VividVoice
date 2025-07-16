@@ -15,3 +15,5 @@ import '@/ai/flows/unreliable-narrator.ts';
 import '@/ai/flows/analyze-pacing.ts';
 import '@/ai/flows/show-dont-tell.ts';
 import '@/ai/flows/consistency-guardian.ts';
+import '@/ai/flows/analyze-subtext.ts';
+import '@/ai/flows/shift-perspective.ts';

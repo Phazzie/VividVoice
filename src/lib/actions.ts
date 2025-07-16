@@ -23,6 +23,8 @@ import { applyNarratorBias as applyNarratorBiasFlow } from '@/ai/flows/unreliabl
 import { analyzePacing as analyzePacingFlow } from '@/ai/flows/analyze-pacing';
 import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/ai/flows/show-dont-tell';
 import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
+import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
+import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 
 import { z } from 'zod';
 import {
@@ -35,6 +37,8 @@ import {
   type PacingSegment as ImportedPacingSegment,
   type ShowDontTellSuggestion as ImportedShowDontTellSuggestion,
   type ConsistencyIssue as ImportedConsistencyIssue,
+  type SubtextAnalysis as ImportedSubtextAnalysis,
+  type Perspective as ImportedPerspective,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
@@ -46,6 +50,8 @@ export type Trope = ImportedTrope;
 export type PacingSegment = ImportedPacingSegment;
 export type ShowDontTellSuggestion = ImportedShowDontTellSuggestion;
 export type ConsistencyIssue = ImportedConsistencyIssue;
+export type SubtextAnalysis = ImportedSubtextAnalysis;
+export type Perspective = ImportedPerspective;
 export type { Character, ChatMessage, NarratorBias };
 
 
@@ -281,8 +287,7 @@ export async function analyzeStoryPacing(storyText: string): Promise<PacingSegme
 
 
 /**
- * [PLANNED FEATURE] Suggests "showing" alternatives for "telling" sentences.
- * The AI will first identify sentences that are good candidates for this transformation.
+ * Suggests "showing" alternatives for "telling" sentences.
  * @param storyText The full text of the story.
  * @returns A promise resolving to an array of suggestions.
  */
@@ -298,7 +303,7 @@ export async function getShowDontTellSuggestions(storyText: string): Promise<Sho
 }
 
 /**
- * [PLANNED FEATURE] Scans the entire story for continuity errors or character inconsistencies.
+ * Scans the entire story for continuity errors or character inconsistencies.
  * @param storyText The full text of the story.
  * @returns A promise resolving to an array of identified inconsistencies.
  */
@@ -314,31 +319,36 @@ export async function findInconsistencies(storyText: string): Promise<Consistenc
 }
 
 /**
- * [PLANNED FEATURE] Analyzes dialogue for subtext—the unspoken emotion behind the words.
- * @param dialogueSegment A single segment of dialogue to analyze.
- * @returns A promise resolving to a subtext analysis object.
+ * Analyzes dialogue for subtext—the unspoken emotion behind the words.
+ * @param storyText The full text of the story.
+ * @returns A promise resolving to an array of subtext analyses.
  */
-export async function analyzeSubtext(dialogueSegment: DialogueSegment): Promise<any> {
-  console.log('SEAM CALLED: analyzeSubtext');
-  // AI FLOW to be created: `analyzeSubtextFlow`
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-  console.warn('`analyzeSubtext` is not implemented yet.');
-  return null;
+export async function analyzeSubtext(storyText: string): Promise<SubtextAnalysis[]> {
+  console.log('Calling analyzeSubtext action...');
+  try {
+    const result = await analyzeSubtextFlow({ storyText });
+    return result.analyses;
+  } catch(e: any) {
+    console.error('Error in analyzeSubtext action:', e);
+    throw new Error('Failed to analyze subtext.');
+  }
 }
 
 /**
- * [PLANNED FEATURE] Rewrites a summary of the story from a different character's perspective.
+ * Rewrites a summary of the story from a different character's perspective.
  * @param storyText The full text of the story.
  * @param characterName The name of the character whose perspective to adopt.
  * @param role The role to cast them in ('Protagonist' or 'Antagonist').
  * @returns A promise resolving to the rewritten story summary.
  */
-export async function shiftPerspective(storyText: string, characterName: string, role: 'Protagonist' | 'Antagonist'): Promise<string> {
-  console.log('SEAM CALLED: shiftPerspective');
-  // AI FLOW to be created: `shiftPerspectiveFlow`
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-  console.warn('`shiftPerspective` is not implemented yet.');
-  return `This is a placeholder summary. The 'shiftPerspective' feature for ${characterName} as ${role} is not yet implemented.`;
+export async function shiftPerspective(storyText: string, characterName: string, role: 'Protagonist' | 'Antagonist'): Promise<Perspective> {
+  console.log('Calling shiftPerspective action...');
+  try {
+    return await shiftPerspectiveFlow({ storyText, characterName, role });
+  } catch(e: any) {
+    console.error('Error in shiftPerspective action:', e);
+    throw new Error('Failed to shift perspective.');
+  }
 }
 
 /**

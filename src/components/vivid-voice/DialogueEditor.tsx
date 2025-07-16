@@ -20,9 +20,10 @@ import { TropeInverter } from '@/components/vivid-voice/TropeInverter';
 import { ActorStudio } from '@/components/vivid-voice/ActorStudio';
 import { UnreliableNarrator } from '@/components/vivid-voice/UnreliableNarrator';
 import { PacingAnalysis } from '@/components/vivid-voice/PacingAnalysis';
-import { PlaceholderTool } from './PlaceholderTool';
 import { ShowDontTell } from './ShowDontTell';
 import { ConsistencyGuardian } from './ConsistencyGuardian';
+import { SubtextAnalyzer } from './SubtextAnalyzer';
+import { PerspectiveShifter } from './PerspectiveShifter';
 
 type DialogueEditorProps = {
   storyText: string;
@@ -157,10 +158,10 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
                 <ConsistencyGuardian storyText={storyText} />
             </TabsContent>
             <TabsContent value="subtext" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <PlaceholderTool toolName="Subtext Analyzer" />
+                <SubtextAnalyzer storyText={storyText} />
             </TabsContent>
             <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <PlaceholderTool toolName="Perspective Shifter" />
+                <PerspectiveShifter characters={characters} storyText={storyText} />
             </TabsContent>
         </ScrollArea>
       </Tabs>

@@ -140,3 +140,27 @@ export const ConsistencyIssueSchema = z.object({
   explanation: z.string().describe("A brief explanation of why this is a potential consistency problem."),
 });
 export type ConsistencyIssue = z.infer<typeof ConsistencyIssueSchema>;
+
+
+/**
+ * Defines the schema for an identified piece of subtext.
+ */
+export const SubtextAnalysisSchema = z.object({
+  dialogue: z.string().describe("The original line of dialogue."),
+  character: z.string().describe("The character speaking the line."),
+  literalMeaning: z.string().describe("The surface-level, literal meaning of the dialogue."),
+  subtext: z.string().describe("The unspoken, underlying meaning or emotion behind the line."),
+  explanation: z.string().describe("A brief explanation of how the context clues point to this subtext."),
+});
+export type SubtextAnalysis = z.infer<typeof SubtextAnalysisSchema>;
+
+
+/**
+ * Defines the schema for the perspective shifter tool.
+ */
+export const PerspectiveSchema = z.object({
+  character: z.string().describe("The character whose perspective was adopted."),
+  role: z.enum(['Protagonist', 'Antagonist']).describe("The role this character was cast in for the summary."),
+  summary: z.string().describe("The summary of the story, rewritten from the character's new perspective."),
+});
+export type Perspective = z.infer<typeof PerspectiveSchema>;
