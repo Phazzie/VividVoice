@@ -118,6 +118,7 @@ const availableVoices = [
 
 /**
  * Generates audio for a story, assigning a unique voice to each character.
+ * This is now done on a per-segment basis to allow for line-by-line regeneration.
  * @param segments An array of DialogueSegment objects.
  * @returns A Promise that resolves to an array of StorySegmentWithAudio, each containing its own audio URI.
  * @throws An error if the input segments array is empty.
@@ -136,13 +137,10 @@ export async function generateStoryAudio(
     const uniqueCharacters = [...new Set(segments.map(s => s.character))];
     const characterVoiceMap = new Map<string, string>();
     uniqueCharacters.forEach((char, index) => {
-        // We assign a consistent voice from our available list.
         characterVoiceMap.set(char, availableVoices[index % availableVoices.length]);
     });
 
     const audioPromises = segments.map(async (segment) => {
-      // Narrator segments are handled differently, often with a more neutral voice.
-      // For now, we'll assign one from the map, but this could be customized.
       const voice = characterVoiceMap.get(segment.character) || availableVoices[0];
       
       const { audioDataUri } = await generateEmotionalTTS({ 
@@ -273,4 +271,86 @@ export async function analyzeStoryPacing(storyText: string): Promise<PacingSegme
         console.error('Error in analyzeStoryPacing action:', e);
         throw new Error('Failed to analyze story pacing.');
     }
+}
+
+
+// ##################################################################################
+// ##                          SEAM: NEW FEATURE STUBS                             ##
+// ## The following actions are placeholders for planned features. They define     ##
+// ## the "seams" of our application and allow the UI to be built out before       ##
+// ## the AI logic is fully implemented.                                           ##
+// ##################################################################################
+
+/**
+ * [PLANNED FEATURE] Suggests "showing" alternatives for "telling" sentences.
+ * The AI will first identify sentences that are good candidates for this transformation.
+ * @param storyText The full text of the story.
+ * @returns A promise resolving to an array of suggestions.
+ */
+export async function getShowDontTellSuggestions(storyText: string): Promise<any[]> {
+  console.log('SEAM CALLED: getShowDontTellSuggestions');
+  // AI FLOW to be created: `suggestShowDontTellFlow`
+  // This is a placeholder. In the future, this will call a Genkit flow.
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+  console.warn('`getShowDontTellSuggestions` is not implemented yet.');
+  return [];
+}
+
+/**
+ * [PLANNED FEATURE] Scans the entire story for continuity errors or character inconsistencies.
+ * @param storyText The full text of the story.
+ * @returns A promise resolving to an array of identified inconsistencies.
+ */
+export async function findInconsistencies(storyText: string): Promise<any[]> {
+  console.log('SEAM CALLED: findInconsistencies');
+  // AI FLOW to be created: `findInconsistenciesFlow`
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+  console.warn('`findInconsistencies` is not implemented yet.');
+  return [];
+}
+
+/**
+ * [PLANNED FEATURE] Analyzes dialogue for subtext—the unspoken emotion behind the words.
+ * @param dialogueSegment A single segment of dialogue to analyze.
+ * @returns A promise resolving to a subtext analysis object.
+ */
+export async function analyzeSubtext(dialogueSegment: DialogueSegment): Promise<any> {
+  console.log('SEAM CALLED: analyzeSubtext');
+  // AI FLOW to be created: `analyzeSubtextFlow`
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+  console.warn('`analyzeSubtext` is not implemented yet.');
+  return null;
+}
+
+/**
+ * [PLANNED FEATURE] Rewrites a summary of the story from a different character's perspective.
+ * @param storyText The full text of the story.
+ * @param characterName The name of the character whose perspective to adopt.
+ * @param role The role to cast them in ('Protagonist' or 'Antagonist').
+ * @returns A promise resolving to the rewritten story summary.
+ */
+export async function shiftPerspective(storyText: string, characterName: string, role: 'Protagonist' | 'Antagonist'): Promise<string> {
+  console.log('SEAM CALLED: shiftPerspective');
+  // AI FLOW to be created: `shiftPerspectiveFlow`
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+  console.warn('`shiftPerspective` is not implemented yet.');
+  return `This is a placeholder summary. The 'shiftPerspective' feature for ${characterName} as ${role} is not yet implemented.`;
+}
+
+/**
+ * [PLANNED FEATURE] Intelligently selects a voice for each character based on their description.
+ * @param characters An array of character objects.
+ * @returns A promise resolving to a map of character names to voice IDs.
+ */
+export async function getAICastingChoices(characters: Character[]): Promise<Map<string, string>> {
+  console.log('SEAM CALLED: getAICastingChoices');
+  // AI FLOW to be created: `aiCastingDirectorFlow`
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+  console.warn('`getAICastingChoices` is not implemented yet.');
+  // For now, return the same programmatic mapping we currently use.
+  const characterVoiceMap = new Map<string, string>();
+  characters.forEach((char, index) => {
+      characterVoiceMap.set(char.name, availableVoices[index % availableVoices.length]);
+  });
+  return characterVoiceMap;
 }

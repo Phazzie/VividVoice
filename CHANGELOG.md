@@ -7,9 +7,8 @@ This document tracks the major features and enhancements implemented in the Vivi
 ### Major Features
 
 *   **Multi-Voice TTS Engine**: A new, advanced TTS flow (`generate-multi-voice-tts`) was created to support multi-cast audio. The system can now assign unique voices to different characters and generate a single, cohesive audio file for an entire scene using SSML, creating a more immersive "radio play" experience.
-
-### Architectural Improvements
 *   **Seam-Driven Architecture Refactor**: The entire application was audited and refactored to be fully "seam-driven." The monolithic `parseStory` server action was decomposed into smaller, single-purpose actions (`getParsedStory` and `getCharacterPortraits`). This significantly improves decoupling, making the architecture more robust, maintainable, and easier to test. Orchestration logic (like `Promise.all`) was moved from the backend actions to the client-side `handleParseStory` function, clarifying the separation of concerns.
+*   **Established Future Feature Seams**: Created a full suite of placeholder "seams" (stubbed server actions) for all planned future features, including Pacing Visualization, a "Show, Don't Tell" Converter, a Consistency Guardian, a Subtext Analyzer, and a Perspective Shifter. This allows for rapid UI prototyping and ensures a robust, scalable architecture for future development.
 
 ## Version 1.2.0 - The Advanced Analysis Suite & Core Experience Upgrade
 

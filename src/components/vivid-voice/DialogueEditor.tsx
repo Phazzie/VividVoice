@@ -20,6 +20,7 @@ import { TropeInverter } from '@/components/vivid-voice/TropeInverter';
 import { ActorStudio } from '@/components/vivid-voice/ActorStudio';
 import { UnreliableNarrator } from '@/components/vivid-voice/UnreliableNarrator';
 import { PacingAnalysis } from '@/components/vivid-voice/PacingAnalysis';
+import { PlaceholderTool } from './PlaceholderTool';
 
 type DialogueEditorProps = {
   storyText: string;
@@ -56,10 +57,16 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
 
-  const characters: Character[] = characterPortraits.map(p => {
-    const segment = initialSegments.find(s => s.character === p.name);
-    return { name: p.name, description: segment ? 'Character in the story' : '...' };
-  });
+  const characters: Character[] = Array.from(new Set(initialSegments.map(s => s.character)))
+    .filter(name => name.toLowerCase() !== 'narrator')
+    .map(name => {
+      const portrait = characterPortraits.find(p => p.name === name);
+      // This is a bit of a hack to get a description.
+      // In a real app, this would be more robust.
+      const description = initialSegments.find(s => s.character === name)?.dialogue || '...';
+      return { name, description };
+    });
+
 
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-primary/50 card-glow-primary overflow-hidden">
@@ -73,12 +80,16 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
         <ScrollArea>
           <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20">
               <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Editor</TabsTrigger>
-              <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Literary Analysis</TabsTrigger>
+              <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Literary Devices</TabsTrigger>
               <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Dynamics</TabsTrigger>
                <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Pacing</TabsTrigger>
               <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Trope Inverter</TabsTrigger>
               <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Actor's Studio</TabsTrigger>
               <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Unreliable Narrator</TabsTrigger>
+              <TabsTrigger value="showDontTell" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Show, Don't Tell</TabsTrigger>
+              <TabsTrigger value="consistency" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Consistency</TabsTrigger>
+              <TabsTrigger value="subtext" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Subtext</TabsTrigger>
+              <TabsTrigger value="perspective" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Perspective</TabsTrigger>
           </TabsList>
         </ScrollArea>
         <ScrollArea className="h-[55vh]">
@@ -136,6 +147,19 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
             </TabsContent>
             <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <UnreliableNarrator storyText={storyText} />
+            </TabsContent>
+            {/* New Placeholder Tabs */}
+            <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <PlaceholderTool toolName="Show, Don't Tell Converter" />
+            </TabsContent>
+            <TabsContent value="consistency" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <PlaceholderTool toolName="Consistency Guardian" />
+            </TabsContent>
+            <TabsContent value="subtext" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <PlaceholderTool toolName="Subtext Analyzer" />
+            </TabsContent>
+            <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <PlaceholderTool toolName="Perspective Shifter" />
             </TabsContent>
         </ScrollArea>
       </Tabs>
