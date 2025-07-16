@@ -51,6 +51,16 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
     setSegments(newSegments);
   };
 
+  const handleApplySuggestion = (originalText: string, newText: string) => {
+    const newSegments = segments.map(segment => {
+      if (segment.dialogue.trim() === originalText.trim()) {
+        return { ...segment, dialogue: newText };
+      }
+      return segment;
+    });
+    setSegments(newSegments);
+  };
+
   const handleSubmit = () => {
     onGenerateAudio(segments);
   };
@@ -154,7 +164,7 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
                 <UnreliableNarrator storyText={storyText} />
             </TabsContent>
             <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ShowDontTell storyText={storyText} />
+                <ShowDontTell storyText={storyText} onApplySuggestion={handleApplySuggestion} />
             </TabsContent>
             <TabsContent value="consistency" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <ConsistencyGuardian storyText={storyText} />

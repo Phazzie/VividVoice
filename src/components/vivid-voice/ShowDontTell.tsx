@@ -4,13 +4,18 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type ShowDontTellSuggestion, getShowDontTellSuggestions } from '@/lib/actions';
-import { Loader2, Eye, AlertCircle, Zap } from 'lucide-react';
+import { Loader2, Eye, AlertCircle, Zap, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '../ui/separator';
 
-export function ShowDontTell({ storyText }: { storyText: string }) {
+interface ShowDontTellProps {
+    storyText: string;
+    onApplySuggestion: (originalText: string, newText: string) => void;
+}
+
+export function ShowDontTell({ storyText, onApplySuggestion }: ShowDontTellProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [suggestions, setSuggestions] = useState<ShowDontTellSuggestion[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -37,6 +42,16 @@ export function ShowDontTell({ storyText }: { storyText: string }) {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleApply = (suggestion: ShowDontTellSuggestion) => {
+        onApplySuggestion(suggestion.tellingSentence, suggestion.showingSuggestion);
+        toast({
+            title: "Suggestion Applied",
+            description: "The dialogue has been updated in the editor.",
+        });
+        // Remove the applied suggestion from the list
+        setSuggestions(prev => prev.filter(s => s.tellingSentence !== suggestion.tellingSentence));
     };
     
     return (
@@ -75,8 +90,16 @@ export function ShowDontTell({ storyText }: { storyText: string }) {
                             </CardHeader>
                             <CardContent>
                                 <Separator className="my-4"/>
-                                <p className="font-headline text-lg text-primary">"Showing" Suggestion:</p>
-                                <p className="font-body text-base">{suggestion.showingSuggestion}</p>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-headline text-lg text-primary">"Showing" Suggestion:</p>
+                                        <p className="font-body text-base">{suggestion.showingSuggestion}</p>
+                                    </div>
+                                    <Button size="sm" onClick={() => handleApply(suggestion)}>
+                                        <Wand2 className="mr-2 h-4 w-4"/>
+                                        Apply
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
                     ))}
