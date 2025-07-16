@@ -121,3 +121,22 @@ export const PacingSegmentSchema = z.object({
   wordCount: z.number().describe('The number of words in this segment.'),
 });
 export type PacingSegment = z.infer<typeof PacingSegmentSchema>;
+
+/**
+ * Defines the schema for a "Show, Don't Tell" suggestion.
+ */
+export const ShowDontTellSuggestionSchema = z.object({
+  tellingSentence: z.string().describe("The original sentence from the text that is 'telling' the emotion or event."),
+  showingSuggestion: z.string().describe("A rewritten paragraph that 'shows' the same concept through action, description, and internal thought."),
+});
+export type ShowDontTellSuggestion = z.infer<typeof ShowDontTellSuggestionSchema>;
+
+/**
+ * Defines the schema for an identified consistency issue.
+ */
+export const ConsistencyIssueSchema = z.object({
+  issue: z.string().describe("A concise description of the consistency issue found."),
+  quote: z.string().describe("The specific quote from the text where the inconsistency is most apparent."),
+  explanation: z.string().describe("A brief explanation of why this is a potential consistency problem."),
+});
+export type ConsistencyIssue = z.infer<typeof ConsistencyIssueSchema>;

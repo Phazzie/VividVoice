@@ -21,6 +21,8 @@ import { ActorStudio } from '@/components/vivid-voice/ActorStudio';
 import { UnreliableNarrator } from '@/components/vivid-voice/UnreliableNarrator';
 import { PacingAnalysis } from '@/components/vivid-voice/PacingAnalysis';
 import { PlaceholderTool } from './PlaceholderTool';
+import { ShowDontTell } from './ShowDontTell';
+import { ConsistencyGuardian } from './ConsistencyGuardian';
 
 type DialogueEditorProps = {
   storyText: string;
@@ -148,12 +150,11 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
             <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <UnreliableNarrator storyText={storyText} />
             </TabsContent>
-            {/* New Placeholder Tabs */}
             <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <PlaceholderTool toolName="Show, Don't Tell Converter" />
+                <ShowDontTell storyText={storyText} />
             </TabsContent>
             <TabsContent value="consistency" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <PlaceholderTool toolName="Consistency Guardian" />
+                <ConsistencyGuardian storyText={storyText} />
             </TabsContent>
             <TabsContent value="subtext" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <PlaceholderTool toolName="Subtext Analyzer" />

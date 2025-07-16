@@ -21,6 +21,8 @@ import { invertTropes as invertTropesFlow } from '@/ai/flows/trope-inverter';
 import { characterChat as characterChatFlow } from '@/ai/flows/character-chat';
 import { applyNarratorBias as applyNarratorBiasFlow } from '@/ai/flows/unreliable-narrator';
 import { analyzePacing as analyzePacingFlow } from '@/ai/flows/analyze-pacing';
+import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/ai/flows/show-dont-tell';
+import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
 
 import { z } from 'zod';
 import {
@@ -31,6 +33,8 @@ import {
   type ChatMessage,
   type NarratorBias,
   type PacingSegment as ImportedPacingSegment,
+  type ShowDontTellSuggestion as ImportedShowDontTellSuggestion,
+  type ConsistencyIssue as ImportedConsistencyIssue,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
@@ -40,6 +44,8 @@ export type LiteraryDevice = ImportedLiteraryDevice;
 export type DialogueDynamics = ImportedDialogueDynamics;
 export type Trope = ImportedTrope;
 export type PacingSegment = ImportedPacingSegment;
+export type ShowDontTellSuggestion = ImportedShowDontTellSuggestion;
+export type ConsistencyIssue = ImportedConsistencyIssue;
 export type { Character, ChatMessage, NarratorBias };
 
 
@@ -274,26 +280,21 @@ export async function analyzeStoryPacing(storyText: string): Promise<PacingSegme
 }
 
 
-// ##################################################################################
-// ##                          SEAM: NEW FEATURE STUBS                             ##
-// ## The following actions are placeholders for planned features. They define     ##
-// ## the "seams" of our application and allow the UI to be built out before       ##
-// ## the AI logic is fully implemented.                                           ##
-// ##################################################################################
-
 /**
  * [PLANNED FEATURE] Suggests "showing" alternatives for "telling" sentences.
  * The AI will first identify sentences that are good candidates for this transformation.
  * @param storyText The full text of the story.
  * @returns A promise resolving to an array of suggestions.
  */
-export async function getShowDontTellSuggestions(storyText: string): Promise<any[]> {
-  console.log('SEAM CALLED: getShowDontTellSuggestions');
-  // AI FLOW to be created: `suggestShowDontTellFlow`
-  // This is a placeholder. In the future, this will call a Genkit flow.
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-  console.warn('`getShowDontTellSuggestions` is not implemented yet.');
-  return [];
+export async function getShowDontTellSuggestions(storyText: string): Promise<ShowDontTellSuggestion[]> {
+  console.log('Calling getShowDontTellSuggestions action...');
+  try {
+    const result = await getShowDontTellSuggestionsFlow({ storyText });
+    return result.suggestions;
+  } catch(e: any) {
+    console.error('Error in getShowDontTellSuggestions action:', e);
+    throw new Error('Failed to get "Show, Don\'t Tell" suggestions.');
+  }
 }
 
 /**
@@ -301,12 +302,15 @@ export async function getShowDontTellSuggestions(storyText: string): Promise<any
  * @param storyText The full text of the story.
  * @returns A promise resolving to an array of identified inconsistencies.
  */
-export async function findInconsistencies(storyText: string): Promise<any[]> {
-  console.log('SEAM CALLED: findInconsistencies');
-  // AI FLOW to be created: `findInconsistenciesFlow`
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-  console.warn('`findInconsistencies` is not implemented yet.');
-  return [];
+export async function findInconsistencies(storyText: string): Promise<ConsistencyIssue[]> {
+  console.log('Calling findInconsistencies action...');
+   try {
+    const result = await findInconsistenciesFlow({ storyText });
+    return result.issues;
+  } catch(e: any) {
+    console.error('Error in findInconsistencies action:', e);
+    throw new Error('Failed to find inconsistencies.');
+  }
 }
 
 /**
