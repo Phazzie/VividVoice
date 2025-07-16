@@ -2,10 +2,9 @@
 'use server';
 
 /**
- * @fileOverview A seam for an AI agent that identifies and suggests inversions for literary tropes.
- * THIS IS A PLACEHOLDER/SEAM file. The logic is not implemented yet.
+ * @fileOverview An AI agent that identifies and suggests inversions for literary tropes.
  * 
- * - invertTropes - A function that will handle the trope analysis.
+ * - invertTropes - A function that handles the trope analysis.
  * - InvertTropesInput - The input type for the function.
  * - InvertTropesOutput - The return type for the function.
  */
@@ -26,24 +25,36 @@ export type InvertTropesOutput = z.infer<typeof InvertTropesOutputSchema>;
 
 
 export async function invertTropes(input: InvertTropesInput): Promise<InvertTropesOutput> {
-    console.log("SEAM: Called invertTropes AI flow. Returning mocked data.");
-    
-    // This is a seam. We return mocked data that matches the schema.
-    // The real implementation will call the AI model.
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-
-    return {
-        tropes: [
-            {
-                trope: "The Chosen One",
-                quote: "It is you, Arthur, who must pull the sword from the stone.",
-                inversionSuggestion: "Instead of Arthur being the only one who can pull it out, perhaps anyone *except* him can. The prophecy was a misinterpretation, and his destiny is to lead, not to wield a specific weapon. This forces him to rely on charisma and strategy instead of birthright."
-            },
-            {
-                trope: "Damsel in Distress",
-                quote: "Princess Amelia looked out from the high tower, waiting for a hero to save her.",
-                inversionSuggestion: "Amelia is not waiting to be saved; she's using the time in the tower to study the dragon's habits and the castle's architecture. When the 'hero' arrives, he finds she's already mapped out the escape route and tamed the dragon."
-            }
-        ]
-    };
+    return invertTropesFlow(input);
 }
+
+
+const invertTropesFlow = ai.defineFlow(
+    {
+        name: 'invertTropesFlow',
+        inputSchema: InvertTropesInputSchema,
+        outputSchema: InvertTropesOutputSchema,
+    },
+    async (input) => {
+        const prompt = ai.definePrompt({
+            name: 'tropeInverterPrompt',
+            input: {schema: InvertTropesInputSchema},
+            output: {schema: InvertTropesOutputSchema},
+            prompt: `You are a brilliant literary critic and editor, known for your ability to deconstruct and reconstruct narratives. Your task is to analyze the provided story text for common literary tropes.
+
+For each trope you identify, you must provide:
+1.  The 'trope' name (e.g., "The Chosen One," "Damsel in Distress," "The Mentor").
+2.  A direct 'quote' from the text that perfectly exemplifies this trope.
+3.  A creative and insightful 'inversionSuggestion' that subverts or cleverly twists the trope to make the story more original and unpredictable.
+
+Return your findings as a JSON object with a 'tropes' array. If no clear tropes are found, return an empty array.
+
+Story Text:
+{{{storyText}}}
+`,
+        });
+
+        const {output} = await prompt(input);
+        return output!;
+    }
+);
