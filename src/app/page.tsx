@@ -9,11 +9,15 @@ import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
 import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type AppState = 'initial' | 'parsing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any;
 
-export default function VividVoicePage() {
+export default function StagingStoriesPage() {
+  const { user, loading } = useAuth();
   const [appState, setAppState] = useState<AppState>('initial');
   const [storyText, setStoryText] = useState<string>('');
   const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
@@ -33,15 +37,18 @@ export default function VividVoicePage() {
     setTranscript([]);
 
     try {
-      const parsedData = await getParsedStory(newStoryText);
-      const portraitData = await getCharacterPortraits(parsedData.characters);
+      // In a real app, you would likely associate this work with the user.
+      // For now, it remains anonymous.
+      const [parsedData, portraitData] = await Promise.all([
+        getParsedStory(newStoryText),
+        getCharacterPortraits((await getParsedStory(newStoryText)).characters)
+      ]);
       
       setParsedSegments(parsedData.segments);
       setCharacters(parsedData.characters);
       setCharacterPortraits(portraitData);
       setStoryText(newStoryText);
 
-      // Check if portrait generation partially failed, which is a non-blocking issue.
       if (portraitData.length < (parsedData.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
@@ -68,7 +75,6 @@ export default function VividVoicePage() {
     setError(null);
     
     try {
-      // Call the new, advanced multi-voice TTS action which now returns a transcript.
       const { audioDataUri, transcript } = await generateMultiVoiceSceneAudio(editedSegments, characters);
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);
@@ -91,7 +97,73 @@ export default function VividVoicePage() {
     setTranscript([]);
   }
 
-  const isLoading = appState === 'parsing' || appState === 'generating';
+  const isLoading = appState === 'parsing' || appState === 'generating' || loading;
+
+  const renderContent = () => {
+     if (appState === 'initial' && !isLoading) {
+       return (
+         <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
+             <div className="p-4 bg-accent/20 rounded-full text-glow-accent">
+                <Wand2 className="w-16 h-16 text-accent"/>
+             </div>
+            <p className="font-headline text-3xl mt-4 text-glow-accent">Your Story Awaits</p>
+            <p className="max-w-md font-serif text-lg">
+              Paste your narrative into the box to begin. The AI will parse it, generate character portraits, and then you can edit emotions before generating the final audio.
+            </p>
+            {user && (
+              <Button asChild className="mt-4">
+                <Link href="/dashboard">Go to Your Dashboard</Link>
+              </Button>
+            )}
+         </div>
+       );
+     }
+
+      if (appState === 'parsing' || appState === 'generating' || loading) {
+       return (
+          <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
+            <div className="p-4 bg-primary/20 rounded-full text-glow-primary animate-pulse">
+                <Sparkles className="w-16 h-16 text-primary"/>
+            </div>
+            <p className="font-headline text-3xl mt-4 text-glow-primary">
+              {loading ? 'Authenticating...' : appState === 'parsing' ? 'Analyzing Story & Characters...' : 'Generating Audio...'}
+            </p>
+          </div>
+       );
+     }
+
+     if (appState === 'editing') {
+       return (
+         <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
+           <DialogueEditor 
+             storyText={storyText}
+             initialSegments={parsedSegments}
+             characterPortraits={characterPortraits}
+             onGenerateAudio={handleGenerateAudio}
+             isLoading={appState === 'generating'}
+           />
+         </div>
+       );
+     }
+
+     if (appState === 'displaying' && sceneAudioUri) {
+        return (
+          <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
+            <StoryDisplay 
+             segments={parsedSegments} 
+             characterPortraits={characterPortraits}
+             characters={characters}
+             storyText={storyText}
+             sceneAudioUri={sceneAudioUri}
+             transcript={transcript}
+             onBack={handleBackToEditor}
+           />
+          </div>
+        );
+     }
+
+     return null;
+  }
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -104,72 +176,18 @@ export default function VividVoicePage() {
       
       <div className="relative z-10 flex flex-col items-center min-h-screen p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-6xl mx-auto">
-          <header className="text-center space-y-4 mb-10">
-            <h1 className="font-headline text-5xl md:text-7xl font-bold text-glow-primary text-gradient bg-gradient-to-r from-primary via-accent to-secondary animate-in fade-in slide-in-from-top-4 duration-1000">
-              Staging Stories
-            </h1>
-            <p className="text-muted-foreground text-lg flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-6 duration-1000 delay-200">
-              with the Skeptical Wombat <Sparkles className="w-5 h-5 text-accent text-glow-accent" />
-            </p>
-          </header>
+          {/* Header is now in RootLayout */}
 
-          <main className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start">
+          <main className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start mt-10">
             <div className={cn(
               "lg:col-span-2 lg:sticky lg:top-8 space-y-8 transition-all duration-700 animate-in fade-in slide-in-from-left-8",
               (appState === 'editing' || appState === 'displaying') && "lg:opacity-50 lg:pointer-events-none"
             )}>
-              <StoryForm onSubmit={handleParseStory} isLoading={appState === 'parsing'} />
+              <StoryForm onSubmit={handleParseStory} isLoading={appState === 'parsing' || loading} />
             </div>
             
             <div className="lg:col-span-3 min-h-[60vh]">
-              {appState === 'initial' && !isLoading && (
-                <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
-                   <div className="p-4 bg-accent/20 rounded-full text-glow-accent">
-                      <Wand2 className="w-16 h-16 text-accent"/>
-                   </div>
-                  <p className="font-headline text-3xl mt-4 text-glow-accent">Your Story Awaits</p>
-                  <p className="max-w-md font-serif text-lg">
-                    Paste your narrative into the box to begin. The AI will parse it, generate character portraits, and then you can edit emotions before generating the final audio.
-                  </p>
-                </div>
-              )}
-
-              {(appState === 'parsing' || appState === 'generating') && (
-                 <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
-                   <div className="p-4 bg-primary/20 rounded-full text-glow-primary animate-pulse">
-                      <Sparkles className="w-16 h-16 text-primary"/>
-                   </div>
-                  <p className="font-headline text-3xl mt-4 text-glow-primary">
-                    {appState === 'parsing' ? 'Analyzing Story & Characters...' : 'Generating Audio...'}
-                  </p>
-                </div>
-              )}
-
-              {appState === 'editing' && (
-                <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
-                  <DialogueEditor 
-                    storyText={storyText}
-                    initialSegments={parsedSegments}
-                    characterPortraits={characterPortraits}
-                    onGenerateAudio={handleGenerateAudio}
-                    isLoading={appState === 'generating'}
-                  />
-                </div>
-              )}
-              
-              {appState === 'displaying' && sceneAudioUri && (
-                 <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
-                   <StoryDisplay 
-                    segments={parsedSegments} 
-                    characterPortraits={characterPortraits}
-                    characters={characters}
-                    storyText={storyText}
-                    sceneAudioUri={sceneAudioUri}
-                    transcript={transcript}
-                    onBack={handleBackToEditor}
-                  />
-                 </div>
-              )}
+              {renderContent()}
             </div>
           </main>
         </div>

@@ -1,6 +1,8 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from '@/contexts/AuthContext';
+import { Header } from '@/components/vivid-voice/Header';
 
 export const metadata: Metadata = {
   title: 'Staging Stories with the Skeptical Wombat',
@@ -20,8 +22,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400;1,700&family=Belleza&display=swap" rel="stylesheet" />
       </head>
       <body className="font-headline antialiased min-h-screen">
-        {children}
-        <Toaster />
+        <AuthProvider>
+          <Header />
+          <main>{children}</main>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );
