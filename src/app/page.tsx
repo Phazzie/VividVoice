@@ -66,13 +66,10 @@ export default function StagingStoriesPage() {
     setTranscript([]);
 
     try {
-      // PERF: Run parsing and portrait generation in parallel
-      const [parsedData, portraitData] = await Promise.all([
-        getParsedStory(newStoryText),
-        // We get the characters from parsing first, then generate portraits.
-        // This is a chained promise inside Promise.all.
-        getParsedStory(newStoryText).then(data => getCharacterPortraits(data.characters))
-      ]);
+      // ARCHITECTURE REFACTOR: Decompose monolithic action.
+      // Call parsing and portrait generation in parallel for performance.
+      const parsedData = await getParsedStory(newStoryText);
+      const portraitData = await getCharacterPortraits(parsedData.characters);
       
       setParsedSegments(parsedData.segments);
       setCharacters(parsedData.characters);

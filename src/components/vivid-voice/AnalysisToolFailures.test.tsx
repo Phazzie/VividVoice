@@ -113,7 +113,7 @@ describe('Analysis Tools Failure Handling', () => {
     });
 
     it('should show a toast on failure for ShowDontTell', async () => {
-        await testFailureCase(ShowDontTell, { storyText }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', 'Analysis Error', 'Failed to get "Show, Don\'t Tell" suggestions.');
+        await testFailureCase(ShowDontTell, { storyText, onApplySuggestion: vi.fn() }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', 'Analysis Error', 'Failed to get "Show, Don\'t Tell" suggestions.');
     });
 
     it('should show a toast on failure for ConsistencyGuardian', async () => {

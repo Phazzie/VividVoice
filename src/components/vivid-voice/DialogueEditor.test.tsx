@@ -49,11 +49,13 @@ describe('DialogueEditor', () => {
   it('should render initial segments correctly', () => {
     render(
       <DialogueEditor
+        storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={false}
+        onStorySave={() => {}}
       />
     );
 
@@ -67,11 +69,13 @@ describe('DialogueEditor', () => {
     const user = userEvent.setup();
     render(
       <DialogueEditor
+        storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={false}
+        onStorySave={() => {}}
       />
     );
 
@@ -85,11 +89,13 @@ describe('DialogueEditor', () => {
     const user = userEvent.setup();
     render(
       <DialogueEditor
+        storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={false}
+        onStorySave={() => {}}
       />
     );
 
@@ -112,11 +118,13 @@ describe('DialogueEditor', () => {
     const handleGenerateAudio = vi.fn();
     render(
       <DialogueEditor
+        storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
         characterPortraits={mockPortraits}
         onGenerateAudio={handleGenerateAudio}
         isLoading={false}
+        onStorySave={() => {}}
       />
     );
 
@@ -124,7 +132,7 @@ describe('DialogueEditor', () => {
     await user.clear(firstTextarea);
     await user.type(firstTextarea, 'A new beginning.');
 
-    const generateButton = screen.getByRole('button', { name: /Generate Vivid Narration/i });
+    const generateButton = screen.getByRole('button', { name: /Generate Expressive Narration/i });
     await user.click(generateButton);
 
     const expectedSegments = [
@@ -138,11 +146,13 @@ describe('DialogueEditor', () => {
   it('should disable the generate button when isLoading is true', () => {
     render(
       <DialogueEditor
+        storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={true}
+        onStorySave={() => {}}
       />
     );
     const generateButton = screen.getByRole('button', { name: /Generating Audio.../i });

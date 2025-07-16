@@ -10,6 +10,7 @@ vi.mock('@/lib/actions');
 
 describe('ShowDontTell', () => {
     const storyText = 'She was angry.';
+    const onApply = vi.fn();
 
     it('should render the button and handle successful analysis', async () => {
         const user = userEvent.setup();
@@ -19,7 +20,7 @@ describe('ShowDontTell', () => {
         }];
         (actions.getShowDontTellSuggestions as vi.Mock).mockResolvedValue(mockSuggestions);
 
-        render(<ShowDontTell storyText={storyText} />);
+        render(<ShowDontTell storyText={storyText} onApplySuggestion={onApply} />);
 
         const analyzeButton = screen.getByRole('button', { name: /Find "Telling" Sentences/i });
         await user.click(analyzeButton);
@@ -32,12 +33,29 @@ describe('ShowDontTell', () => {
         });
     });
 
+     it('should call onApplySuggestion when apply button is clicked', async () => {
+        const user = userEvent.setup();
+        const mockSuggestions = [{
+            tellingSentence: 'She was angry.',
+            showingSuggestion: 'Her knuckles turned white.'
+        }];
+        (actions.getShowDontTellSuggestions as vi.Mock).mockResolvedValue(mockSuggestions);
+
+        render(<ShowDontTell storyText={storyText} onApplySuggestion={onApply} />);
+        
+        await user.click(screen.getByRole('button', { name: /Find/i }));
+        const applyButton = await screen.findByRole('button', { name: /Apply/i });
+        await user.click(applyButton);
+
+        expect(onApply).toHaveBeenCalledWith('She was angry.', 'Her knuckles turned white.');
+    });
+
      it('should display an error alert if analysis fails', async () => {
         const user = userEvent.setup();
         const errorMessage = 'Show, Dont Tell analysis failed';
         (actions.getShowDontTellSuggestions as vi.Mock).mockRejectedValue(new Error(errorMessage));
 
-        render(<ShowDontTell storyText={storyText} />);
+        render(<ShowDontTell storyText={storyText} onApplySuggestion={onApply} />);
         
         await user.click(screen.getByRole('button', { name: /Find "Telling" Sentences/i }));
 

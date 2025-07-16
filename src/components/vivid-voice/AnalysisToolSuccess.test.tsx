@@ -88,7 +88,7 @@ describe('Analysis Tools Success Path Handling', () => {
     });
 
     it('should show results for ShowDontTell', async () => {
-        await testSuccessCase(ShowDontTell, { storyText }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', [{ tellingSentence: 'a sentence', showingSuggestion: 'a suggestion' }], /Original "Telling" Sentence:/i);
+        await testSuccessCase(ShowDontTell, { storyText, onApplySuggestion: vi.fn() }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', [{ tellingSentence: 'a sentence', showingSuggestion: 'a suggestion' }], /Original "Telling" Sentence:/i);
     });
 
     it('should show results for ConsistencyGuardian', async () => {
