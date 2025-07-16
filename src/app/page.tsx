@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -5,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, type StorySegmentWithAudio, parseStory, generateStoryAudio, type CharacterPortrait } from "@/lib/actions";
+import { type DialogueSegment, type StorySegmentWithAudio, getParsedStory, getCharacterPortraits, generateStoryAudio, type CharacterPortrait } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +29,25 @@ export default function VividVoicePage() {
     setStoryText('');
 
     try {
-      const result = await parseStory(newStoryText);
-      if (!result || !result.segments || result.segments.length === 0) {
-        throw new Error("Failed to parse the story. Please check the text format.");
-      }
-      setParsedSegments(result.segments);
-      setCharacterPortraits(result.portraits);
-      setStoryText(result.storyText);
+      // Step 1: Parse the story to get segments and character definitions. This is the critical path.
+      const { segments, characters } = await getParsedStory(newStoryText);
+      setParsedSegments(segments);
+      setStoryText(newStoryText);
+      
+      // Step 2 (in parallel): Generate character portraits. This is non-critical.
+      // We don't need to await this to show the editor. We can update the state when it's done.
+      getCharacterPortraits(characters).then(portraits => {
+        setCharacterPortraits(portraits);
+      }).catch(e => {
+        // Log the error but don't block the user.
+         console.error("Non-critical error: Failed to generate portraits.", e);
+         toast({
+            variant: "default",
+            title: "Portrait Generation Note",
+            description: "Could not generate all character portraits, but you can continue editing.",
+          });
+      });
+
       setAppState('editing');
     } catch (e: any) {
       const errorMessage = e.message || "An unexpected error occurred during parsing.";

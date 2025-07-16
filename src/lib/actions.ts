@@ -4,7 +4,7 @@
 /**
  * @fileOverview This file contains the primary server actions for the VividVoice application.
  * These actions orchestrate calls to various Genkit AI flows and are designed to be
- * safely called from client components.
+ * safely called from client components. They act as the "seams" between the UI and the AI.
  */
 
 import {
@@ -13,7 +13,7 @@ import {
 } from '@/ai/flows/parse-dialogue';
 import { generateEmotionalTTS } from '@/ai/flows/generate-emotional-tts';
 import {
-  generateCharacterPortraits
+  generateCharacterPortraits as generateCharacterPortraitsFlow
 } from '@/ai/flows/generate-character-portraits';
 import { analyzeLiteraryDevices as analyzeLiteraryDevicesFlow } from '@/ai/flows/analyze-literary-devices';
 import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flows/analyze-dialogue-dynamics';
@@ -52,84 +52,59 @@ const StorySegmentWithAudioSchema = z.object({
 });
 export type StorySegmentWithAudio = z.infer<typeof StorySegmentWithAudioSchema>;
 
-/**
- * The consolidated result of the initial story processing step.
- */
-type ParseStoryResult = {
-  segments: DialogueSegment[];
-  portraits: CharacterPortrait[];
-  storyText: string;
-};
 
 /**
- * Step 1: Parses story text and generates character portraits concurrently.
- * This function is a key part of the application's performance strategy.
- *
- * @param storyText The raw story text input by the user.
- * @returns A Promise that resolves to a ParseStoryResult object.
- * @throws An error if the story text is empty or if the primary dialogue parsing fails.
+ * Parses the dialogue from a story text.
+ * @param storyText The raw story text.
+ * @returns A promise resolving to the parsed segments and characters.
  */
-export async function parseStory(
-  storyText: string
-): Promise<ParseStoryResult> {
-  console.log('Starting parallel story parsing and character generation...');
-  if (!storyText.trim()) {
-    const errorMsg = 'Validation Error: Story text cannot be empty.';
-    console.error(errorMsg);
-    throw new Error(errorMsg);
-  }
-
-  try {
-    const parsedResult = await parseDialogue({ storyText });
-    
-    if (
-      !parsedResult ||
-      !parsedResult.segments ||
-      parsedResult.segments.length === 0
-    ) {
-      console.error(
-        'Parsing Error: Could not parse any dialogue from the provided text. AI Output:',
-        parsedResult
-      );
-      throw new Error(
-        'Could not parse dialogue. Please ensure it has standard dialogue formatting.'
-      );
-    }
-    console.log(
-      'Story parsing successful, found characters:',
-      parsedResult.characters.map((c: Character) => c.name).join(', ')
-    );
-
-    let finalPortraits: CharacterPortrait[] = [];
-    if (parsedResult.characters.length > 0) {
-      console.log('Generating character portraits...');
-      try {
-        finalPortraits = await generateCharacterPortraits({
-          characters: parsedResult.characters,
-        });
-        console.log('Portrait generation successful.');
-      } catch (portraitError) {
-        console.error(
-          'AI Portrait Generation Error:',
-          portraitError
-        );
-      }
+export async function getParsedStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
+    console.log('Starting story parsing...');
+     if (!storyText.trim()) {
+        const errorMsg = 'Validation Error: Story text cannot be empty.';
+        console.error(errorMsg);
+        throw new Error(errorMsg);
     }
 
-    return {
-      segments: parsedResult.segments,
-      portraits: finalPortraits,
-      storyText: storyText,
-    };
-  } catch (error) {
-    console.error('Fatal Error during story parsing flow:', { error });
-    throw new Error('Failed to process the story.');
-  }
+    try {
+        const parsedResult = await parseDialogue({ storyText });
+         if (!parsedResult || !parsedResult.segments || parsedResult.segments.length === 0) {
+            console.error('Parsing Error: Could not parse any dialogue from the provided text.');
+            throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
+        }
+        console.log('Story parsing successful.');
+        return parsedResult;
+    } catch (error) {
+        console.error('Fatal Error during story parsing flow:', { error });
+        throw new Error('Failed to process the story.');
+    }
 }
 
 /**
- * Step 2: Generates audio for each provided dialogue segment individually.
- *
+ * Generates character portraits from character descriptions.
+ * @param characters An array of character objects with names and descriptions.
+ * @returns A promise resolving to an array of character portraits.
+ */
+export async function getCharacterPortraits(characters: Character[]): Promise<CharacterPortrait[]> {
+    console.log('Starting character portrait generation...');
+    if (characters.length === 0) {
+        return [];
+    }
+    try {
+        const portraits = await generateCharacterPortraitsFlow({ characters });
+        console.log('Portrait generation successful.');
+        return portraits;
+    } catch (error) {
+        console.error('AI Portrait Generation Error:', error);
+        // We don't throw here, as portrait generation is non-critical.
+        // We return an empty array and log the error.
+        return [];
+    }
+}
+
+
+/**
+ * Generates audio for each provided dialogue segment individually.
  * @param segments An array of DialogueSegment objects.
  * @returns A Promise that resolves to an array of StorySegmentWithAudio.
  * @throws An error if the input segments array is empty.

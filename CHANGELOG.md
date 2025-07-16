@@ -2,6 +2,12 @@
 
 This document tracks the major features and enhancements implemented in the VividVoice application.
 
+## Version 1.2.0 - Architecture & Stability
+
+### Major Features
+
+*   **Seam-Driven Architecture Refactor**: The entire application was audited and refactored to be fully "seam-driven." The monolithic `parseStory` server action was decomposed into smaller, single-purpose actions (`getParsedStory` and `getCharacterPortraits`). This significantly improves decoupling, making the architecture more robust, maintainable, and easier to test. Orchestration logic (like `Promise.all`) was moved from the backend actions to the client-side `handleParseStory` function, clarifying the separation of concerns.
+
 ## Version 1.1.0 - The Advanced Analysis Suite & Core Experience Upgrade
 
 ### Major Features
