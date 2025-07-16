@@ -69,7 +69,8 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
     try {
         const parsedResult = await parseDialogue({ storyText });
          if (!parsedResult || !parsedResult.segments || parsedResult.segments.length === 0) {
-            console.error('Parsing Error: Could not parse any dialogue from the provided text.');
+            const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
+            console.error(errorMsg);
             throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
         }
         console.log('Story parsing successful.');
@@ -164,6 +165,28 @@ export async function generateStoryAudio(
   }
 }
 
+/**
+ * Regenerates audio for a single dialogue segment with a specified voice.
+ * @param segment The dialogue segment to regenerate.
+ * @param voice The voice to use for the generation.
+ * @returns A promise that resolves to the new audio data URI.
+ */
+export async function regenerateSingleLineAudio(segment: DialogueSegment, voice: string): Promise<string> {
+    console.log(`Regenerating audio for: "${segment.dialogue}" with voice ${voice}`);
+    try {
+        const { audioDataUri } = await generateEmotionalTTS({
+            dialogue: segment.dialogue,
+            emotion: segment.emotion,
+            voice: voice,
+        });
+        console.log('Single line regeneration successful.');
+        return audioDataUri;
+    } catch (error) {
+        console.error('Fatal Error during single line regeneration flow:', { error });
+        throw new Error('There was an issue regenerating the audio for this line.');
+    }
+}
+
 
 /**
  * Analysis: Scans the story for literary devices.
@@ -211,8 +234,13 @@ export async function invertTropes(storyText: string): Promise<Trope[]> {
  */
 export async function getCharacterResponse(character: Character, storyText: string, history: ChatMessage[], userMessage: string): Promise<string> {
     console.log('Calling getCharacterResponse action...');
-    const result = await characterChatFlow({ character, storyText, history, userMessage });
-    return result.response;
+    try {
+      const result = await characterChatFlow({ character, storyText, history, userMessage });
+      return result.response;
+    } catch (e: any) {
+        console.error('Error in getCharacterResponse action:', e);
+        throw new Error('Failed to get character response.');
+    }
 }
 
 /**
@@ -220,6 +248,11 @@ export async function getCharacterResponse(character: Character, storyText: stri
  */
 export async function getBiasedStory(storyText: string, bias: NarratorBias): Promise<string> {
     console.log('Calling getBiasedStory action...');
-    const result = await applyNarratorBiasFlow({ storyText, bias });
-    return result.biasedStoryText;
+    try {
+      const result = await applyNarratorBiasFlow({ storyText, bias });
+      return result.biasedStoryText;
+    } catch (e: any) {
+        console.error('Error in getBiasedStory action:', e);
+        throw new Error('Failed to apply narrator bias.');
+    }
 }

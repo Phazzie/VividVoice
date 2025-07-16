@@ -28,7 +28,7 @@ type DialogueEditorProps = {
   isLoading: boolean;
 };
 
-const emotionOptions = [
+export const emotionOptions = [
   "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
 ];
 
