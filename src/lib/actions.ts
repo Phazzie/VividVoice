@@ -20,6 +20,7 @@ import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flo
 import { invertTropes as invertTropesFlow } from '@/ai/flows/trope-inverter';
 import { characterChat as characterChatFlow } from '@/ai/flows/character-chat';
 import { applyNarratorBias as applyNarratorBiasFlow } from '@/ai/flows/unreliable-narrator';
+import { analyzePacing as analyzePacingFlow } from '@/ai/flows/analyze-pacing';
 
 import { z } from 'zod';
 import {
@@ -29,6 +30,7 @@ import {
   type Trope as ImportedTrope,
   type ChatMessage,
   type NarratorBias,
+  type PacingSegment as ImportedPacingSegment,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
@@ -37,6 +39,7 @@ export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
 export type DialogueDynamics = ImportedDialogueDynamics;
 export type Trope = ImportedTrope;
+export type PacingSegment = ImportedPacingSegment;
 export type { Character, ChatMessage, NarratorBias };
 
 
@@ -254,5 +257,20 @@ export async function getBiasedStory(storyText: string, bias: NarratorBias): Pro
     } catch (e: any) {
         console.error('Error in getBiasedStory action:', e);
         throw new Error('Failed to apply narrator bias.');
+    }
+}
+
+
+/**
+ * Analysis: Analyzes story pacing.
+ */
+export async function analyzeStoryPacing(storyText: string): Promise<PacingSegment[]> {
+    console.log('Calling analyzeStoryPacing action...');
+    try {
+        const result = await analyzePacingFlow({ storyText });
+        return result.segments;
+    } catch (e: any) {
+        console.error('Error in analyzeStoryPacing action:', e);
+        throw new Error('Failed to analyze story pacing.');
     }
 }

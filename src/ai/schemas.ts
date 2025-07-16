@@ -112,3 +112,12 @@ export const NarratorBiasSchema = z.enum([
     "Hides a Key Fact"
 ]);
 export type NarratorBias = z.infer<typeof NarratorBiasSchema>;
+
+/**
+ * Defines the schema for a single segment used in pacing analysis.
+ */
+export const PacingSegmentSchema = z.object({
+  type: z.enum(['Dialogue', 'Narration']).describe('The type of the segment.'),
+  wordCount: z.number().describe('The number of words in this segment.'),
+});
+export type PacingSegment = z.infer<typeof PacingSegmentSchema>;

@@ -19,6 +19,7 @@ import { DialogueDynamicsAnalysis } from '@/components/vivid-voice/DialogueDynam
 import { TropeInverter } from '@/components/vivid-voice/TropeInverter';
 import { ActorStudio } from '@/components/vivid-voice/ActorStudio';
 import { UnreliableNarrator } from '@/components/vivid-voice/UnreliableNarrator';
+import { PacingAnalysis } from '@/components/vivid-voice/PacingAnalysis';
 
 type DialogueEditorProps = {
   storyText: string;
@@ -74,6 +75,7 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
               <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Editor</TabsTrigger>
               <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Literary Analysis</TabsTrigger>
               <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Dynamics</TabsTrigger>
+               <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Pacing</TabsTrigger>
               <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Trope Inverter</TabsTrigger>
               <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Actor's Studio</TabsTrigger>
               <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Unreliable Narrator</TabsTrigger>
@@ -122,6 +124,9 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
             </TabsContent>
              <TabsContent value="dialogueDynamics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <DialogueDynamicsAnalysis storyText={storyText} />
+            </TabsContent>
+            <TabsContent value="pacing" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <PacingAnalysis storyText={storyText} />
             </TabsContent>
             <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <TropeInverter storyText={storyText} />

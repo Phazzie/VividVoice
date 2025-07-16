@@ -12,3 +12,4 @@ import '@/ai/flows/analyze-dialogue-dynamics.ts';
 import '@/ai/flows/trope-inverter.ts';
 import '@/ai/flows/character-chat.ts';
 import '@/ai/flows/unreliable-narrator.ts';
+import '@/ai/flows/analyze-pacing.ts';
