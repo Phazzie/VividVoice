@@ -63,41 +63,9 @@ export type { ChatMessage, NarratorBias };
  */
 export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
 
-
 /**
- * The main entry point action for processing a story. It parses the dialogue and
- * generates character portraits in parallel. This is a more robust seam than calling
- * two separate actions from the client.
- * @param storyText The raw story text.
- * @returns A promise resolving to the parsed segments, characters, and their portraits.
- */
-export async function parseStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[], portraits: CharacterPortrait[] }> {
-    console.log('Starting unified story processing...');
-    if (!storyText.trim()) {
-        const errorMsg = 'Validation Error: Story text cannot be empty.';
-        console.error(errorMsg);
-        throw new Error(errorMsg);
-    }
-    try {
-        // First, parse the dialogue to get character information.
-        const { segments, characters } = await getParsedStory(storyText);
-
-        // Now, generate character portraits. We can do this in parallel with parsing in a more complex setup,
-        // but doing it sequentially here is clearer and still efficient.
-        const portraits = await getCharacterPortraits(characters);
-        
-        console.log('Unified story processing successful.');
-        return { segments, characters, portraits };
-
-    } catch (error) {
-        console.error('Fatal Error during unified story processing flow:', { error });
-        throw new Error('Failed to process the story.');
-    }
-}
-
-
-/**
- * Parses the dialogue from a story text.
+ * Parses the dialogue from a story text. This is the first critical step in the story
+ * processing pipeline.
  * @param storyText The raw story text.
  * @returns A promise resolving to the parsed segments and characters.
  */
@@ -125,7 +93,8 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
 }
 
 /**
- * Generates character portraits from character descriptions.
+ * Generates character portraits from character descriptions. This is a non-critical,
+ * aesthetic enhancement.
  * @param characters An array of character objects with names and descriptions.
  * @returns A promise resolving to an array of character portraits.
  */

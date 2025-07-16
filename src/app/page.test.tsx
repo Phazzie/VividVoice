@@ -1,6 +1,6 @@
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import VividVoicePage from './page';
 import { userEvent } from '@testing-library/user-event';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +10,8 @@ vi.mock('@/lib/actions', async (importOriginal) => {
     const actual = await importOriginal() as any;
     return {
         ...actual,
-        parseStory: vi.fn(),
+        getParsedStory: vi.fn(),
+        getCharacterPortraits: vi.fn(),
         generateMultiVoiceSceneAudio: vi.fn(),
     };
 });
@@ -46,7 +47,7 @@ vi.mock('@/components/vivid-voice/StoryDisplay', () => ({
 vi.mock('@/hooks/use-toast');
 
 // We need to import the mocked actions *after* the vi.mock call
-import { parseStory, generateMultiVoiceSceneAudio } from '@/lib/actions';
+import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio } from '@/lib/actions';
 
 describe('VividVoicePage State Machine', () => {
 
@@ -62,9 +63,10 @@ describe('VividVoicePage State Machine', () => {
     const mockParsedResponse = {
       segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
       characters: [{ name: 'Alice', description: 'A character' }],
-      portraits: [{ name: 'Alice', portraitDataUri: 'url' }],
     };
-    (parseStory as vi.Mock).mockResolvedValue(mockParsedResponse);
+    const mockPortraitResponse = [{ name: 'Alice', portraitDataUri: 'url' }];
+    (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
+    (getCharacterPortraits as vi.Mock).mockResolvedValue(mockPortraitResponse);
 
     render(<VividVoicePage />);
     
@@ -77,10 +79,11 @@ describe('VividVoicePage State Machine', () => {
 
     // Parsing state
     expect(screen.getByText('Analyzing Story & Characters...')).toBeInTheDocument();
-    expect(parseStory).toHaveBeenCalledWith('mock story');
+    expect(getParsedStory).toHaveBeenCalledWith('mock story');
 
     // Editing state (after promise resolves)
     await waitFor(() => {
+      expect(getCharacterPortraits).toHaveBeenCalledWith(mockParsedResponse.characters);
       expect(screen.getByRole('heading', { name: /Dialogue Editor/i })).toBeInTheDocument();
     });
   });
@@ -98,9 +101,10 @@ describe('VividVoicePage State Machine', () => {
      const mockParsedResponse = {
       segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
       characters: [{ name: 'Alice', description: 'A character' }],
-      portraits: [{ name: 'Alice', portraitDataUri: 'url' }],
     };
-    (parseStory as vi.Mock).mockResolvedValue(mockParsedResponse);
+    const mockPortraitResponse = [{ name: 'Alice', portraitDataUri: 'url' }];
+    (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
+    (getCharacterPortraits as vi.Mock).mockResolvedValue(mockPortraitResponse);
     
     render(<VividVoicePage />);
     
@@ -128,8 +132,9 @@ describe('VividVoicePage State Machine', () => {
         const user = userEvent.setup();
         const mockAudioResponse = { audioDataUri: 'test.wav', transcript: [] };
         (generateMultiVoiceSceneAudio as vi.Mock).mockResolvedValue(mockAudioResponse);
-        const mockParsedResponse = { segments: [], characters: [{name: 'Alice', description: 'desc'}], portraits: [] };
-        (parseStory as vi.Mock).mockResolvedValue(mockParsedResponse);
+        const mockParsedResponse = { segments: [], characters: [{name: 'Alice', description: 'desc'}] };
+        (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
+        (getCharacterPortraits as vi.Mock).mockResolvedValue([]);
 
         render(<VividVoicePage />);
 
@@ -153,7 +158,7 @@ describe('VividVoicePage State Machine', () => {
     it('should return to initial state and show a toast if parsing fails', async () => {
         const user = userEvent.setup();
         const errorMessage = 'Parsing failed!';
-        (parseStory as vi.Mock).mockRejectedValue(new Error(errorMessage));
+        (getParsedStory as vi.Mock).mockRejectedValue(new Error(errorMessage));
 
         render(<VividVoicePage />);
         
@@ -174,12 +179,13 @@ describe('VividVoicePage State Machine', () => {
     // Test a non-critical failure during portrait generation
     it('should proceed to editing and show a toast if only portrait generation fails', async () => {
       const user = userEvent.setup();
-      const mockResponse = {
+      const mockParsedResponse = {
         segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
         characters: [{ name: 'Alice', description: 'A character' }, { name: 'Bob', description: 'Another' }],
-        portraits: [{ name: 'Alice', portraitDataUri: 'url' }], // Only one portrait for two characters
       };
-      (parseStory as vi.Mock).mockResolvedValue(mockResponse);
+      (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
+      // Simulate portrait generation returning only one portrait for two characters
+      (getCharacterPortraits as vi.Mock).mockResolvedValue([{ name: 'Alice', portraitDataUri: 'url' }]);
 
       render(<VividVoicePage />);
 

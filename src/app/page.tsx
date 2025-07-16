@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, parseStory, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
+import { type DialogueSegment, getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -32,15 +32,17 @@ export default function VividVoicePage() {
     setTranscript([]);
 
     try {
-      // Use the new, unified `parseStory` action. It handles parsing, character creation,
-      // and portrait generation in a single, clean seam.
-      const { segments, characters, portraits } = await parseStory(newStoryText);
-      
+      // Decomposed Flow: First, get the parsed story and characters.
+      const { segments, characters } = await getParsedStory(newStoryText);
       setParsedSegments(segments);
       setCharacters(characters);
-      setCharacterPortraits(portraits);
       setStoryText(newStoryText);
+
+      // Now, generate portraits in parallel. This is a non-critical enhancement.
+      const portraits = await getCharacterPortraits(characters);
+      setCharacterPortraits(portraits);
       
+      // Check if portrait generation partially failed, which is a non-blocking issue.
       if (portraits.length < (characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
