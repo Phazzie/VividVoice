@@ -6,7 +6,7 @@ import { Header } from '@/components/vivid-voice/Header';
 import { Belleza, Alegreya } from 'next/font/google';
 
 export const metadata: Metadata = {
-  title: 'VividVoice',
+  title: 'Staging Stories with the Skeptical Wombat',
   description: 'AI-powered narrative story reader with expressive voice acting.',
 };
 
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark ${belleza.variable} ${alegreya.variable}`}>
+    <html lang="en" className={`${belleza.variable} ${alegreya.variable}`}>
       <body className="antialiased min-h-screen bg-background text-foreground font-body">
         <AuthProvider>
           <Header />
