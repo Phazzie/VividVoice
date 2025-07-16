@@ -11,10 +11,10 @@ import {
   parseDialogue,
   type DialogueSegment as ImportedDialogueSegment,
 } from '@/ai/flows/parse-dialogue';
-import { generateEmotionalTTS } from '@/ai/flows/generate-emotional-tts';
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
 } from '@/ai/flows/generate-character-portraits';
+import { generateMultiVoiceTTS } from '@/ai/flows/generate-multi-voice-tts';
 import { analyzeLiteraryDevices as analyzeLiteraryDevicesFlow } from '@/ai/flows/analyze-literary-devices';
 import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flows/analyze-dialogue-dynamics';
 import { invertTropes as invertTropesFlow } from '@/ai/flows/trope-inverter';
@@ -104,15 +104,15 @@ export async function getCharacterPortraits(characters: Character[]): Promise<Ch
 
 
 /**
- * Generates audio for each provided dialogue segment individually.
+ * Generates a single, multi-voice audio file for an entire story.
  * @param segments An array of DialogueSegment objects.
- * @returns A Promise that resolves to an array of StorySegmentWithAudio.
+ * @returns A Promise that resolves to an array of StorySegmentWithAudio, where only the first segment contains the audio URI.
  * @throws An error if the input segments array is empty.
  */
 export async function generateStoryAudio(
   segments: DialogueSegment[]
 ): Promise<StorySegmentWithAudio[]> {
-  console.log('Starting TTS generation for refined segments...');
+  console.log('Starting multi-voice TTS generation for the entire story...');
   if (!segments || segments.length === 0) {
     const errorMsg = 'Validation Error: Segments for audio generation cannot be empty.';
     console.error(errorMsg);
@@ -120,25 +120,21 @@ export async function generateStoryAudio(
   }
   
   try {
-    const audioPromises = segments.map(async (segment) => {
-      if ((segment.character.toLowerCase() === 'narrator' && segment.dialogue.trim() === '') || segment.dialogue.trim() === '') {
-        return { ...segment, audioUri: undefined };
-      }
-      
-      try {
-        const { audioDataUri } = await generateEmotionalTTS({ segments: [segment] });
-        return { ...segment, audioUri: audioDataUri };
-      } catch (ttsError) {
-        console.error(`TTS generation failed for segment: "${segment.dialogue.substring(0,30)}..."`, { error: ttsError });
-        return { ...segment, audioUri: undefined };
-      }
-    });
+    const characters = [...new Set(segments.map(s => s.character))];
+    const { audioDataUri } = await generateMultiVoiceTTS({ segments, characters });
 
-    const segmentsWithAudio = await Promise.all(audioPromises);
-    console.log('Story audio processing finished successfully.');
-    return segmentsWithAudio;
+    // The audio URI is for the whole story. We'll attach it to the first segment
+    // and the UI will know to use it for the whole player.
+    const storyWithAudio: StorySegmentWithAudio[] = segments.map((segment, index) => ({
+      ...segment,
+      audioUri: index === 0 ? audioDataUri : undefined,
+    }));
+    
+    console.log('Multi-voice story audio processing finished successfully.');
+    return storyWithAudio;
+
   } catch (error) {
-    console.error('Fatal Error during TTS generation flow:', { error });
+    console.error('Fatal Error during multi-voice TTS generation flow:', { error });
     throw new Error('There was an issue generating the audio.');
   }
 }
@@ -149,8 +145,13 @@ export async function generateStoryAudio(
  */
 export async function analyzeLiteraryDevices(storyText: string): Promise<LiteraryDevice[]> {
     console.log('Calling analyzeLiteraryDevices action...');
-    const result = await analyzeLiteraryDevicesFlow({ storyText });
-    return result.devices;
+    try {
+        const result = await analyzeLiteraryDevicesFlow({ storyText });
+        return result.devices;
+    } catch (e: any) {
+        console.error('Error in analyzeLiteraryDevices action:', e);
+        throw new Error('Failed to analyze literary devices.');
+    }
 }
 
 /**
@@ -158,7 +159,12 @@ export async function analyzeLiteraryDevices(storyText: string): Promise<Literar
  */
 export async function analyzeDialogueDynamics(storyText: string): Promise<DialogueDynamics> {
     console.log('Calling analyzeDialogueDynamics action...');
-    return await analyzeDialogueDynamicsFlow({ storyText });
+    try {
+       return await analyzeDialogueDynamicsFlow({ storyText });
+    } catch (e: any) {
+        console.error('Error in analyzeDialogueDynamics action:', e);
+        throw new Error('Failed to analyze dialogue dynamics.');
+    }
 }
 
 /**
@@ -166,8 +172,13 @@ export async function analyzeDialogueDynamics(storyText: string): Promise<Dialog
  */
 export async function invertTropes(storyText: string): Promise<Trope[]> {
     console.log('Calling invertTropes action...');
-    const result = await invertTropesFlow({ storyText });
-    return result.tropes;
+    try {
+        const result = await invertTropesFlow({ storyText });
+        return result.tropes;
+    } catch (e: any) {
+        console.error('Error in invertTropes action:', e);
+        throw new Error('Failed to analyze tropes.');
+    }
 }
 
 /**

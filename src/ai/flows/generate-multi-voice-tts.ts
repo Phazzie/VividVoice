@@ -4,7 +4,7 @@
 /**
  * @fileOverview Implements an advanced AI-driven text-to-speech system for generating
  * multi-cast narrative audio. This flow assigns unique voices to characters and
- * generates a single audio file with different speakers.
+ * generates a single audio file with different speakers using SSML.
  *
  * - generateMultiVoiceTTS - A function that generates expressive speech for a given story.
  * - GenerateMultiVoiceTTSInput - The input type for the function.
@@ -36,7 +36,9 @@ export async function generateMultiVoiceTTS(input: GenerateMultiVoiceTTSInput): 
 
 // A predefined list of available high-quality voices.
 const availableVoices = [
-  'Alloy', 'Echo', 'Fable', 'Onyx', 'Nova', 'Shimmer', 'Luna', 'Sol'
+  'en-US-Standard-A', 'en-US-Standard-B', 'en-US-Standard-C', 
+  'en-US-Standard-D', 'en-US-Standard-E', 'en-US-Standard-F',
+  'en-US-Standard-G', 'en-US-Standard-H', 'en-US-Standard-I', 'en-US-Standard-J'
 ];
 
 const generateMultiVoiceTTSFlow = ai.defineFlow(
@@ -48,44 +50,40 @@ const generateMultiVoiceTTSFlow = ai.defineFlow(
   async ({ segments, characters }) => {
     // Assign a unique, consistent voice to each character.
     const characterVoiceMap = new Map<string, string>();
-    characters.forEach((char, index) => {
-      // Exclude Narrator as they will use the default voice.
-      if (char.toLowerCase() !== 'narrator') {
-        characterVoiceMap.set(char, availableVoices[index % availableVoices.length]);
-      }
+    const nonNarratorCharacters = characters.filter(c => c.toLowerCase() !== 'narrator');
+    nonNarratorCharacters.forEach((char, index) => {
+      characterVoiceMap.set(char, availableVoices[index % availableVoices.length]);
     });
 
     // Use ssml-builder to construct the complex speech synthesis prompt.
-    const ssml = new SsmlBuilder();
-    const speech = ssml.speak();
-
+    let ssml = new SsmlBuilder();
     segments.forEach(segment => {
       const voice = characterVoiceMap.get(segment.character);
-      const prosody = { rate: 'medium', pitch: 'medium' }; // Default prosody
-
+      
       // Add a slight pause for narrator segments to improve pacing.
       if (segment.character.toLowerCase() === 'narrator') {
-        speech.pause('300ms');
+        ssml.pause('300ms');
       }
       
-      const p = speech.p(); // Start a new paragraph for each segment
-      
-      // Use <voice> tag only if a specific character voice is assigned.
+      let speech = ssml.ssml();
       if (voice) {
-        const v = p.voice({ name: voice });
-        v.prosody(prosody, `(${segment.emotion}) ${segment.dialogue}`);
-      } else {
-        // Narrator uses the default voice without a <voice> tag.
-        p.prosody(prosody, `(${segment.emotion}) ${segment.dialogue}`);
+        speech = speech.voice({name: voice});
       }
 
+      // We add the emotion as a prosody instruction to guide the AI's performance.
+      speech.prosody({
+          rate: 'medium',
+          pitch: 'medium'
+      }, `(${segment.emotion}) ${segment.dialogue}`);
+
+
       if (segment.character.toLowerCase() === 'narrator') {
-        speech.pause('500ms');
+        ssml.pause('500ms');
       }
     });
 
-    const ssmlString = speech.end({ pretty: true });
-
+    const ssmlString = ssml.toString();
+    
     // Generate the audio using the constructed SSML string.
     const {media} = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',

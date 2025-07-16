@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, FastForward, Rewind, BookText, Edit, SkipForward, SkipBack } from 'lucide-react';
+import { Play, Pause, FastForward, Rewind, BookText, Edit } from 'lucide-react';
 import { type StorySegmentWithAudio, type CharacterPortrait } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,12 +20,14 @@ type StoryDisplayProps = {
 
 export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisplayProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
-
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  const audioUri = useMemo(() => segments.find(s => s.audioUri)?.audioUri, [segments]);
 
   const characterColors = useMemo(() => {
     const uniqueCharacters = [...new Set(segments.map(s => s.character))];
@@ -35,46 +37,17 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
     }, {} as Record<string, string>);
   }, [segments]);
 
-  // Effect to handle audio playback and source changes
+  // Effect to handle playing and pausing the audio
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     
-    // Stop if we've reached the end
-    if (currentSegmentIndex >= segments.length) {
-      setIsPlaying(false);
-      return;
-    }
-    
-    const currentSegment = segments[currentSegmentIndex];
-    
-    // If there's no audio URI for the current segment, skip to the next one automatically if playing.
-    if (!currentSegment?.audioUri) {
-      if(isPlaying) {
-        setCurrentSegmentIndex(prev => prev + 1);
-      }
-      return;
-    }
-
-    // Set the audio source if it has changed
-    if (audio.src !== currentSegment.audioUri) {
-        audio.src = currentSegment.audioUri;
-        audio.load();
-    }
-    
-    // Play or pause based on isPlaying state
     if (isPlaying) {
-        const playPromise = audio.play();
-        playPromise?.catch(e => {
-            console.error("Audio play failed:", e);
-            setIsPlaying(false); // Stop trying to play if it fails
-        });
+      audio.play().catch(e => console.error("Audio play failed", e));
     } else {
-        audio.pause();
+      audio.pause();
     }
-
-  }, [currentSegmentIndex, segments, isPlaying]);
-
+  }, [isPlaying]);
 
   // Effect to manage playback speed
   useEffect(() => {
@@ -83,64 +56,41 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
       audio.playbackRate = playbackSpeed;
     }
   }, [playbackSpeed]);
-  
-  // Effect to scroll the currently playing segment into view
-  useEffect(() => {
-    const currentSegmentElement = document.getElementById(`segment-${currentSegmentIndex}`);
-    if (currentSegmentElement && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const elementTop = currentSegmentElement.offsetTop;
-      const elementHeight = currentSegmentElement.offsetHeight;
-      const containerTop = container.scrollTop;
-      const containerHeight = container.clientHeight;
-
-      if (elementTop < containerTop || (elementTop + elementHeight) > (containerTop + containerHeight)) {
-          container.scrollTo({
-            top: elementTop - container.offsetTop - (containerHeight / 4),
-            behavior: 'smooth',
-          });
-      }
-    }
-  }, [currentSegmentIndex]);
 
   const handlePlayPause = () => {
-    // If at the end, restart from the beginning when play is pressed
-    if (!isPlaying && currentSegmentIndex >= segments.length - 1) {
-      setCurrentSegmentIndex(0);
-    }
     setIsPlaying(prev => !prev);
   };
   
-  const handleSkip = (direction: 'forward' | 'backward') => {
-    const nextIndex = direction === 'forward' ? currentSegmentIndex + 1 : currentSegmentIndex - 1;
-    if (nextIndex >= 0 && nextIndex < segments.length) {
-      setCurrentSegmentIndex(nextIndex);
-    }
-  }
-
   const handleTimeUpdate = () => {
     const audio = audioRef.current;
-    if (!audio || !audio.duration || isNaN(audio.duration)) return;
-    const currentProgressInSegment = (audio.currentTime / audio.duration);
-    const totalProgress = ((currentSegmentIndex + currentProgressInSegment) / segments.length) * 100;
-    setProgress(totalProgress);
+    if (!audio) return;
+    setProgress((audio.currentTime / audio.duration) * 100);
+    setCurrentTime(audio.currentTime);
   };
   
-  const handleAudioEnded = () => {
-    if (currentSegmentIndex < segments.length - 1) {
-      setCurrentSegmentIndex(prevIndex => prevIndex + 1);
-    } else {
-      setIsPlaying(false);
-      setProgress(100);
-    }
-  };
+  const handleLoadedMetadata = () => {
+     const audio = audioRef.current;
+     if (!audio) return;
+     setDuration(audio.duration);
+  }
+
+  const handleSeek = (value: number[]) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const newTime = (value[0] / 100) * duration;
+    audio.currentTime = newTime;
+    setProgress(value[0]);
+  }
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  }
 
   const getPortrait = (characterName: string) => {
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
-  
-  const isLastSegment = currentSegmentIndex >= segments.length - 1;
-  const isFirstSegment = currentSegmentIndex === 0;
 
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-secondary/50 card-glow-accent overflow-hidden">
@@ -151,30 +101,14 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
           </Button>
           <CardTitle className="font-headline text-2xl text-gradient bg-gradient-to-r from-secondary to-accent text-glow-accent">Your Vivid Story</CardTitle>
         </div>
-        <div className="flex items-center gap-2">
-           <Button onClick={() => handleSkip('backward')} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary" disabled={isFirstSegment && !isPlaying}>
-            <SkipBack className="w-5 h-5 fill-current" />
-          </Button>
-          <Button onClick={handlePlayPause} size="icon" className="rounded-full w-14 h-14 bg-gradient-to-br from-secondary to-accent text-primary-foreground shadow-lg shadow-secondary/40 hover:scale-110 transition-transform">
-            {isPlaying ? <Pause className="w-7 h-7 fill-current" /> : <Play className="w-7 h-7 fill-current" />}
-          </Button>
-          <Button onClick={() => handleSkip('forward')} size="icon" variant="ghost" className="rounded-full w-10 h-10 text-secondary hover:bg-secondary/20 hover:text-secondary" disabled={isLastSegment}>
-            <SkipForward className="w-5 h-5 fill-current" />
-          </Button>
-        </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div ref={scrollContainerRef} className="max-h-[50vh] overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth bg-grid bg-[length:30px_30px] bg-card/10">
+        <div className="max-h-[50vh] overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth bg-grid bg-[length:30px_30px] bg-card/10">
           {segments.map((segment, index) => (
             <div
               key={index}
               id={`segment-${index}`}
-              className={cn(
-                "flex gap-4 p-4 rounded-xl transition-all duration-300 ease-in-out transform border",
-                index === currentSegmentIndex && isPlaying 
-                  ? "bg-secondary/20 scale-[1.03] shadow-lg shadow-secondary/20 border-secondary" 
-                  : "bg-muted/50 border-transparent"
-              )}
+              className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-transparent"
             >
               <Avatar className="h-16 w-16 border-2 shrink-0" style={{ borderColor: characterColors[segment.character] }}>
                  <AvatarImage src={getPortrait(segment.character)} alt={`Portrait of ${segment.character}`} />
@@ -194,7 +128,25 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
           ))}
         </div>
         <div className="p-4 md:p-6 border-t-2 border-secondary/20 bg-muted/30 backdrop-blur-sm space-y-4">
-             <Progress value={progress} className="h-2 [&>div]:bg-secondary" />
+            <div className='space-y-2'>
+              <Slider
+                  value={[progress]}
+                  onValueChange={handleSeek}
+                  className="w-full"
+                  aria-label="Audio progress bar"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-4">
+                 <Button onClick={handlePlayPause} size="icon" className="rounded-full w-16 h-16 bg-gradient-to-br from-secondary to-accent text-primary-foreground shadow-lg shadow-secondary/40 hover:scale-110 transition-transform">
+                    {isPlaying ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current" />}
+                </Button>
+            </div>
+            
             <div className="flex items-center gap-4">
               <Label htmlFor="playback-speed" className="flex items-center gap-2 text-muted-foreground font-headline">
                 <FastForward className="w-5 h-5 text-secondary" /> Speed
@@ -212,7 +164,7 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
             </div>
         </div>
       </CardContent>
-      <audio ref={audioRef} onTimeUpdate={handleTimeUpdate} onEnded={handleAudioEnded} />
+      {audioUri && <audio ref={audioRef} src={audioUri} onTimeUpdate={handleTimeUpdate} onLoadedMetadata={handleLoadedMetadata} onEnded={() => setIsPlaying(false)} />}
     </Card>
   );
 }
