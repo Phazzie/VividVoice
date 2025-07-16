@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment, type CharacterPortrait, type Character, saveStory } from '@/lib/actions';
+import { type DialogueSegment, type CharacterPortrait, type Character } from '@/lib/actions';
+import { saveStory } from '@/lib/data';
 import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -271,5 +272,3 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characterP
     </Card>
   );
 }
-
-    

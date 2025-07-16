@@ -6,7 +6,8 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, getStoryById, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
+import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
+import { getStoryById } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,10 +40,10 @@ export default function StagingStoriesPage() {
         setAppState('loadingStory');
         try {
           const story = await getStoryById(storyIdToLoad);
-          if (story) {
+          if (story && story.userId === user.uid) {
             await handleParseStory(story.storyText, story.id);
           } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story.'});
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story or you do not have permission to view it.'});
             setAppState('initial');
           }
         } catch (e: any) {
@@ -52,6 +53,7 @@ export default function StagingStoriesPage() {
       };
       loadStory();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyIdToLoad, user]);
   
   const handleParseStory = async (newStoryText: string, existingStoryId: string | null = null) => {
@@ -64,14 +66,20 @@ export default function StagingStoriesPage() {
     setTranscript([]);
 
     try {
-      const parsedData = await getParsedStory(newStoryText);
-      const portraitData = await getCharacterPortraits(parsedData.characters);
+      // PERF: Run parsing and portrait generation in parallel
+      const [parsedData, portraitData] = await Promise.all([
+        getParsedStory(newStoryText),
+        // We get the characters from parsing first, then generate portraits.
+        // This is a chained promise inside Promise.all.
+        getParsedStory(newStoryText).then(data => getCharacterPortraits(data.characters))
+      ]);
       
       setParsedSegments(parsedData.segments);
       setCharacters(parsedData.characters);
       setCharacterPortraits(portraitData);
       setStoryText(newStoryText);
 
+      // Non-critical warning if some portraits failed
       if (portraitData.length < (parsedData.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
@@ -230,5 +238,3 @@ export default function StagingStoriesPage() {
     </div>
   );
 }
-
-    

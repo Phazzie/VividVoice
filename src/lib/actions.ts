@@ -1,19 +1,6 @@
 
 'use server';
 
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  serverTimestamp,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
-import { db } from './firebase';
-
 /**
  * @fileOverview This file contains the primary server actions for the VividVoice application.
  * These actions orchestrate calls to various Genkit AI flows and are designed to be
@@ -72,19 +59,6 @@ export type SoundEffect = ImportedSoundEffect;
 export type TranscriptSegment = ImportedTranscriptSegment;
 export type { ChatMessage, NarratorBias };
 
-
-/**
- * Defines the shape of a Story document in Firestore.
- */
-export type Story = {
-  id: string;
-  userId: string;
-  title: string;
-  storyText: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
 /**
  * Defines the shape of a sound effect after a URL has been found for it.
  */
@@ -100,7 +74,7 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
     console.log('Starting story parsing and AI casting...');
      if (!storyText.trim()) {
         const errorMsg = 'Validation Error: Story text cannot be empty.';
-        console.error(errorMsg);
+        console.error({ action: 'getParsedStory', error: errorMsg });
         throw new Error(errorMsg);
     }
 
@@ -108,13 +82,13 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
         const parsedResult = await parseDialogueFlow({ storyText });
          if (!parsedResult || !parsedResult.segments || parsedResult.segments.length === 0) {
             const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
-            console.error(errorMsg);
+            console.error({ action: 'getParsedStory', error: errorMsg });
             throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
         }
         console.log('Story parsing and AI casting successful.');
         return parsedResult;
     } catch (error) {
-        console.error('Fatal Error during story parsing flow:', { error });
+        console.error('Fatal Error during getParsedStory action:', { error });
         throw new Error('Failed to process the story.');
     }
 }
@@ -135,7 +109,7 @@ export async function getCharacterPortraits(characters: Character[]): Promise<Ch
         console.log('Portrait generation successful.');
         return portraits;
     } catch (error) {
-        console.error('AI Portrait Generation Error:', error);
+        console.error('AI Portrait Generation Error in getCharacterPortraits action:', { error });
         // We don't throw here, as portrait generation is non-critical.
         // We return an empty array and log the error.
         return [];
@@ -157,7 +131,7 @@ export async function generateMultiVoiceSceneAudio(
   console.log('Starting multi-voice TTS scene generation...');
   if (!segments || segments.length === 0) {
     const errorMsg = 'Validation Error: Segments for audio generation cannot be empty.';
-    console.error(errorMsg);
+    console.error({ action: 'generateMultiVoiceSceneAudio', error: errorMsg });
     throw new Error(errorMsg);
   }
   
@@ -167,89 +141,10 @@ export async function generateMultiVoiceSceneAudio(
     return result;
 
   } catch (error) {
-    console.error('Fatal Error during multi-voice TTS generation flow:', { error });
+    console.error('Fatal Error during generateMultiVoiceSceneAudio action:', { error });
     throw new Error('There was an issue generating the audio for the scene.');
   }
 }
-
-/**
- * Saves a story to Firestore. If an ID is provided, it updates the existing
- * document; otherwise, it creates a new one.
- * @param storyData The data for the story.
- * @returns The ID of the saved document.
- */
-export async function saveStory(storyData: Omit<Story, 'createdAt' | 'updatedAt'>): Promise<string> {
-  if (!db) throw new Error('Firestore is not initialized.');
-  const { id, userId, title, storyText } = storyData;
-
-  if (!userId || !title || !storyText) {
-    throw new Error('User ID, title, and story text are required.');
-  }
-
-  const storiesCollection = collection(db, 'stories');
-
-  if (id) {
-    // Update existing story
-    const storyRef = doc(db, 'stories', id);
-    await updateDoc(storyRef, {
-      title,
-      storyText,
-      updatedAt: serverTimestamp(),
-    });
-    return id;
-  } else {
-    // Create new story
-    const newStoryRef = await addDoc(storiesCollection, {
-      userId,
-      title,
-      storyText,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-    return newStoryRef.id;
-  }
-}
-
-/**
- * Fetches all stories for a given user from Firestore.
- * @param userId The ID of the user.
- * @returns An array of story objects.
- */
-export async function getStoriesForUser(userId: string): Promise<Story[]> {
-  if (!db) throw new Error('Firestore is not initialized.');
-  const storiesCollection = collection(db, 'stories');
-  const q = query(storiesCollection, where('userId', '==', userId));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    // Convert Firestore Timestamps to ISO strings
-    createdAt: doc.data().createdAt.toDate().toISOString(),
-    updatedAt: doc.data().updatedAt.toDate().toISOString(),
-  })) as Story[];
-}
-
-/**
- * Fetches a single story by its ID from Firestore.
- * @param storyId The ID of the story to fetch.
- * @returns The story object, or null if not found.
- */
-export async function getStoryById(storyId: string): Promise<Story | null> {
-  if (!db) throw new Error('Firestore is not initialized.');
-  const storyRef = doc(db, 'stories', storyId);
-  const docSnap = await getDoc(storyRef);
-  if (!docSnap.exists()) {
-    return null;
-  }
-  const data = docSnap.data();
-  return {
-    id: docSnap.id,
-    ...data,
-    createdAt: data.createdAt.toDate().toISOString(),
-    updatedAt: data.updatedAt.toDate().toISOString(),
-  } as Story;
-}
-
 
 /**
  * Analysis: Scans the story for literary devices.
@@ -260,7 +155,7 @@ export async function analyzeLiteraryDevices(storyText: string): Promise<Literar
         const result = await analyzeLiteraryDevicesFlow({ storyText });
         return result.devices;
     } catch (e: any) {
-        console.error('Error in analyzeLiteraryDevices action:', e);
+        console.error('Error in analyzeLiteraryDevices action:', { error: e });
         throw new Error('Failed to analyze literary devices.');
     }
 }
@@ -273,7 +168,7 @@ export async function analyzeDialogueDynamics(storyText: string): Promise<Dialog
     try {
        return await analyzeDialogueDynamicsFlow({ storyText });
     } catch (e: any) {
-        console.error('Error in analyzeDialogueDynamics action:', e);
+        console.error('Error in analyzeDialogueDynamics action:', { error: e });
         throw new Error('Failed to analyze dialogue dynamics.');
     }
 }
@@ -287,7 +182,7 @@ export async function invertTropes(storyText: string): Promise<Trope[]> {
         const result = await invertTropesFlow({ storyText });
         return result.tropes;
     } catch (e: any) {
-        console.error('Error in invertTropes action:', e);
+        console.error('Error in invertTropes action:', { error: e });
         throw new Error('Failed to analyze tropes.');
     }
 }
@@ -301,7 +196,7 @@ export async function getCharacterResponse(character: Character, storyText: stri
       const result = await characterChatFlow({ character, storyText, history, userMessage });
       return result.response;
     } catch (e: any) {
-        console.error('Error in getCharacterResponse action:', e);
+        console.error('Error in getCharacterResponse action:', { error: e });
         throw new Error('Failed to get character response.');
     }
 }
@@ -315,7 +210,7 @@ export async function getBiasedStory(storyText: string, bias: NarratorBias): Pro
       const result = await applyNarratorBiasFlow({ storyText, bias });
       return result.biasedStoryText;
     } catch (e: any) {
-        console.error('Error in getBiasedStory action:', e);
+        console.error('Error in getBiasedStory action:', { error: e });
         throw new Error('Failed to apply narrator bias.');
     }
 }
@@ -330,7 +225,7 @@ export async function analyzeStoryPacing(storyText: string): Promise<PacingSegme
         const result = await analyzePacingFlow({ storyText });
         return result.segments;
     } catch (e: any) {
-        console.error('Error in analyzeStoryPacing action:', e);
+        console.error('Error in analyzeStoryPacing action:', { error: e });
         throw new Error('Failed to analyze story pacing.');
     }
 }
@@ -347,7 +242,7 @@ export async function getShowDontTellSuggestions(storyText: string): Promise<Sho
     const result = await getShowDontTellSuggestionsFlow({ storyText });
     return result.suggestions;
   } catch(e: any) {
-    console.error('Error in getShowDontTellSuggestions action:', e);
+    console.error('Error in getShowDontTellSuggestions action:', { error: e });
     throw new Error('Failed to get "Show, Don\'t Tell" suggestions.');
   }
 }
@@ -363,7 +258,7 @@ export async function findInconsistencies(storyText: string): Promise<Consistenc
     const result = await findInconsistenciesFlow({ storyText });
     return result.issues;
   } catch(e: any) {
-    console.error('Error in findInconsistencies action:', e);
+    console.error('Error in findInconsistencies action:', { error: e });
     throw new Error('Failed to find inconsistencies.');
   }
 }
@@ -379,7 +274,7 @@ export async function analyzeSubtext(storyText: string): Promise<SubtextAnalysis
     const result = await analyzeSubtextFlow({ storyText });
     return result.analyses;
   } catch(e: any) {
-    console.error('Error in analyzeSubtext action:', e);
+    console.error('Error in analyzeSubtext action:', { error: e });
     throw new Error('Failed to analyze subtext.');
   }
 }
@@ -396,7 +291,7 @@ export async function shiftPerspective(storyText: string, characterName: string,
   try {
     return await shiftPerspectiveFlow({ storyText, characterName, role });
   } catch(e: any) {
-    console.error('Error in shiftPerspective action:', e);
+    console.error('Error in shiftPerspective action:', { error: e });
     throw new Error('Failed to shift perspective.');
   }
 }
@@ -425,10 +320,8 @@ export async function getSoundDesign(storyText: string): Promise<SoundEffectWith
       soundUrl: placeholderSoundUrl,
     }));
   } catch (e: any) {
-    console.error('Error in getSoundDesign action:', e);
+    console.error('Error in getSoundDesign action:', { error: e });
     // Return empty array on failure as this is a non-critical enhancement.
     return [];
   }
 }
-
-    

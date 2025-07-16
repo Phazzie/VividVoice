@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getStoriesForUser, type Story } from "@/lib/actions";
+import { getStoriesForUser, type Story } from "@/lib/data";
 import { Loader2, PlusCircle, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DashboardPage() {
-    const { user, loading: authLoading, logout } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [stories, setStories] = useState<Story[]>([]);
     const [loadingStories, setLoadingStories] = useState(true);
@@ -100,5 +100,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    
