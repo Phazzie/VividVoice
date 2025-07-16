@@ -13,6 +13,9 @@ This document tracks the major features and enhancements implemented in the Vivi
         *   **Pacing**: Visualizes the average words per turn for each character in a bar chart.
         *   **AI Summary**: Provides a natural language summary of the dialogue dynamics.
     *   **Trope Inverter**: An AI-powered tool that identifies common literary tropes and provides creative, insightful suggestions for how to subvert or invert them to make the story more original.
+    *   **Unreliable Narrator Mode**: An experimental tool that rewrites the narrative portions of the story to reflect a chosen bias (e.g., "Jealous of Main Character"), providing a new creative lens on the text.
+
+*   **AI Actor's Studio**: An interactive chat interface allowing writers to "interview" characters from their story. The AI adopts the character's persona based on their existing dialogue and description, providing a powerful tool for character development.
 
 *   **Parallelized AI Processing**: The initial story processing was significantly optimized. The app now runs dialogue parsing, character portrait generation, and literary analysis concurrently, reducing the user's waiting time.
 
@@ -22,7 +25,7 @@ This document tracks the major features and enhancements implemented in the Vivi
 *   **Synchronized Highlighting**: The story display now highlights the text of the currently playing audio segment, providing a polished, karaoke-style reading experience that is perfectly synchronized with the audio.
 *   **Advanced Emotion Controls**: The free-text emotion input in the dialogue editor was replaced with a curated dropdown of specific emotional tones (e.g., Happy, Sad, Anxious, Whispering), giving the user more direct and predictable control over the TTS performance.
 
-*   **Seam-Driven Architecture**: Implemented placeholder "seams" for future features like the AI Actor's Studio and Unreliable Narrator mode. This allows for rapid prototyping and ensures a robust, scalable architecture.
+*   **Seam-Driven Architecture**: Implemented placeholder "seams" for future features like the AI Actor's Studio and Unreliable Narrator mode. This allowed for rapid prototyping and ensures a robust, scalable architecture.
 
 ## Version 1.0.0 - Foundational Features
 

@@ -2,10 +2,9 @@
 'use server';
 
 /**
- * @fileOverview A seam for the Unreliable Narrator feature.
- * THIS IS A PLACEHOLDER/SEAM file. The logic is not implemented yet.
+ * @fileOverview An AI agent that rewrites a story to reflect a specific narrator bias.
  * 
- * - applyNarratorBias - A function that will rewrite the story with a biased narrator.
+ * - applyNarratorBias - A function that handles rewriting the story with a biased narrator.
  * - ApplyNarratorBiasInput - The input type for the function.
  * - ApplyNarratorBiasOutput - The return type for the function.
  */
@@ -27,18 +26,40 @@ export type ApplyNarratorBiasOutput = z.infer<typeof ApplyNarratorBiasOutputSche
 
 
 export async function applyNarratorBias(input: ApplyNarratorBiasInput): Promise<ApplyNarratorBiasOutput> {
-    console.log(`SEAM: Called applyNarratorBias AI flow with bias: ${input.bias}. Returning mocked data.`);
-    
-    // This is a seam. We return mocked data that matches the schema.
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
-
-    const biasedText = `Narrator: The old house, if you could call it that, squatted on the hill, practically sneering at the town below. A bitter wind, the kind that feels personal, clawed through the grass.
-Alice: It looks a bit spooky. Are you sure about this, Bob?
-Bob: (He said with a foolish grin) Don't be silly, it's just an old house. Think of the adventure! We'll be famous!
-Alice: (She was always so timid.) I'd rather be safe than famous.
-Narrator: Bob, in his usual reckless fashion, was already stomping on the porch steps, which groaned under his weight. Alice, predictably, hesitated, clutching that drab shawl of hers.`;
-
-    return {
-        biasedStoryText: biasedText
-    };
+   return applyNarratorBiasFlow(input);
 }
+
+const applyNarratorBiasFlow = ai.defineFlow(
+    {
+        name: 'applyNarratorBiasFlow',
+        inputSchema: ApplyNarratorBiasInputSchema,
+        outputSchema: ApplyNarratorBiasOutputSchema,
+    },
+    async (input) => {
+        const prompt = ai.definePrompt({
+            name: 'unreliableNarratorPrompt',
+            input: {schema: ApplyNarratorBiasInputSchema},
+            output: {schema: ApplyNarratorBiasOutputSchema},
+            prompt: `You are a master storyteller and editor. Your task is to rewrite the provided story text by imbuing the narrator's voice with a specific bias.
+
+**CRITICAL INSTRUCTIONS:**
+1.  **Do NOT change the characters' dialogue.** The dialogue lines must remain exactly as they are in the original text.
+2.  **Only modify the narrator's text.** Subtly alter the descriptions, word choices, and sentence structures of the narrator's parts to reflect the specified bias.
+3.  The bias should be woven into the narrative, not explicitly stated. Show, don't tell.
+
+**Specified Bias:**
+{{bias}}
+
+**Original Story Text:**
+\`\`\`
+{{storyText}}
+\`\`\`
+
+Now, return the rewritten story as a single JSON object with the key 'biasedStoryText'.
+`,
+        });
+
+        const {output} = await prompt(input);
+        return output!;
+    }
+);
