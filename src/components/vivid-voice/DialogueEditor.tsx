@@ -16,6 +16,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { BookText } from 'lucide-react';
 import { LiteraryAnalysisTab } from '@/components/vivid-voice/LiteraryAnalysis';
 import { DialogueDynamicsAnalysis } from '@/components/vivid-voice/DialogueDynamicsAnalysis';
+import { TropeInverter } from '@/components/vivid-voice/TropeInverter';
+import { ActorStudio } from '@/components/vivid-voice/ActorStudio';
+import { UnreliableNarrator } from '@/components/vivid-voice/UnreliableNarrator';
 
 type DialogueEditorProps = {
   storyText: string;
@@ -52,6 +55,8 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
 
+  const characters = characterPortraits.map(p => ({name: p.name, description: '...'}));
+
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-primary/50 card-glow-primary overflow-hidden">
       <CardHeader className="border-b-2 border-primary/20 p-4 bg-gradient-to-r from-primary/10 via-card/70 to-card/70">
@@ -61,11 +66,16 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
         </CardTitle>
       </CardHeader>
       <Tabs defaultValue="dialogue" className="w-full">
-        <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20 grid grid-cols-3">
-            <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none">Dialogue Editor</TabsTrigger>
-            <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none">Literary Analysis</TabsTrigger>
-            <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none">Dialogue Dynamics</TabsTrigger>
-        </TabsList>
+        <ScrollArea>
+          <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20">
+              <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Editor</TabsTrigger>
+              <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Literary Analysis</TabsTrigger>
+              <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Dialogue Dynamics</TabsTrigger>
+              <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Trope Inverter</TabsTrigger>
+              <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Actor's Studio</TabsTrigger>
+              <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0">Unreliable Narrator</TabsTrigger>
+          </TabsList>
+        </ScrollArea>
         <ScrollArea className="h-[55vh]">
             <TabsContent value="dialogue" className="p-4 md:p-6 space-y-4 bg-grid bg-[length:30px_30px] bg-card/10">
                 {segments.map((segment, index) => (
@@ -109,6 +119,15 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
             </TabsContent>
              <TabsContent value="dialogueDynamics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <DialogueDynamicsAnalysis storyText={storyText} />
+            </TabsContent>
+            <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <TropeInverter storyText={storyText} />
+            </TabsContent>
+            <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <ActorStudio characters={characters} />
+            </TabsContent>
+            <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                <UnreliableNarrator storyText={storyText} />
             </TabsContent>
         </ScrollArea>
       </Tabs>

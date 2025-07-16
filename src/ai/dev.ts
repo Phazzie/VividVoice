@@ -8,3 +8,6 @@ import '@/ai/flows/generate-emotional-tts.ts';
 import '@/ai/flows/generate-character-portraits.ts';
 import '@/ai/flows/analyze-literary-devices.ts';
 import '@/ai/flows/analyze-dialogue-dynamics.ts';
+import '@/ai/flows/trope-inverter.ts';
+import '@/ai/flows/character-chat.ts';
+import '@/ai/flows/unreliable-narrator.ts';

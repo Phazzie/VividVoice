@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 
 /**
@@ -79,3 +78,37 @@ export const DialogueDynamicsSchema = z.object({
   summary: z.string().describe('A brief, insightful summary of the overall dialogue dynamics, including who is driving the conversation.'),
 });
 export type DialogueDynamics = z.infer<typeof DialogueDynamicsSchema>;
+
+
+/**
+ * Defines the schema for the trope inversion analysis.
+ */
+export const TropeSchema = z.object({
+  trope: z.string().describe('The name of the identified literary trope (e.g., "The Chosen One").'),
+  quote: z.string().describe('The specific quote from the text that exemplifies the trope.'),
+  inversionSuggestion: z.string().describe('A creative suggestion for how to subvert or invert the trope.'),
+});
+export type Trope = z.infer<typeof TropeSchema>;
+
+
+/**
+ * Defines the schema for a single chat message in the Actor's Studio.
+ */
+export const ChatMessageSchema = z.object({
+    isUser: z.boolean(),
+    message: z.string(),
+});
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+/**
+ * Defines the schema for narrator bias modes.
+ */
+export const NarratorBiasSchema = z.enum([
+    "Neutral",
+    "Jealous of Main Character",
+    "Secretly the Villain",
+    "Admires Main Character",
+    "Completely Unreliable",
+    "Hides a Key Fact"
+]);
+export type NarratorBias = z.infer<typeof NarratorBiasSchema>;

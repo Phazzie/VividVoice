@@ -1,0 +1,110 @@
+
+"use client";
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { type Character, type ChatMessage, getCharacterResponse } from '@/lib/actions';
+import { Loader2, Send } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn, getCharacterColor } from '@/lib/utils';
+import { User } from 'lucide-react';
+
+interface ActorStudioProps {
+    characters: Character[];
+}
+
+export function ActorStudio({ characters }: ActorStudioProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+    const [userMessage, setUserMessage] = useState('');
+    const { toast } = useToast();
+
+    const handleCharacterChange = (characterName: string) => {
+        const char = characters.find(c => c.name === characterName) || null;
+        setSelectedCharacter(char);
+        setChatHistory([]); // Reset chat history when character changes
+    };
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedCharacter || !userMessage.trim()) return;
+
+        const newHistory: ChatMessage[] = [...chatHistory, { isUser: true, message: userMessage }];
+        setChatHistory(newHistory);
+        setUserMessage('');
+        setIsLoading(true);
+
+        try {
+            const response = await getCharacterResponse(selectedCharacter, newHistory, userMessage);
+            setChatHistory(prev => [...prev, { isUser: false, message: response }]);
+        } catch (e: any) {
+            toast({
+                variant: "destructive",
+                title: "Chat Error",
+                description: e.message || "Could not get a response from the character.",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-4 h-full flex flex-col">
+            <Select onValueChange={handleCharacterChange} disabled={characters.length === 0}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a character to interview..." />
+                </SelectTrigger>
+                <SelectContent>
+                    {characters.map(char => (
+                        <SelectItem key={char.name} value={char.name}>{char.name}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            {selectedCharacter && (
+                <Card className="flex-1 flex flex-col">
+                    <ScrollArea className="flex-1 p-4">
+                        <div className="space-y-4">
+                            {chatHistory.map((msg, index) => (
+                                <div key={index} className={cn("flex items-start gap-3", msg.isUser ? "justify-end" : "justify-start")}>
+                                    {!msg.isUser && (
+                                        <Avatar className="h-10 w-10 border-2" style={{ borderColor: getCharacterColor(selectedCharacter.name)}}>
+                                            <AvatarFallback className="text-white" style={{backgroundColor: getCharacterColor(selectedCharacter.name)}}>{selectedCharacter.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                    <div className={cn("max-w-xs md:max-w-md p-3 rounded-lg", msg.isUser ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                                        <p>{msg.message}</p>
+                                    </div>
+                                     {msg.isUser && (
+                                        <Avatar className="h-10 w-10 border-2 border-accent">
+                                            <AvatarFallback className="bg-accent text-accent-foreground"><User /></AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                    <CardContent className="p-4 border-t">
+                        <form onSubmit={handleSendMessage} className="flex gap-2">
+                            <Input 
+                                value={userMessage}
+                                onChange={e => setUserMessage(e.target.value)}
+                                placeholder={`Ask ${selectedCharacter.name} a question...`}
+                                disabled={isLoading}
+                            />
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    );
+}
