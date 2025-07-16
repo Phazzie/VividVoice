@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character } from "@/lib/actions";
+import { type DialogueSegment, getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,7 @@ export default function VividVoicePage() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [characterPortraits, setCharacterPortraits] = useState<CharacterPortrait[]>([]);
   const [sceneAudioUri, setSceneAudioUri] = useState<string>('');
+  const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
@@ -28,6 +29,7 @@ export default function VividVoicePage() {
     setParsedSegments([]);
     setCharacterPortraits([]);
     setStoryText('');
+    setTranscript([]);
 
     try {
       const { segments, characters } = await getParsedStory(newStoryText);
@@ -64,8 +66,9 @@ export default function VividVoicePage() {
     setError(null);
     
     try {
-      const { audioDataUri } = await generateMultiVoiceSceneAudio(editedSegments, characters);
+      const { audioDataUri, transcript } = await generateMultiVoiceSceneAudio(editedSegments, characters);
       setSceneAudioUri(audioDataUri);
+      setTranscript(transcript);
       setAppState('displaying');
     } catch (e: any) {
        const errorMessage = e.message || "An unexpected error occurred during audio generation.";
@@ -82,6 +85,7 @@ export default function VividVoicePage() {
   const handleBackToEditor = () => {
     setAppState('editing');
     setSceneAudioUri('');
+    setTranscript([]);
   }
 
   const isLoading = appState === 'parsing' || appState === 'generating';
@@ -158,6 +162,7 @@ export default function VividVoicePage() {
                     characters={characters}
                     storyText={storyText}
                     sceneAudioUri={sceneAudioUri}
+                    transcript={transcript}
                     onBack={handleBackToEditor}
                   />
                  </div>

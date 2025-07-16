@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, FastForward, Rewind, BookText, Edit, Wand2, RefreshCw, Loader2, X, Music2 } from 'lucide-react';
-import { type DialogueSegment, type CharacterPortrait, type Character, getSoundDesign, type SoundEffectWithUrl } from '@/lib/actions';
+import { useState, useRef, useEffect } from 'react';
+import { Play, Pause, FastForward, Rewind, BookText, Edit, Volume2 } from 'lucide-react';
+import { type DialogueSegment, type CharacterPortrait, type Character, getSoundDesign, type SoundEffectWithUrl, type TranscriptSegment } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-
+import { Music2 } from 'lucide-react';
 
 type StoryDisplayProps = {
   segments: DialogueSegment[];
@@ -20,21 +20,17 @@ type StoryDisplayProps = {
   characters: Character[];
   storyText: string;
   sceneAudioUri: string;
+  transcript: TranscriptSegment[];
   onBack: () => void;
 };
 
-export function StoryDisplay({ segments, characterPortraits, characters, storyText, sceneAudioUri, onBack }: StoryDisplayProps) {
+export function StoryDisplay({ segments, characterPortraits, characters, storyText, sceneAudioUri, transcript, onBack }: StoryDisplayProps) {
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
-
-  // NOTE: With the new single-file audio generation, line-by-line regeneration is no longer feasible.
-  // The complexity of timing and stitching audio makes it impractical.
-  // We prioritize the higher quality of a single cohesive performance.
-  // The inline editing UI has been removed to reflect this new architecture.
+  const [volume, setVolume] = useState(1);
   
-  // State for sound design
   const [soundEffects, setSoundEffects] = useState<SoundEffectWithUrl[]>([]);
   const [activeSound, setActiveSound] = useState<string | null>(null);
   
@@ -43,23 +39,6 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
   const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { toast } = useToast();
 
-  const segmentTimings = useMemo(() => {
-    // A simplified estimation of segment durations.
-    // In a real-world scenario, the TTS service would provide this metadata.
-    // For this demo, we estimate based on word count.
-    const averageWordsPerSecond = 2.5;
-    let accumulatedTime = 0;
-    const timings = segments.map(segment => {
-        const wordCount = segment.dialogue.split(/\s+/).length;
-        const duration = wordCount / averageWordsPerSecond;
-        const startTime = accumulatedTime;
-        accumulatedTime += duration;
-        return { startTime, duration };
-    });
-    return timings;
-  }, [segments]);
-
-  // Fetch sound design on component mount
   useEffect(() => {
     getSoundDesign(storyText)
       .then(effects => {
@@ -99,6 +78,11 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
     if (audio) audio.playbackRate = playbackSpeed;
   }, [playbackSpeed]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) audio.volume = volume;
+  }, [volume]);
+
   const handlePlayPause = () => setIsPlaying(prev => !prev);
   
   const handleSeek = (direction: 'forward' | 'backward') => {
@@ -114,11 +98,7 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
     const currentTime = audio.currentTime;
     setProgress((currentTime / audio.duration) * 100);
 
-    // Find the current segment based on estimated timings
-    const newCurrentIndex = segmentTimings.findIndex(timing => 
-        currentTime >= timing.startTime && currentTime < (timing.startTime + timing.duration)
-    );
-
+    const newCurrentIndex = transcript.findIndex(t => currentTime >= t.startTime && currentTime < t.endTime);
     if (newCurrentIndex !== -1 && newCurrentIndex !== currentSegmentIndex) {
         setCurrentSegmentIndex(newCurrentIndex);
     }
@@ -182,7 +162,7 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
             </div>
             <div className="flex items-center gap-4">
               <Label htmlFor="playback-speed" className="flex items-center gap-2 text-muted-foreground font-headline">
-                <FastForward className="w-5 h-5 text-secondary" /> Speed
+                <FastForward className="w-5 h-5 text-secondary" />
               </Label>
               <Slider
                 id="playback-speed"
@@ -194,6 +174,21 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
                 className="max-w-xs"
               />
                <span className="font-mono text-sm text-muted-foreground w-12 text-center bg-background/50 rounded-md py-1">{playbackSpeed.toFixed(1)}x</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Label htmlFor="volume-control" className="flex items-center gap-2 text-muted-foreground font-headline">
+                <Volume2 className="w-5 h-5 text-secondary" />
+              </Label>
+              <Slider
+                id="volume-control"
+                min={0}
+                max={1}
+                step={0.05}
+                value={[volume]}
+                onValueChange={(value) => setVolume(value[0])}
+                className="max-w-xs"
+              />
+               <span className="font-mono text-sm text-muted-foreground w-12 text-center bg-background/50 rounded-md py-1">{Math.round(volume * 100)}%</span>
             </div>
         </div>
       </CardContent>

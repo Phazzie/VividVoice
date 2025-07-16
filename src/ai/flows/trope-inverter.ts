@@ -40,17 +40,19 @@ const invertTropesFlow = ai.defineFlow(
             name: 'tropeInverterPrompt',
             input: {schema: InvertTropesInputSchema},
             output: {schema: InvertTropesOutputSchema},
-            prompt: `You are a brilliant literary critic and editor, known for your ability to deconstruct and reconstruct narratives. Your task is to analyze the provided story text for common literary tropes.
+            prompt: `You are a brilliant and subversive literary critic and editor, known for your ability to deconstruct and reconstruct narratives. Your task is to analyze the provided story text for common literary tropes and offer creative ways to subvert them.
 
 For each trope you identify, you must provide:
-1.  The 'trope' name (e.g., "The Chosen One," "Damsel in Distress," "The Mentor").
+1.  The 'trope' name (e.g., "The Chosen One," "Damsel in Distress," "The Mentor," "Love Triangle").
 2.  A direct 'quote' from the text that perfectly exemplifies this trope.
-3.  A creative and insightful 'inversionSuggestion' that subverts or cleverly twists the trope to make the story more original and unpredictable.
+3.  A creative and insightful 'inversionSuggestion' that subverts, deconstructs, or cleverly twists the trope to make the story more original and unpredictable. The suggestion should be actionable for the writer.
 
 Return your findings as a JSON object with a 'tropes' array. If no clear tropes are found, return an empty array.
 
-Story Text:
+**Story Text to Analyze:**
+\`\`\`
 {{{storyText}}}
+\`\`\`
 `,
         });
 

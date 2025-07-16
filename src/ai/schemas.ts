@@ -177,3 +177,25 @@ export const SoundEffectSchema = z.object({
   soundQuery: z.string().describe("A short search query for a sound effects library (e.g., 'door creak')."),
 });
 export type SoundEffect = z.infer<typeof SoundEffectSchema>;
+
+
+/**
+ * Defines the schema for a single word in a TTS transcript, including timing.
+ */
+export const TranscriptWordSchema = z.object({
+  word: z.string(),
+  startTime: z.number(),
+  endTime: z.number(),
+});
+export type TranscriptWord = z.infer<typeof TranscriptWordSchema>;
+
+/**
+ * Defines the schema for a segment's transcript, linking it back to the original segment.
+ */
+export const TranscriptSegmentSchema = z.object({
+  segmentIndex: z.number(),
+  words: z.array(TranscriptWordSchema),
+  startTime: z.number(),
+  endTime: z.number(),
+});
+export type TranscriptSegment = z.infer<typeof TranscriptSegmentSchema>;

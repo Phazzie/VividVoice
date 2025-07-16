@@ -41,6 +41,7 @@ import {
   type SubtextAnalysis as ImportedSubtextAnalysis,
   type Perspective as ImportedPerspective,
   type SoundEffect as ImportedSoundEffect,
+  type TranscriptSegment as ImportedTranscriptSegment,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
@@ -56,6 +57,7 @@ export type ConsistencyIssue = ImportedConsistencyIssue;
 export type SubtextAnalysis = ImportedSubtextAnalysis;
 export type Perspective = ImportedPerspective;
 export type SoundEffect = ImportedSoundEffect;
+export type TranscriptSegment = ImportedTranscriptSegment;
 export type { ChatMessage, NarratorBias };
 
 /**
@@ -116,16 +118,16 @@ export async function getCharacterPortraits(characters: Character[]): Promise<Ch
 
 
 /**
- * Generates a single, cohesive audio file for an entire scene using multiple AI voices.
+ * Generates a single, cohesive audio file for an entire scene, along with a detailed transcript.
  * @param segments An array of DialogueSegment objects for the scene.
  * @param characters An array of Character objects which includes AI-chosen voice IDs.
- * @returns A Promise that resolves to an object containing the audio data URI.
+ * @returns A Promise resolving to an object containing the audio data URI and the transcript.
  * @throws An error if the input segments array is empty.
  */
 export async function generateMultiVoiceSceneAudio(
   segments: DialogueSegment[],
   characters: Character[]
-): Promise<{ audioDataUri: string }> {
+): Promise<{ audioDataUri: string; transcript: TranscriptSegment[] }> {
   console.log('Starting multi-voice TTS scene generation...');
   if (!segments || segments.length === 0) {
     const errorMsg = 'Validation Error: Segments for audio generation cannot be empty.';

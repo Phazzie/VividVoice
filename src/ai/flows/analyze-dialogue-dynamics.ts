@@ -36,26 +36,31 @@ const analyzeDialogueDynamicsFlow = ai.defineFlow(
       name: 'dialogueDynamicsPrompt',
       input: {schema: AnalyzeDialogueDynamicsInputSchema},
       output: {schema: DialogueDynamicsSchema},
-      prompt: `You are an expert script analyst and editor. Analyze the provided story text to understand the power dynamics and pacing of the dialogue.
+      prompt: `You are an expert script analyst and editor. Your task is to perform a detailed analysis of the provided story text to understand the power dynamics and pacing of the dialogue.
 
-Exclude the 'Narrator' from all character-specific metrics. Focus only on the dialogue between characters.
+**CRITICAL INSTRUCTIONS:**
+- You MUST exclude the 'Narrator' from all character-specific metrics. Focus only on the dialogue between characters who are not the narrator.
+- Ensure all numeric fields in the output are populated correctly.
 
-1.  **Power Balance Analysis**: For each character, calculate the following metrics:
-    *   'dialogueTurns': The total number of times the character speaks.
-    *   'wordCount': The total number of words spoken by the character.
-    *   'questionsAsked': The number of sentences that are questions.
-    *   'assertionsMade': The number of sentences that are declarative statements.
+**ANALYSIS STEPS:**
+1.  **Power Balance Analysis**: For each character involved in the dialogue (excluding the Narrator), you will meticulously calculate the following metrics:
+    *   'dialogueTurns': The total number of times the character has a block of dialogue.
+    *   'wordCount': The total number of words spoken by the character across all their turns.
+    *   'questionsAsked': The number of sentences spoken by the character that end in a question mark.
+    *   'assertionsMade': The number of sentences that are declarative statements, not questions.
 
 2.  **Pacing Analysis**:
-    *   Calculate the 'overallWordsPerTurn' for the entire dialogue.
-    *   For each character, calculate their average 'wordsPerTurn'.
+    *   Calculate the 'overallWordsPerTurn' for the entire dialogue, averaging across all characters (excluding the Narrator).
+    *   For each character (excluding the Narrator), calculate their average 'wordsPerTurn'.
 
-3.  **Summary**: Provide a brief, insightful 'summary' of the dialogue dynamics. Who appears to be driving the conversation? Is the power balance even? Is the pacing fast or slow?
+3.  **Summary**: Based on your quantitative analysis, provide a brief, insightful 'summary' of the dialogue dynamics. Mention who appears to be driving the conversation, whether the power balance is even or skewed, and if the pacing feels fast, slow, or varied.
 
-Return a single JSON object structured according to the DialogueDynamics schema.
+Return a single JSON object structured precisely according to the DialogueDynamics schema.
 
-Story Text:
+**Story Text to Analyze:**
+\`\`\`
 {{{storyText}}}
+\`\`\`
 `,
     });
     
