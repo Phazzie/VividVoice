@@ -1,24 +1,29 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
+import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, getStoryById, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
 
-type AppState = 'initial' | 'parsing' | 'editing' | 'generating' | 'displaying';
+type AppState = 'initial' | 'loadingStory' | 'parsing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any;
 
 export default function StagingStoriesPage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const storyIdToLoad = searchParams.get('storyId');
+
   const [appState, setAppState] = useState<AppState>('initial');
+  const [storyId, setStoryId] = useState<string | null>(storyIdToLoad);
   const [storyText, setStoryText] = useState<string>('');
   const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -27,22 +32,40 @@ export default function StagingStoriesPage() {
   const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (storyIdToLoad && user) {
+      const loadStory = async () => {
+        setAppState('loadingStory');
+        try {
+          const story = await getStoryById(storyIdToLoad);
+          if (story) {
+            await handleParseStory(story.storyText, story.id);
+          } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story.'});
+            setAppState('initial');
+          }
+        } catch (e: any) {
+          toast({ variant: 'destructive', title: 'Error Loading Story', description: e.message });
+          setAppState('initial');
+        }
+      };
+      loadStory();
+    }
+  }, [storyIdToLoad, user]);
   
-  const handleParseStory = async (newStoryText: string) => {
+  const handleParseStory = async (newStoryText: string, existingStoryId: string | null = null) => {
     setAppState('parsing');
     setError(null);
+    setStoryId(existingStoryId);
     setParsedSegments([]);
     setCharacterPortraits([]);
     setStoryText('');
     setTranscript([]);
 
     try {
-      // In a real app, you would likely associate this work with the user.
-      // For now, it remains anonymous.
-      const [parsedData, portraitData] = await Promise.all([
-        getParsedStory(newStoryText),
-        getCharacterPortraits((await getParsedStory(newStoryText)).characters)
-      ]);
+      const parsedData = await getParsedStory(newStoryText);
+      const portraitData = await getCharacterPortraits(parsedData.characters);
       
       setParsedSegments(parsedData.segments);
       setCharacters(parsedData.characters);
@@ -79,8 +102,7 @@ export default function StagingStoriesPage() {
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);
       setAppState('displaying');
-    } catch (e: any) {
-       const errorMessage = e.message || "An unexpected error occurred during audio generation.";
+    } catch (e: any)       const errorMessage = e.message || "An unexpected error occurred during audio generation.";
       setError(errorMessage);
       setAppState('editing');
       toast({
@@ -97,36 +119,44 @@ export default function StagingStoriesPage() {
     setTranscript([]);
   }
 
-  const isLoading = appState === 'parsing' || appState === 'generating' || loading;
+  const isLoading = ['parsing', 'generating', 'loadingStory'].includes(appState) || authLoading;
 
   const renderContent = () => {
      if (appState === 'initial' && !isLoading) {
        return (
          <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
-             <div className="p-4 bg-accent/20 rounded-full text-glow-accent">
-                <Wand2 className="w-16 h-16 text-accent"/>
-             </div>
+             <img src="https://storage.googleapis.com/static.invertase.io/wombat-2-1.png" alt="Skeptical Wombat Mascot" className="w-48 h-48" />
             <p className="font-headline text-3xl mt-4 text-glow-accent">Your Story Awaits</p>
             <p className="max-w-md font-serif text-lg">
               Paste your narrative into the box to begin. The AI will parse it, generate character portraits, and then you can edit emotions before generating the final audio.
             </p>
-            {user && (
+            {user ? (
               <Button asChild className="mt-4">
-                <Link href="/dashboard">Go to Your Dashboard</Link>
+                <Link href="/dashboard">View Your Saved Stories</Link>
+              </Button>
+            ) : (
+               <Button asChild className="mt-4">
+                <Link href="/login">Login to Save & Load Stories</Link>
               </Button>
             )}
          </div>
        );
      }
 
-      if (appState === 'parsing' || appState === 'generating' || loading) {
+      if (isLoading) {
+       const loadingMessages = {
+         loadingStory: 'Loading Your Story...',
+         parsing: 'Analyzing Story & Characters...',
+         generating: 'Generating Audio...',
+         initial: 'Authenticating...'
+       }
        return (
           <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
             <div className="p-4 bg-primary/20 rounded-full text-glow-primary animate-pulse">
                 <Sparkles className="w-16 h-16 text-primary"/>
             </div>
             <p className="font-headline text-3xl mt-4 text-glow-primary">
-              {loading ? 'Authenticating...' : appState === 'parsing' ? 'Analyzing Story & Characters...' : 'Generating Audio...'}
+              {loadingMessages[appState as keyof typeof loadingMessages] || 'Loading...'}
             </p>
           </div>
        );
@@ -136,11 +166,13 @@ export default function StagingStoriesPage() {
        return (
          <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
            <DialogueEditor 
+             storyId={storyId}
              storyText={storyText}
              initialSegments={parsedSegments}
              characterPortraits={characterPortraits}
              onGenerateAudio={handleGenerateAudio}
              isLoading={appState === 'generating'}
+             onStorySave={(id) => setStoryId(id)}
            />
          </div>
        );
@@ -176,14 +208,13 @@ export default function StagingStoriesPage() {
       
       <div className="relative z-10 flex flex-col items-center min-h-screen p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-6xl mx-auto">
-          {/* Header is now in RootLayout */}
 
           <main className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start mt-10">
             <div className={cn(
               "lg:col-span-2 lg:sticky lg:top-8 space-y-8 transition-all duration-700 animate-in fade-in slide-in-from-left-8",
-              (appState === 'editing' || appState === 'displaying') && "lg:opacity-50 lg:pointer-events-none"
+              (appState !== 'initial' && !isLoading) && "lg:opacity-50 lg:pointer-events-none"
             )}>
-              <StoryForm onSubmit={handleParseStory} isLoading={appState === 'parsing' || loading} />
+              <StoryForm onSubmit={(text) => handleParseStory(text)} isLoading={isLoading} />
             </div>
             
             <div className="lg:col-span-3 min-h-[60vh]">
@@ -198,3 +229,5 @@ export default function StagingStoriesPage() {
     </div>
   );
 }
+
+    

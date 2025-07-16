@@ -3,16 +3,30 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment, type CharacterPortrait, type Character } from '@/lib/actions';
+import { type DialogueSegment, type CharacterPortrait, type Character, saveStory } from '@/lib/actions';
 import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Input } from '@/components/ui/input';
+
 import { LiteraryAnalysisTab } from '@/components/vivid-voice/LiteraryAnalysis';
 import { DialogueDynamicsAnalysis } from '@/components/vivid-voice/DialogueDynamicsAnalysis';
 import { TropeInverter } from '@/components/vivid-voice/TropeInverter';
@@ -25,19 +39,25 @@ import { SubtextAnalyzer } from './SubtextAnalyzer';
 import { PerspectiveShifter } from './PerspectiveShifter';
 
 type DialogueEditorProps = {
+  storyId: string | null;
   storyText: string;
   initialSegments: DialogueSegment[];
   characterPortraits: CharacterPortrait[];
   onGenerateAudio: (segments: DialogueSegment[]) => void;
   isLoading: boolean;
+  onStorySave: (id: string) => void;
 };
 
 export const emotionOptions = [
   "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
 ];
 
-export function DialogueEditor({ storyText, initialSegments, characterPortraits, onGenerateAudio, isLoading }: DialogueEditorProps) {
+export function DialogueEditor({ storyId, storyText, initialSegments, characterPortraits, onGenerateAudio, isLoading, onStorySave }: DialogueEditorProps) {
   const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments);
+  const [storyTitle, setStoryTitle] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const handleDialogueChange = (index: number, value: string) => {
     const newSegments = [...segments];
@@ -65,6 +85,29 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
     onGenerateAudio(segments);
   };
 
+  const handleSaveStory = async () => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Not Logged In', description: 'You must be logged in to save a story.' });
+      return;
+    }
+    if (!storyTitle.trim()) {
+      toast({ variant: 'destructive', title: 'Title Required', description: 'Please enter a title for your story.' });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const fullStoryText = segments.map(s => s.character === 'Narrator' ? s.dialogue : `${s.character}: ${s.dialogue}`).join('\n');
+      const savedStoryId = await saveStory({ id: storyId, title: storyTitle, storyText: fullStoryText, userId: user.uid });
+      onStorySave(savedStoryId);
+      toast({ title: 'Story Saved!', description: `"${storyTitle}" has been saved successfully.` });
+    } catch (e: any) {
+      toast({ variant: 'destructive', title: 'Error Saving Story', description: e.message });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getPortrait = (characterName: string) => {
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
@@ -85,10 +128,38 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
               <Edit className="w-6 h-6 text-primary" />
               Director's Room
             </CardTitle>
-            <Button variant="outline" size="sm">
-                <Save className="mr-2 h-4 w-4"/>
-                Save Story
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={!user}>
+                  <Save className="mr-2 h-4 w-4"/>
+                  Save Story
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Save Your Story</DialogTitle>
+                  <DialogDescription>
+                    Give your story a title to save it to your dashboard.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="title" className="text-right">
+                      Title
+                    </Label>
+                    <Input id="title" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)} className="col-span-3" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" onClick={handleSaveStory} disabled={isSaving}>
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Save
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </div>
       </CardHeader>
       <Tabs defaultValue="dialogue" className="w-full">
@@ -200,3 +271,5 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
     </Card>
   );
 }
+
+    
