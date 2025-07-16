@@ -1,6 +1,6 @@
-# VividVoice - Prompt Engineering Guide
+# Staging Stories - Prompt Engineering Guide
 
-This document tracks the evolution of the AI prompts used in the VividVoice application and outlines strategies for future improvements.
+This document tracks the evolution of the AI prompts used in the Staging Stories application and outlines strategies for future improvements.
 
 ## Philosophy
 

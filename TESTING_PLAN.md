@@ -1,6 +1,6 @@
-# VividVoice - Testing Strategy & Roadmap
+# Staging Stories - Testing Strategy & Roadmap
 
-This document outlines the testing strategy for the VividVoice application. The goal is to ensure reliability, prevent regressions, and build a high-quality product. Tests are ranked by Return on Investment (ROI) and grouped for efficient implementation.
+This document outlines the testing strategy for the Staging Stories application. The goal is to ensure reliability, prevent regressions, and build a high-quality product. Tests are ranked by Return on Investment (ROI) and grouped for efficient implementation.
 
 ## Group 1: Core Component & State Management Tests (Highest ROI)
 

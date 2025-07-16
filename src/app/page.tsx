@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 type AppState = 'initial' | 'parsing' | 'editing' | 'generating' | 'displaying';
+type DialogueSegment = any;
 
 export default function VividVoicePage() {
   const [appState, setAppState] = useState<AppState>('initial');

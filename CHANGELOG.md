@@ -1,6 +1,6 @@
-# VividVoice Application Changelog
+# Staging Stories Application Changelog
 
-This document tracks the major features and enhancements implemented in the VividVoice application.
+This document tracks the major features and enhancements implemented in the Staging Stories application.
 
 ## Version 1.3.0 - Advanced Audio & Architectural Polish
 
@@ -37,7 +37,7 @@ This document tracks the major features and enhancements implemented in the Vivi
 
 ## Version 1.0.0 - Foundational Features
 
-*   **Initial Application Setup**: Created the core Next.js application structure with VividVoice branding, including the main page layout, story submission form, and dialogue editor.
+*   **Initial Application Setup**: Created the core Next.js application structure with Staging Stories branding, including the main page layout, story submission form, and dialogue editor.
 *   **AI Emotion Inference**: Implemented the initial AI flow to parse story text, separate it into dialogue segments, and infer the emotion for each line based on the full context of the story.
 *   **Character Portrait Generation**: Implemented an AI flow to generate unique, artistic portraits for each character identified in the story.
 *   **Structured Error Logging**: Enhanced server actions to provide detailed, structured error logging to the console.

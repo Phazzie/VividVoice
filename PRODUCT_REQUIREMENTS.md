@@ -1,5 +1,5 @@
 
-# Product Requirements Document: VividVoice
+# Product Requirements Document: Staging Stories with the Skeptical Wombat
 
 **Author:** AI Coding Partner, Firebase Studio
 **Version:** 1.0
@@ -9,11 +9,11 @@
 
 ## 1. Introduction & Vision
 
-VividVoice is a sophisticated, AI-powered web application designed to transform static written narratives into dynamic, immersive audio-visual experiences. It serves as a creative co-pilot for writers, providing not only expressive text-to-speech generation but also a comprehensive suite of advanced literary analysis tools. The core vision is to bridge the gap between the written word and a fully realized performance, empowering creators to hear their stories come to life and to analyze their craft with unprecedented depth.
+**Staging Stories with the Skeptical Wombat** is a sophisticated, AI-powered web application designed to transform static written narratives into dynamic, immersive audio-visual experiences. It serves as a creative co-pilot for writers, providing not only expressive text-to-speech generation but also a comprehensive suite of advanced literary analysis tools. The core vision is to bridge the gap between the written word and a fully realized performance, empowering creators to hear their stories come to life and to analyze their craft with unprecedented depth.
 
 ## 2. Target Audience
 
-The primary target audience for VividVoice includes:
+The primary target audience includes:
 
 *   **Creative Writers & Novelists:** Authors who want to hear their characters' dialogue performed, check the pacing of their scenes, and get a new perspective on their work-in-progress.
 *   **Screenwriters & Playwrights:** Writers who need to quickly prototype scenes, hear the flow of dialogue, and analyze character dynamics.
@@ -22,11 +22,11 @@ The primary target audience for VividVoice includes:
 
 ## 3. User Problems & Solutions
 
-VividVoice addresses several key problems faced by writers:
+**Staging Stories** addresses several key problems faced by writers:
 
 | Problem | Solution |
 | :--- | :--- |
-| **"Inner voice" monologue is limiting:** Writers can't easily hear how their dialogue sounds when spoken by different characters. | **Multi-Voice Audio Generation:** VividVoice generates a single, cohesive "radio play" with unique, AI-assigned voices for each character, complete with emotional delivery. |
+| **"Inner voice" monologue is limiting:** Writers can't easily hear how their dialogue sounds when spoken by different characters. | **Multi-Voice Audio Generation:** The application generates a single, cohesive "radio play" with unique, AI-assigned voices for each character, complete with emotional delivery. |
 | **Lack of objective feedback on craft:** It's difficult for a writer to objectively analyze their own work for pacing, character balance, or use of literary devices. | **The Director's Room:** A suite of one-click AI analysis tools provides data-driven, objective feedback on everything from dialogue dynamics to narrative pacing and trope usage. |
 | **Difficulty in character development:** Ensuring a character's voice is consistent and unique can be challenging. | **AI Actor's Studio:** An interactive chat interface allows writers to "interview" their characters, helping to flesh out their personality and speaking style. |
 | **Creative blocks and stale ideas:** Writers often struggle with unoriginal plots or predictable character arcs. | **Trope Inverter & Perspective Shifter:** AI tools designed to spark creativity by offering concrete suggestions on how to subvert common tropes or re-frame the story from a different point of view. |
