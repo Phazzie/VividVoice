@@ -4,17 +4,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type LiteraryDevice, analyzeLiteraryDevices } from '@/lib/actions';
-import { Loader2, FlaskConical } from 'lucide-react';
+import { Loader2, FlaskConical, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export function LiteraryAnalysisTab({ storyText }: { storyText: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [devices, setDevices] = useState<LiteraryDevice[]>([]);
+    const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
 
     const handleAnalyze = async () => {
         setIsLoading(true);
         setDevices([]);
+        setError(null);
         try {
             const result = await analyzeLiteraryDevices(storyText);
             setDevices(result);
@@ -22,10 +25,12 @@ export function LiteraryAnalysisTab({ storyText }: { storyText: string }) {
                  toast({ title: "Analysis Complete", description: "No specific literary devices were identified in the text." });
             }
         } catch (e: any) {
+            const errorMessage = e.message || "An unexpected error occurred during analysis.";
+            setError(errorMessage);
             toast({
                 variant: "destructive",
                 title: "Analysis Error",
-                description: e.message || "An unexpected error occurred during analysis.",
+                description: errorMessage,
             });
         } finally {
             setIsLoading(false);
@@ -40,6 +45,17 @@ export function LiteraryAnalysisTab({ storyText }: { storyText: string }) {
                     Analyze for Literary Devices
                 </Button>
             </div>
+
+            {error && (
+                 <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        {error}
+                    </AlertDescription>
+                </Alert>
+            )}
+
             {devices.length > 0 && (
                 <div className="space-y-4">
                     {devices.map((device, index) => (

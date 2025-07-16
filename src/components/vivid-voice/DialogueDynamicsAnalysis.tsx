@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type DialogueDynamics, analyzeDialogueDynamics } from '@/lib/actions';
-import { Loader2, Zap, BarChart3 } from 'lucide-react';
+import { Loader2, Zap, BarChart3, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -14,11 +14,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 export function DialogueDynamicsAnalysis({ storyText }: { storyText: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [analysis, setAnalysis] = useState<DialogueDynamics | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
 
     const handleAnalyze = async () => {
         setIsLoading(true);
         setAnalysis(null);
+        setError(null);
         try {
             const result = await analyzeDialogueDynamics(storyText);
             setAnalysis(result);
@@ -26,10 +28,12 @@ export function DialogueDynamicsAnalysis({ storyText }: { storyText: string }) {
                  toast({ title: "Analysis Complete", description: "Could not analyze the dialogue dynamics." });
             }
         } catch (e: any) {
+            const errorMessage = e.message || "An unexpected error occurred during analysis.";
+            setError(errorMessage);
             toast({
                 variant: "destructive",
                 title: "Analysis Error",
-                description: e.message || "An unexpected error occurred during analysis.",
+                description: errorMessage,
             });
         } finally {
             setIsLoading(false);
@@ -44,6 +48,16 @@ export function DialogueDynamicsAnalysis({ storyText }: { storyText: string }) {
                     Analyze Dialogue Dynamics
                 </Button>
             </div>
+
+            {error && (
+                 <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        {error}
+                    </AlertDescription>
+                </Alert>
+            )}
             
             {analysis && (
                 <div className="space-y-8 animate-in fade-in-50 duration-500">

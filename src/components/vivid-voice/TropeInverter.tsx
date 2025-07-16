@@ -4,18 +4,21 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { type Trope, invertTropes } from '@/lib/actions';
-import { Loader2, Zap } from 'lucide-react';
+import { Loader2, Zap, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export function TropeInverter({ storyText }: { storyText: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [tropes, setTropes] = useState<Trope[]>([]);
+    const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
 
     const handleAnalyze = async () => {
         setIsLoading(true);
         setTropes([]);
+        setError(null);
         try {
             const result = await invertTropes(storyText);
             setTropes(result);
@@ -23,10 +26,12 @@ export function TropeInverter({ storyText }: { storyText: string }) {
                  toast({ title: "Analysis Complete", description: "No specific tropes were identified to invert." });
             }
         } catch (e: any) {
+            const errorMessage = e.message || "An unexpected error occurred during analysis.";
+            setError(errorMessage);
             toast({
                 variant: "destructive",
                 title: "Analysis Error",
-                description: e.message || "An unexpected error occurred during analysis.",
+                description: errorMessage,
             });
         } finally {
             setIsLoading(false);
@@ -41,6 +46,16 @@ export function TropeInverter({ storyText }: { storyText: string }) {
                     Analyze for Tropes to Invert
                 </Button>
             </div>
+
+            {error && (
+                 <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        {error}
+                    </AlertDescription>
+                </Alert>
+            )}
             
             {tropes.length > 0 && (
                 <div className="space-y-4 animate-in fade-in-50 duration-500">
