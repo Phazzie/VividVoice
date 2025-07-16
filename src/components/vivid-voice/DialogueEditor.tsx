@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment, type CharacterPortrait } from '@/lib/actions';
+import { type DialogueSegment, type CharacterPortrait, type Character } from '@/lib/actions';
 import { Wand2, Loader2, Edit } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -55,7 +55,10 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
 
-  const characters = characterPortraits.map(p => ({name: p.name, description: '...'}));
+  const characters: Character[] = characterPortraits.map(p => {
+    const segment = initialSegments.find(s => s.character === p.name);
+    return { name: p.name, description: segment ? 'Character in the story' : '...' };
+  });
 
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-primary/50 card-glow-primary overflow-hidden">
@@ -124,7 +127,7 @@ export function DialogueEditor({ storyText, initialSegments, characterPortraits,
                 <TropeInverter storyText={storyText} />
             </TabsContent>
             <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ActorStudio characters={characters} />
+                <ActorStudio characters={characters} storyText={storyText} />
             </TabsContent>
             <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <UnreliableNarrator storyText={storyText} />

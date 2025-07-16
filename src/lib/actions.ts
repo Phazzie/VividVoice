@@ -198,9 +198,9 @@ export async function invertTropes(storyText: string): Promise<Trope[]> {
 /**
  * Interaction: Chats with a character from the story.
  */
-export async function getCharacterResponse(character: Character, history: ChatMessage[], userMessage: string): Promise<string> {
+export async function getCharacterResponse(character: Character, storyText: string, history: ChatMessage[], userMessage: string): Promise<string> {
     console.log('Calling getCharacterResponse action...');
-    const result = await characterChatFlow({ character, history, userMessage });
+    const result = await characterChatFlow({ character, storyText, history, userMessage });
     return result.response;
 }
 

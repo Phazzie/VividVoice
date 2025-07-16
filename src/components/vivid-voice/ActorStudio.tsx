@@ -16,9 +16,10 @@ import { User } from 'lucide-react';
 
 interface ActorStudioProps {
     characters: Character[];
+    storyText: string;
 }
 
-export function ActorStudio({ characters }: ActorStudioProps) {
+export function ActorStudio({ characters, storyText }: ActorStudioProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -41,7 +42,7 @@ export function ActorStudio({ characters }: ActorStudioProps) {
         setIsLoading(true);
 
         try {
-            const response = await getCharacterResponse(selectedCharacter, newHistory, userMessage);
+            const response = await getCharacterResponse(selectedCharacter, storyText, newHistory, userMessage);
             setChatHistory(prev => [...prev, { isUser: false, message: response }]);
         } catch (e: any) {
             toast({
