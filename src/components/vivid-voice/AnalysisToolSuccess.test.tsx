@@ -96,7 +96,7 @@ describe('Analysis Tools Success Path Handling', () => {
     });
 
     it('should show results for SubtextAnalyzer', async () => {
-        await testSuccessCase(SubtextAnalyzer, { storyText }, 'analyzeSubtext', 'Analyze for Subtext', [{ character: 'Alice', dialogue: 'Fine.', literalMeaning: 'Ok', subtext: 'Not ok', explanation: '...' }], /Subtext \(What's Really Meant\)/i);
+        await testSuccessCase(SubtextAnalyzer, { storyText }, 'analyzeSubtext', 'Analyze for Subtext', [{ character: 'Alice', dialogue: 'Fine.', literalMeaning: 'Ok', subtext: 'Not ok', explanation: '...' }], /Subtext \\(What's Really Meant\\)/i);
     });
     
     it('should show results for PerspectiveShifter', async () => {
