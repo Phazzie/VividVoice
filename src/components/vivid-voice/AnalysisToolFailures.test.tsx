@@ -1,6 +1,6 @@
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { userEvent } from '@testing-library/user-event';
 import * as actions from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +36,7 @@ vi.mock('recharts', async () => {
 
 describe('Analysis Tools Failure Handling', () => {
     const storyText = 'A story to analyze.';
-    const mockCharacters = [{ name: 'Alice', description: 'A character' }];
+    const mockCharacters = [{ name: 'Alice', description: 'A character', voiceId: 'v1' }];
     const user = userEvent.setup();
     const toastMock = vi.fn();
 
@@ -50,6 +50,7 @@ describe('Analysis Tools Failure Handling', () => {
         props: any,
         actionToMock: keyof typeof actions,
         buttonName: string,
+        expectedTitle: string,
         errorMessage: string
     ) => {
         (actions[actionToMock] as vi.Mock).mockRejectedValue(new Error(errorMessage));
@@ -62,26 +63,26 @@ describe('Analysis Tools Failure Handling', () => {
         await waitFor(() => {
             expect(toastMock).toHaveBeenCalledWith({
                 variant: "destructive",
-                title: expect.any(String),
+                title: expectedTitle,
                 description: errorMessage,
             });
         });
     };
 
     it('should show a toast on failure for LiteraryAnalysisTab', async () => {
-        await testFailureCase(LiteraryAnalysisTab, { storyText }, 'analyzeLiteraryDevices', 'Analyze for Literary Devices', 'Literary analysis failed.');
+        await testFailureCase(LiteraryAnalysisTab, { storyText }, 'analyzeLiteraryDevices', 'Analyze for Literary Devices', 'Analysis Error', 'Failed to analyze literary devices.');
     });
 
     it('should show a toast on failure for DialogueDynamicsAnalysis', async () => {
-        await testFailureCase(DialogueDynamicsAnalysis, { storyText }, 'analyzeDialogueDynamics', 'Analyze Dialogue Dynamics', 'Dialogue dynamics analysis failed.');
+        await testFailureCase(DialogueDynamicsAnalysis, { storyText }, 'analyzeDialogueDynamics', 'Analyze Dialogue Dynamics', 'Analysis Error', 'Failed to analyze dialogue dynamics.');
     });
     
     it('should show a toast on failure for TropeInverter', async () => {
-        await testFailureCase(TropeInverter, { storyText }, 'invertTropes', 'Analyze for Tropes', 'Trope analysis failed.');
+        await testFailureCase(TropeInverter, { storyText }, 'invertTropes', 'Analyze for Tropes', 'Analysis Error', 'Failed to analyze tropes.');
     });
 
     it('should show a toast on failure for ActorStudio', async () => {
-        const errorMessage = 'Character chat failed.';
+        const errorMessage = 'Failed to get character response.';
         (actions.getCharacterResponse as vi.Mock).mockRejectedValue(new Error(errorMessage));
         
         render(<ActorStudio characters={mockCharacters} storyText={storyText} />);
@@ -104,27 +105,27 @@ describe('Analysis Tools Failure Handling', () => {
     });
 
     it('should show a toast on failure for UnreliableNarrator', async () => {
-         await testFailureCase(UnreliableNarrator, { storyText }, 'getBiasedStory', 'Apply Bias', 'Bias generation failed.');
+         await testFailureCase(UnreliableNarrator, { storyText }, 'getBiasedStory', 'Apply Bias', 'Generation Error', 'Failed to apply narrator bias.');
     });
 
     it('should show a toast on failure for PacingAnalysis', async () => {
-        await testFailureCase(PacingAnalysis, { storyText }, 'analyzeStoryPacing', 'Analyze Story Pacing', 'Pacing analysis failed.');
+        await testFailureCase(PacingAnalysis, { storyText }, 'analyzeStoryPacing', 'Analyze Story Pacing', 'Analysis Error', 'Failed to analyze story pacing.');
     });
 
     it('should show a toast on failure for ShowDontTell', async () => {
-        await testFailureCase(ShowDontTell, { storyText }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', 'Show, dont tell analysis failed.');
+        await testFailureCase(ShowDontTell, { storyText }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', 'Analysis Error', 'Failed to get "Show, Don\'t Tell" suggestions.');
     });
 
     it('should show a toast on failure for ConsistencyGuardian', async () => {
-        await testFailureCase(ConsistencyGuardian, { storyText }, 'findInconsistencies', 'Check for Inconsistencies', 'Consistency analysis failed.');
+        await testFailureCase(ConsistencyGuardian, { storyText }, 'findInconsistencies', 'Check for Inconsistencies', 'Analysis Error', 'Failed to find inconsistencies.');
     });
 
     it('should show a toast on failure for SubtextAnalyzer', async () => {
-        await testFailureCase(SubtextAnalyzer, { storyText }, 'analyzeSubtext', 'Analyze for Subtext', 'Subtext analysis failed.');
+        await testFailureCase(SubtextAnalyzer, { storyText }, 'analyzeSubtext', 'Analyze for Subtext', 'Analysis Error', 'Failed to analyze subtext.');
     });
     
     it('should show a toast on failure for PerspectiveShifter', async () => {
-        const errorMessage = 'Perspective shift failed.';
+        const errorMessage = 'Failed to shift perspective.';
          (actions.shiftPerspective as vi.Mock).mockRejectedValue(new Error(errorMessage));
         
         render(<PerspectiveShifter characters={mockCharacters} storyText={storyText} />);
