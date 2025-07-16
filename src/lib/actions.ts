@@ -28,7 +28,7 @@ import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-persp
 
 import { z } from 'zod';
 import {
-  type Character,
+  type Character as ImportedCharacter,
   type LiteraryDevice as ImportedLiteraryDevice,
   type DialogueDynamics as ImportedDialogueDynamics,
   type Trope as ImportedTrope,
@@ -43,6 +43,7 @@ import {
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
+export type Character = ImportedCharacter;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
 export type DialogueDynamics = ImportedDialogueDynamics;
@@ -52,7 +53,7 @@ export type ShowDontTellSuggestion = ImportedShowDontTellSuggestion;
 export type ConsistencyIssue = ImportedConsistencyIssue;
 export type SubtextAnalysis = ImportedSubtextAnalysis;
 export type Perspective = ImportedPerspective;
-export type { Character, ChatMessage, NarratorBias };
+export type { ChatMessage, NarratorBias };
 
 
 /**
@@ -74,7 +75,7 @@ export type StorySegmentWithAudio = z.infer<typeof StorySegmentWithAudioSchema>;
  * @returns A promise resolving to the parsed segments and characters.
  */
 export async function getParsedStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
-    console.log('Starting story parsing...');
+    console.log('Starting story parsing and AI casting...');
      if (!storyText.trim()) {
         const errorMsg = 'Validation Error: Story text cannot be empty.';
         console.error(errorMsg);
@@ -88,7 +89,7 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
             console.error(errorMsg);
             throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
         }
-        console.log('Story parsing successful.');
+        console.log('Story parsing and AI casting successful.');
         return parsedResult;
     } catch (error) {
         console.error('Fatal Error during story parsing flow:', { error });
@@ -118,27 +119,18 @@ export async function getCharacterPortraits(characters: Character[]): Promise<Ch
     }
 }
 
-// A predefined list of available high-quality voices.
-const availableVoices = [
-  'en-US-Standard-A', 'en-US-Standard-B', 'en-US-Standard-C', 
-  'en-US-Standard-D', 'en-US-Standard-E', 'en-US-Standard-F',
-  'en-US-Standard-G', 'en-US-Standard-H', 'en-US-Standard-I', 'en-US-Standard-J',
-  'en-US-Wavenet-A', 'en-US-Wavenet-B', 'en-US-Wavenet-C', 'en-US-Wavenet-D',
-  'en-US-Wavenet-E', 'en-US-Wavenet-F', 'en-US-Wavenet-G', 'en-US-Wavenet-H',
-  'en-US-Wavenet-I', 'en-US-Wavenet-J'
-];
-
 /**
- * Generates audio for a story, assigning a unique voice to each character.
- * This is now done on a per-segment basis to allow for line-by-line regeneration.
+ * Generates audio for a story, using the AI-chosen voice for each character.
  * @param segments An array of DialogueSegment objects.
+ * @param characters An array of Character objects which includes the AI-chosen voiceId.
  * @returns A Promise that resolves to an array of StorySegmentWithAudio, each containing its own audio URI.
  * @throws An error if the input segments array is empty.
  */
 export async function generateStoryAudio(
-  segments: DialogueSegment[]
+  segments: DialogueSegment[],
+  characters: Character[]
 ): Promise<StorySegmentWithAudio[]> {
-  console.log('Starting per-segment TTS generation with unique voices...');
+  console.log('Starting per-segment TTS generation with AI-chosen voices...');
   if (!segments || segments.length === 0) {
     const errorMsg = 'Validation Error: Segments for audio generation cannot be empty.';
     console.error(errorMsg);
@@ -146,14 +138,18 @@ export async function generateStoryAudio(
   }
   
   try {
-    const uniqueCharacters = [...new Set(segments.map(s => s.character))];
     const characterVoiceMap = new Map<string, string>();
-    uniqueCharacters.forEach((char, index) => {
-        characterVoiceMap.set(char, availableVoices[index % availableVoices.length]);
+    characters.forEach(char => {
+        if (char.voiceId) {
+            characterVoiceMap.set(char.name, char.voiceId);
+        }
     });
+    // Add a default for the narrator
+    characterVoiceMap.set('Narrator', 'en-US-Standard-A');
 
     const audioPromises = segments.map(async (segment) => {
-      const voice = characterVoiceMap.get(segment.character) || availableVoices[0];
+      // Use the AI-chosen voice, or a default if one isn't found (should not happen in normal flow).
+      const voice = characterVoiceMap.get(segment.character) || 'en-US-Standard-A';
       
       const { audioDataUri } = await generateEmotionalTTS({ 
           dialogue: segment.dialogue, 
@@ -349,22 +345,4 @@ export async function shiftPerspective(storyText: string, characterName: string,
     console.error('Error in shiftPerspective action:', e);
     throw new Error('Failed to shift perspective.');
   }
-}
-
-/**
- * [PLANNED FEATURE] Intelligently selects a voice for each character based on their description.
- * @param characters An array of character objects.
- * @returns A promise resolving to a map of character names to voice IDs.
- */
-export async function getAICastingChoices(characters: Character[]): Promise<Map<string, string>> {
-  console.log('SEAM CALLED: getAICastingChoices');
-  // AI FLOW to be created: `aiCastingDirectorFlow`
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-  console.warn('`getAICastingChoices` is not implemented yet.');
-  // For now, return the same programmatic mapping we currently use.
-  const characterVoiceMap = new Map<string, string>();
-  characters.forEach((char, index) => {
-      characterVoiceMap.set(char.name, availableVoices[index % availableVoices.length]);
-  });
-  return characterVoiceMap;
 }

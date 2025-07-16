@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Play, Pause, FastForward, Rewind, BookText, Edit, Wand2, RefreshCw, Loader2, X } from 'lucide-react';
-import { type StorySegmentWithAudio, type CharacterPortrait, regenerateSingleLineAudio } from '@/lib/actions';
+import { type StorySegmentWithAudio, type CharacterPortrait, regenerateSingleLineAudio, type Character } from '@/lib/actions';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -26,10 +26,11 @@ import { Textarea } from '../ui/textarea';
 type StoryDisplayProps = {
   segments: StorySegmentWithAudio[];
   characterPortraits: CharacterPortrait[];
+  characters: Character[];
   onBack: () => void;
 };
 
-export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisplayProps) {
+export function StoryDisplay({ segments, characterPortraits, characters, onBack }: StoryDisplayProps) {
   const [storySegments, setStorySegments] = useState<StorySegmentWithAudio[]>(segments);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,20 +49,15 @@ export function StoryDisplay({ segments, characterPortraits, onBack }: StoryDisp
 
   const characterVoiceMap = useMemo(() => {
     const map = new Map<string, string>();
-    const uniqueCharacters = [...new Set(storySegments.map(s => s.character))];
-    const availableVoices = [
-      'en-US-Standard-A', 'en-US-Standard-B', 'en-US-Standard-C', 
-      'en-US-Standard-D', 'en-US-Standard-E', 'en-US-Standard-F',
-      'en-US-Standard-G', 'en-US-Standard-H', 'en-US-Standard-I', 'en-US-Standard-J',
-      'en-US-Wavenet-A', 'en-US-Wavenet-B', 'en-US-Wavenet-C', 'en-US-Wavenet-D',
-      'en-US-Wavenet-E', 'en-US-Wavenet-F', 'en-US-Wavenet-G', 'en-US-Wavenet-H',
-      'en-US-Wavenet-I', 'en-US-Wavenet-J'
-    ];
-    uniqueCharacters.forEach((char, index) => {
-        map.set(char, availableVoices[index % availableVoices.length]);
+    characters.forEach(char => {
+      if (char.voiceId) {
+        map.set(char.name, char.voiceId);
+      }
     });
+    // Add a default for the narrator
+    map.set('Narrator', 'en-US-Standard-A');
     return map;
-  }, [storySegments]);
+  }, [characters]);
 
   useEffect(() => {
     segmentRefs.current[currentSegmentIndex]?.scrollIntoView({

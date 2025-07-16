@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, type StorySegmentWithAudio, getParsedStory, getCharacterPortraits, generateStoryAudio, type CharacterPortrait } from "@/lib/actions";
+import { type DialogueSegment, type StorySegmentWithAudio, getParsedStory, getCharacterPortraits, generateStoryAudio, type CharacterPortrait, type Character } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ export default function VividVoicePage() {
   const [appState, setAppState] = useState<AppState>('initial');
   const [storyText, setStoryText] = useState<string>('');
   const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
+  const [characters, setCharacters] = useState<Character[]>([]);
   const [characterPortraits, setCharacterPortraits] = useState<CharacterPortrait[]>([]);
   const [finalSegments, setFinalSegments] = useState<StorySegmentWithAudio[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -29,9 +30,10 @@ export default function VividVoicePage() {
     setStoryText('');
 
     try {
-      // Step 1: Parse the story to get segments and character definitions. This is the critical path.
+      // Step 1: Parse the story to get segments and character definitions (including AI-chosen voices).
       const { segments, characters } = await getParsedStory(newStoryText);
       setParsedSegments(segments);
+      setCharacters(characters);
       setStoryText(newStoryText);
       
       // Step 2 (in parallel): Generate character portraits. This is non-critical.
@@ -66,7 +68,7 @@ export default function VividVoicePage() {
     setError(null);
     
     try {
-      const result = await generateStoryAudio(editedSegments);
+      const result = await generateStoryAudio(editedSegments, characters);
       setFinalSegments(result);
       setAppState('displaying');
     } catch (e: any) {
@@ -156,6 +158,7 @@ export default function VividVoicePage() {
                    <StoryDisplay 
                     segments={finalSegments} 
                     characterPortraits={characterPortraits}
+                    characters={characters}
                     onBack={handleBackToEditor}
                   />
                  </div>
