@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { type DialogueSegment, getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
+import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -32,18 +32,16 @@ export default function VividVoicePage() {
     setTranscript([]);
 
     try {
-      // Decomposed Flow: First, get the parsed story and characters.
-      const { segments, characters } = await getParsedStory(newStoryText);
-      setParsedSegments(segments);
-      setCharacters(characters);
+      const parsedData = await getParsedStory(newStoryText);
+      const portraitData = await getCharacterPortraits(parsedData.characters);
+      
+      setParsedSegments(parsedData.segments);
+      setCharacters(parsedData.characters);
+      setCharacterPortraits(portraitData);
       setStoryText(newStoryText);
 
-      // Now, generate portraits in parallel. This is a non-critical enhancement.
-      const portraits = await getCharacterPortraits(characters);
-      setCharacterPortraits(portraits);
-      
       // Check if portrait generation partially failed, which is a non-blocking issue.
-      if (portraits.length < (characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
+      if (portraitData.length < (parsedData.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
             title: "Portrait Generation Note",
@@ -106,11 +104,11 @@ export default function VividVoicePage() {
       <div className="relative z-10 flex flex-col items-center min-h-screen p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-6xl mx-auto">
           <header className="text-center space-y-4 mb-10">
-            <h1 className="font-headline text-6xl md:text-8xl font-bold text-glow-primary text-gradient bg-gradient-to-r from-primary via-accent to-secondary animate-in fade-in slide-in-from-top-4 duration-1000">
-              VividVoice
+            <h1 className="font-headline text-5xl md:text-7xl font-bold text-glow-primary text-gradient bg-gradient-to-r from-primary via-accent to-secondary animate-in fade-in slide-in-from-top-4 duration-1000">
+              Staging Stories
             </h1>
             <p className="text-muted-foreground text-lg flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-6 duration-1000 delay-200">
-              AI-Powered Expressive Storytelling <Sparkles className="w-5 h-5 text-accent text-glow-accent" />
+              with the Skeptical Wombat <Sparkles className="w-5 h-5 text-accent text-glow-accent" />
             </p>
           </header>
 

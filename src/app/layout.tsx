@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'VividVoice',
+  title: 'Staging Stories with the Skeptical Wombat',
   description: 'AI-powered narrative story reader with expressive voice acting.',
 };
 
