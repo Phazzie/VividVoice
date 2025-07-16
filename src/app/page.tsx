@@ -32,11 +32,14 @@ export default function VividVoicePage() {
     setTranscript([]);
 
     try {
+      // The `getParsedStory` action now also handles the "AI Casting Director" logic,
+      // assigning voice IDs to each character.
       const { segments, characters } = await getParsedStory(newStoryText);
       setParsedSegments(segments);
       setCharacters(characters);
       setStoryText(newStoryText);
       
+      // We can kick off portrait generation in parallel. It's a non-critical enhancement.
       getCharacterPortraits(characters).then(portraits => {
         setCharacterPortraits(portraits);
       }).catch(e => {
@@ -66,6 +69,7 @@ export default function VividVoicePage() {
     setError(null);
     
     try {
+      // Call the new, advanced multi-voice TTS action which now returns a transcript.
       const { audioDataUri, transcript } = await generateMultiVoiceSceneAudio(editedSegments, characters);
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);

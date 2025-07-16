@@ -190,7 +190,8 @@ export const TranscriptWordSchema = z.object({
 export type TranscriptWord = z.infer<typeof TranscriptWordSchema>;
 
 /**
- * Defines the schema for a segment's transcript, linking it back to the original segment.
+ * Defines the schema for a segment's transcript, linking it back to the original segment
+ * and providing overall timing for precise highlighting.
  */
 export const TranscriptSegmentSchema = z.object({
   segmentIndex: z.number(),

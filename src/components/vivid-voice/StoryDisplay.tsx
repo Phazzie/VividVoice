@@ -25,7 +25,7 @@ type StoryDisplayProps = {
 };
 
 export function StoryDisplay({ segments, characterPortraits, characters, storyText, sceneAudioUri, transcript, onBack }: StoryDisplayProps) {
-  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
@@ -39,6 +39,7 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
   const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { toast } = useToast();
 
+  // Fetch sound design cues when the component loads.
   useEffect(() => {
     getSoundDesign(storyText)
       .then(effects => {
@@ -56,13 +57,17 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
       });
   }, [storyText, toast]);
   
+  // Auto-scroll to the currently highlighted segment.
   useEffect(() => {
-    segmentRefs.current[currentSegmentIndex]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    });
+    if (currentSegmentIndex >= 0 && currentSegmentIndex < segmentRefs.current.length) {
+      segmentRefs.current[currentSegmentIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
   }, [currentSegmentIndex]);
 
+  // Manage play/pause state.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -73,11 +78,13 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
     }
   }, [isPlaying]);
 
+  // Manage playback speed.
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) audio.playbackRate = playbackSpeed;
   }, [playbackSpeed]);
 
+  // Manage volume.
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) audio.volume = volume;
@@ -92,15 +99,27 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
     audio.currentTime = Math.max(0, Math.min(audio.duration, newTime));
   }
 
+  // This is the core of the accurate highlighting.
+  // It's called on every time update from the main audio element.
   const handleTimeUpdate = () => {
     const audio = audioRef.current;
     if (!audio || !audio.duration) return;
     const currentTime = audio.currentTime;
+    
+    // Update the progress bar.
     setProgress((currentTime / audio.duration) * 100);
 
+    // Find which segment should be active based on the detailed transcript.
     const newCurrentIndex = transcript.findIndex(t => currentTime >= t.startTime && currentTime < t.endTime);
+    
     if (newCurrentIndex !== -1 && newCurrentIndex !== currentSegmentIndex) {
         setCurrentSegmentIndex(newCurrentIndex);
+        
+        // Check if there's a sound effect for this new segment.
+        const sfx = soundEffects.find(s => s.segmentIndex === newCurrentIndex);
+        if (sfx) {
+            setActiveSound(sfx.soundUrl);
+        }
     }
   };
   
@@ -125,7 +144,7 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
               id={`segment-${index}`}
               className={cn(
                 "flex gap-4 p-4 rounded-xl border transition-all duration-300 relative group",
-                index === currentSegmentIndex && isPlaying
+                index === currentSegmentIndex
                   ? 'bg-secondary/20 border-secondary'
                   : 'bg-muted/50 border-transparent'
               )}
