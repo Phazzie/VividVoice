@@ -1,7 +1,11 @@
+
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StoryDisplay } from './StoryDisplay';
 import { userEvent } from '@testing-library/user-event';
+import * as actions from '@/lib/actions';
+
+vi.mock('@/lib/actions');
 
 const mockSegments = [
   { character: 'Narrator', dialogue: 'The beginning.', emotion: 'Neutral' },
@@ -33,6 +37,8 @@ describe('StoryDisplay', () => {
       configurable: true,
       value: vi.fn(),
     });
+    // Mock getSoundDesign
+    (actions.getSoundDesign as vi.Mock).mockResolvedValue([]);
   });
 
   it('should render the story segments and controls', () => {
@@ -126,7 +132,7 @@ describe('StoryDisplay', () => {
     }
     
     // Segment 0 should be highlighted
-    const segment0 = screen.getByText('The beginning.').closest('div.flex.gap-4');
+    const segment0 = screen.getByText('The beginning.').closest('div.group');
     expect(segment0).toHaveClass('bg-secondary/20 border-secondary');
 
     // Simulate another time update
@@ -136,8 +142,46 @@ describe('StoryDisplay', () => {
     }
 
     // Segment 1 should be highlighted
-    const segment1 = screen.getByText('Hello there.').closest('div.flex.gap-4');
+    const segment1 = screen.getByText('Hello there.').closest('div.group');
     expect(segment1).toHaveClass('bg-secondary/20 border-secondary');
+  });
+
+  it('should call getSoundDesign and play a sound effect when a relevant segment becomes active', () => {
+     const mockSfx = [{
+        segmentIndex: 1,
+        description: 'a sound',
+        soundQuery: 'sound',
+        soundUrl: 'sfx.mp3'
+     }];
+     (actions.getSoundDesign as vi.Mock).mockResolvedValue(mockSfx);
+     
+     const { container } = render(
+       <StoryDisplay
+        segments={mockSegments}
+        characterPortraits={mockPortraits}
+        characters={mockCharacters}
+        storyText="Story text"
+        sceneAudioUri="test.wav"
+        transcript={mockTranscript}
+        onBack={() => {}}
+      />
+    );
+
+     expect(actions.getSoundDesign).toHaveBeenCalledWith("Story text");
+
+     const audio = container.querySelector('audio[src="test.wav"]');
+     expect(audio).toBeInTheDocument();
+
+      // Simulate time update to trigger the sound effect
+     if(audio) {
+        audio.currentTime = 1.5;
+        fireEvent.timeUpdate(audio);
+     }
+
+     // A new audio element should have been created for the sound effect
+     const sfxAudio = container.querySelector('audio[src="sfx.mp3"]');
+     expect(sfxAudio).toBeInTheDocument();
+     expect(sfxAudio).toHaveAttribute('autoPlay');
   });
 
 });

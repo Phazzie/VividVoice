@@ -1,7 +1,9 @@
+
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import VividVoicePage from './page';
 import { userEvent } from '@testing-library/user-event';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock the server actions module
 vi.mock('@/lib/actions', async (importOriginal) => {
@@ -40,10 +42,19 @@ vi.mock('@/components/vivid-voice/StoryDisplay', () => ({
   )
 }));
 
+// Mock the useToast hook
+vi.mock('@/hooks/use-toast');
+
 // We need to import the mocked actions *after* the vi.mock call
 import { parseStory, generateMultiVoiceSceneAudio } from '@/lib/actions';
 
 describe('VividVoicePage State Machine', () => {
+
+  const toastMock = vi.fn();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (useToast as vi.Mock).mockReturnValue({ toast: toastMock });
+  });
 
   // Test the transition from 'initial' to 'parsing' to 'editing'
   it('should transition from initial -> parsing -> editing on story submission', async () => {
@@ -117,7 +128,7 @@ describe('VividVoicePage State Machine', () => {
         const user = userEvent.setup();
         const mockAudioResponse = { audioDataUri: 'test.wav', transcript: [] };
         (generateMultiVoiceSceneAudio as vi.Mock).mockResolvedValue(mockAudioResponse);
-        const mockParsedResponse = { segments: [], characters: [], portraits: [] };
+        const mockParsedResponse = { segments: [], characters: [{name: 'Alice', description: 'desc'}], portraits: [] };
         (parseStory as vi.Mock).mockResolvedValue(mockParsedResponse);
 
         render(<VividVoicePage />);
@@ -139,7 +150,7 @@ describe('VividVoicePage State Machine', () => {
     });
 
     // Test a failure during parsing
-    it('should return to initial state if parsing fails', async () => {
+    it('should return to initial state and show a toast if parsing fails', async () => {
         const user = userEvent.setup();
         const errorMessage = 'Parsing failed!';
         (parseStory as vi.Mock).mockRejectedValue(new Error(errorMessage));
@@ -151,8 +162,39 @@ describe('VividVoicePage State Machine', () => {
         await waitFor(() => {
             // Should go back to the initial screen
              expect(screen.getByText('Your Story Awaits')).toBeInTheDocument();
-             // Check for toast message (we can't see the toast directly, but we can check if it was called)
-             // This requires mocking useToast, which is more complex. For now, we trust the state transition.
+             // Check for toast message
+             expect(toastMock).toHaveBeenCalledWith({
+                variant: "destructive",
+                title: "Parsing Error",
+                description: errorMessage,
+             });
         });
+    });
+    
+    // Test a non-critical failure during portrait generation
+    it('should proceed to editing and show a toast if only portrait generation fails', async () => {
+      const user = userEvent.setup();
+      const mockResponse = {
+        segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
+        characters: [{ name: 'Alice', description: 'A character' }, { name: 'Bob', description: 'Another' }],
+        portraits: [{ name: 'Alice', portraitDataUri: 'url' }], // Only one portrait for two characters
+      };
+      (parseStory as vi.Mock).mockResolvedValue(mockResponse);
+
+      render(<VividVoicePage />);
+
+      await user.click(screen.getByRole('button', { name: /Start Generation/i }));
+
+      // Should still go to editing state
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /Dialogue Editor/i })).toBeInTheDocument();
+      });
+
+      // Should show a non-destructive toast
+      expect(toastMock).toHaveBeenCalledWith({
+        variant: "default",
+        title: "Portrait Generation Note",
+        description: "Could not generate all character portraits, but you can continue editing.",
+      });
     });
 });
