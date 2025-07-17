@@ -49,6 +49,36 @@ For each distinct device you find, you must provide:
 
 Your goal is to be comprehensive and accurate. Search for a wide range of devices. Return the results as a JSON object with a single key 'devices' containing an array of these objects. If no devices are found, return an empty array.
 
+**High-Quality Example:**
+- **Input Story Text:**
+  \`\`\`
+  The wind whispered warnings through the weeping willows, a sound like a silk sheet slipping over stone.
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "devices": [
+      {
+        "device": "Personification",
+        "quote": "The wind whispered warnings",
+        "explanation": "The wind, an inanimate force, is given the human ability to 'whisper warnings,' creating a sense of foreboding and intelligent menace."
+      },
+      {
+        "device": "Alliteration",
+        "quote": "weeping willows",
+        "explanation": "The repetition of the 'w' sound creates a soft, melancholic auditory effect that reinforces the image of sadness associated with weeping willows."
+      },
+      {
+        "device": "Simile",
+        "quote": "a sound like a silk sheet slipping over stone",
+        "explanation": "The sound of the wind is compared to a 'silk sheet slipping over stone' using the word 'like'. This creates a specific, eerie auditory image that is both smooth and hard, contributing to the unsettling atmosphere."
+      }
+    ]
+  }
+  \`\`\`
+
+Now, analyze the following story text using the same method.
+
 **Story Text to Analyze:**
 \`\`\`
 {{{storyText}}}

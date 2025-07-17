@@ -63,8 +63,57 @@ For each segment, provide:
 - Return a single JSON object with two keys: 'characters' (an array of character objects) and 'segments' (an array of dialogue segment objects).
 - The 'segments' array must be in the exact chronological order of the story.
 
+**High-Quality Example:**
+- **Input Story Text:**
+  \`\`\`
+  Narrator: The flickering neon sign cast long shadows across the alley. Arthur ran a hand through his graying hair, his tie askew.
+  Detective Miller: You look nervous, Arthur. Anything you want to tell me?
+  Arthur: I'm fine. Just a long night.
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "segments": [
+      {
+        "character": "Narrator",
+        "dialogue": "The flickering neon sign cast long shadows across the alley. Arthur ran a hand through his graying hair, his tie askew.",
+        "emotion": "Tense"
+      },
+      {
+        "character": "Detective Miller",
+        "dialogue": "You look nervous, Arthur. Anything you want to tell me?",
+        "emotion": "Intrigued"
+      },
+      {
+        "character": "Arthur",
+        "dialogue": "I'm fine. Just a long night.",
+        "emotion": "Anxious"
+      }
+    ],
+    "characters": [
+      {
+        "name": "Narrator",
+        "description": "An omniscient narrator setting a tense, noir scene.",
+        "voiceId": "en-US-Standard-D"
+      },
+      {
+        "name": "Arthur",
+        "description": "A nervous man with graying hair and a disheveled appearance, likely under stress.",
+        "voiceId": "en-US-Standard-B"
+      },
+      {
+        "name": "Detective Miller",
+        "description": "An observant and inquisitive detective, likely calm and in control of the situation.",
+        "voiceId": "en-US-Standard-G"
+      }
+    ]
+  }
+  \`\`\`
+
 **Available Voices for Casting:**
 ${availableVoices.join(', ')}
+
+Now, process the following story script using the same method.
 
 **Story Script to Process:**
 \`\`\`

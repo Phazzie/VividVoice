@@ -57,6 +57,56 @@ const analyzeDialogueDynamicsFlow = ai.defineFlow(
 
 Return a single JSON object structured precisely according to the DialogueDynamics schema.
 
+**High-Quality Example:**
+- **Input Story Text:**
+  \`\`\`
+  Narrator: The air in the boardroom was thick with tension.
+  Ms. Vance: So, the quarter's numbers are in. They are not good. I've reviewed the data, and the projections are worse. What happened, Frank?
+  Frank: We hit unexpected headwinds. The market shifted.
+  Ms. Vance: The market shifted. That's your analysis.
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "powerBalance": [
+      {
+        "character": "Ms. Vance",
+        "metrics": {
+          "dialogueTurns": 2,
+          "wordCount": 28,
+          "questionsAsked": 1,
+          "assertionsMade": 3
+        }
+      },
+      {
+        "character": "Frank",
+        "metrics": {
+          "dialogueTurns": 1,
+          "wordCount": 7,
+          "questionsAsked": 0,
+          "assertionsMade": 2
+        }
+      }
+    ],
+    "pacing": {
+      "overallWordsPerTurn": 11.67,
+      "characterPacing": [
+        {
+          "character": "Ms. Vance",
+          "wordsPerTurn": 14
+        },
+        {
+          "character": "Frank",
+          "wordsPerTurn": 7
+        }
+      ]
+    },
+    "summary": "The dialogue is significantly skewed, with Ms. Vance dominating the conversation. She speaks four times as many words as Frank, takes more turns, and drives the interaction by asking the only question. Frank is defensive and brief, indicating a clear power imbalance."
+  }
+  \`\`\`
+
+Now, analyze the following story text using the same method.
+
 **Story Text to Analyze:**
 \`\`\`
 {{{storyText}}}
