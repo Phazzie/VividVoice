@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment, type CharacterPortrait, type Character } from '@/lib/actions';
+import { type DialogueSegment, type CharacterPortrait, type Character, getShowDontTellSuggestions, findInconsistencies, analyzeSubtext, shiftPerspective } from '@/lib/actions';
 import { saveStory } from '@/lib/data';
 import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
@@ -38,6 +38,7 @@ import { ShowDontTell } from './ShowDontTell';
 import { ConsistencyGuardian } from './ConsistencyGuardian';
 import { SubtextAnalyzer } from './SubtextAnalyzer';
 import { PerspectiveShifter } from './PerspectiveShifter';
+import { PlaceholderTool } from './PlaceholderTool';
 
 type DialogueEditorProps = {
   storyId: string | null;
@@ -80,6 +81,10 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characterP
       return segment;
     });
     setSegments(newSegments);
+    toast({
+      title: "Suggestion Applied",
+      description: "The dialogue has been updated in the editor.",
+    });
   };
 
   const handleSubmit = () => {
@@ -117,7 +122,8 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characterP
     .filter(name => name.toLowerCase() !== 'narrator')
     .map(name => {
       const portrait = characterPortraits.find(p => p.name === name);
-      const description = initialSegments.find(s => s.character === name)?.dialogue || '...';
+      // This is a simplified description for the Actor's Studio context.
+      const description = `A character in the story. Their dialogue so far includes: ${initialSegments.filter(s => s.character === name).map(s => `"${s.dialogue}"`).join(', ')}`;
       return { name, description, voiceId: 'unknown' };
     });
 
@@ -233,16 +239,16 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characterP
                 <ActorStudio characters={characters} storyText={storyText} />
             </TabsContent>
             <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <UnreliableNarrator storyText={storyText} />
+                <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion}/>
             </TabsContent>
             <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <ShowDontTell storyText={storyText} onApplySuggestion={handleApplySuggestion} />
             </TabsContent>
             <TabsContent value="consistency" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ConsistencyGuardian storyText={storyText} />
+                 <ConsistencyGuardian storyText={storyText} />
             </TabsContent>
             <TabsContent value="subtext" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <SubtextAnalyzer storyText={storyText} />
+                 <SubtextAnalyzer storyText={storyText} />
             </TabsContent>
             <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <PerspectiveShifter characters={characters} storyText={storyText} />
