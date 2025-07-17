@@ -66,22 +66,19 @@ export default function StagingStoriesPage() {
     setTranscript([]);
 
     try {
-      const [parsedData, portraitData] = await Promise.all([
-        getParsedStory(newStoryText),
-        getCharacterPortraits((await getParsedStory(newStoryText)).characters) // This needs to be improved
-      ]);
-      
-      const parsedCharacters = (await getParsedStory(newStoryText)).characters;
+      // The main parsing now returns rich character data, so we can run portrait generation in parallel.
+      const parsedResult = await getParsedStory(newStoryText);
+      const portraitPromise = getCharacterPortraits(parsedResult.characters);
 
-      const finalPortraitData = await getCharacterPortraits(parsedCharacters);
-      
-      setParsedSegments(parsedData.segments);
-      setCharacters(parsedCharacters);
-      setCharacterPortraits(finalPortraitData);
+      const [portraitData] = await Promise.all([portraitPromise]);
+
+      setParsedSegments(parsedResult.segments);
+      setCharacters(parsedResult.characters);
+      setCharacterPortraits(portraitData);
       setStoryText(newStoryText);
 
       // Non-critical warning if some portraits failed
-      if (finalPortraitData.length < (parsedCharacters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
+      if (portraitData.length < (parsedResult.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
             title: "Portrait Generation Note",
@@ -107,6 +104,7 @@ export default function StagingStoriesPage() {
     setError(null);
     
     try {
+      // Pass the rich character objects to the audio generation flow.
       const { audioDataUri, transcript } = await generateMultiVoiceSceneAudio(editedSegments, characters);
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);
@@ -160,13 +158,19 @@ export default function StagingStoriesPage() {
          generating: 'Recording Scene...',
          initial: 'Authenticating...'
        }
+       const currentMessage = appState === 'parsing' 
+        ? 'Casting Characters & Analyzing Script...'
+        : authLoading 
+          ? 'Authenticating...'
+          : loadingMessages[appState as keyof typeof loadingMessages] || 'Loading...';
+
        return (
           <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/50 rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
             <div className="p-4 bg-primary/20 rounded-full text-glow-primary animate-pulse">
                 <Sparkles className="w-16 h-16 text-primary"/>
             </div>
             <p className="font-headline text-3xl mt-4 text-glow-primary">
-              {loadingMessages[appState as keyof typeof loadingMessages] || 'Loading...'}
+              {currentMessage}
             </p>
           </div>
        );
@@ -179,6 +183,7 @@ export default function StagingStoriesPage() {
              storyId={storyId}
              storyText={storyText}
              initialSegments={parsedSegments}
+             characters={characters} // Pass the rich character data
              characterPortraits={characterPortraits}
              onGenerateAudio={handleGenerateAudio}
              isLoading={appState === 'generating'}

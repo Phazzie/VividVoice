@@ -44,6 +44,7 @@ type DialogueEditorProps = {
   storyId: string | null;
   storyText: string;
   initialSegments: DialogueSegment[];
+  characters: Character[];
   characterPortraits: CharacterPortrait[];
   onGenerateAudio: (segments: DialogueSegment[]) => void;
   isLoading: boolean;
@@ -54,7 +55,7 @@ export const emotionOptions = [
   "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
 ];
 
-export function DialogueEditor({ storyId, storyText, initialSegments, characterPortraits, onGenerateAudio, isLoading, onStorySave }: DialogueEditorProps) {
+export function DialogueEditor({ storyId, storyText, initialSegments, characters, characterPortraits, onGenerateAudio, isLoading, onStorySave }: DialogueEditorProps) {
   const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments);
   const [storyTitle, setStoryTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -118,14 +119,7 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characterP
     return characterPortraits.find(p => p.name === characterName)?.portraitDataUri;
   }
 
-  const characters: Character[] = Array.from(new Set(initialSegments.map(s => s.character)))
-    .filter(name => name.toLowerCase() !== 'narrator')
-    .map(name => {
-      const portrait = characterPortraits.find(p => p.name === name);
-      // This is a simplified description for the Actor's Studio context.
-      const description = `A character in the story. Their dialogue so far includes: ${initialSegments.filter(s => s.character === name).map(s => `"${s.dialogue}"`).join(', ')}`;
-      return { name, description, voiceId: 'unknown' };
-    });
+  const interactableCharacters = characters.filter(c => c.name.toLowerCase() !== 'narrator');
 
   return (
     <Card className="bg-card/70 backdrop-blur-xl border-2 border-primary/50 card-glow-primary overflow-hidden">
@@ -239,7 +233,7 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characterP
                 <ActorStudio characters={characters} storyText={storyText} />
             </TabsContent>
             <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion}/>
+                <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />
             </TabsContent>
             <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                 <ShowDontTell storyText={storyText} onApplySuggestion={handleApplySuggestion} />
@@ -251,7 +245,7 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characterP
                  <SubtextAnalyzer storyText={storyText} />
             </TabsContent>
             <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <PerspectiveShifter characters={characters} storyText={storyText} />
+                <PerspectiveShifter characters={interactableCharacters} storyText={storyText} />
             </TabsContent>
         </ScrollArea>
       </Tabs>

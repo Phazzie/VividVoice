@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import VividVoicePage from './page';
 import { userEvent } from '@testing-library/user-event';
 import { useToast } from '@/hooks/use-toast';
+import { Character } from '@/lib/actions';
 
 // Mock the server actions module
 vi.mock('@/lib/actions', async (importOriginal) => {
@@ -62,7 +63,7 @@ describe('VividVoicePage State Machine', () => {
     const user = userEvent.setup();
     const mockParsedResponse = {
       segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
-      characters: [{ name: 'Alice', description: 'A character' }],
+      characters: [{ name: 'Alice', description: 'A character', voiceId: 'v1' }] as Character[],
     };
     const mockPortraitResponse = [{ name: 'Alice', portraitDataUri: 'url' }];
     (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
@@ -78,9 +79,9 @@ describe('VividVoicePage State Machine', () => {
     await user.click(submitButton);
 
     // Parsing state
-    expect(screen.getByText('Analyzing Story & Characters...')).toBeInTheDocument();
+    expect(screen.getByText('Casting Characters & Analyzing Script...')).toBeInTheDocument();
     expect(getParsedStory).toHaveBeenCalledWith('mock story');
-
+    
     // Editing state (after promise resolves)
     await waitFor(() => {
       expect(getCharacterPortraits).toHaveBeenCalledWith(mockParsedResponse.characters);
@@ -100,7 +101,7 @@ describe('VividVoicePage State Machine', () => {
     // Start the component in the 'editing' state by mocking a successful parse
      const mockParsedResponse = {
       segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
-      characters: [{ name: 'Alice', description: 'A character' }],
+      characters: [{ name: 'Alice', description: 'A character', voiceId: 'v1' }] as Character[],
     };
     const mockPortraitResponse = [{ name: 'Alice', portraitDataUri: 'url' }];
     (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
@@ -119,7 +120,7 @@ describe('VividVoicePage State Machine', () => {
     await user.click(generateButton);
 
     // Generating state
-    expect(screen.getByText('Generating Audio...')).toBeInTheDocument();
+    expect(screen.getByText('Recording Scene...')).toBeInTheDocument();
 
     // Displaying state
      await waitFor(() => {
@@ -132,7 +133,7 @@ describe('VividVoicePage State Machine', () => {
         const user = userEvent.setup();
         const mockAudioResponse = { audioDataUri: 'test.wav', transcript: [] };
         (generateMultiVoiceSceneAudio as vi.Mock).mockResolvedValue(mockAudioResponse);
-        const mockParsedResponse = { segments: [], characters: [{name: 'Alice', description: 'desc'}] };
+        const mockParsedResponse = { segments: [], characters: [{name: 'Alice', description: 'desc', voiceId: 'v1'}] as Character[] };
         (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
         (getCharacterPortraits as vi.Mock).mockResolvedValue([]);
 
@@ -181,7 +182,7 @@ describe('VividVoicePage State Machine', () => {
       const user = userEvent.setup();
       const mockParsedResponse = {
         segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
-        characters: [{ name: 'Alice', description: 'A character' }, { name: 'Bob', description: 'Another' }],
+        characters: [{ name: 'Alice', description: 'A character', voiceId: 'v1' }, { name: 'Bob', description: 'Another', voiceId: 'v2' }] as Character[],
       };
       (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
       // Simulate portrait generation returning only one portrait for two characters

@@ -2,11 +2,13 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for parsing dialogue from a story text and assigning it to characters, including inferring emotion, physical descriptions, and assigning a suitable voice.
+ * @fileOverview This file defines a Genkit flow for parsing dialogue from a story text and assigning it to characters.
+ * It has been enhanced to generate a comprehensive character profile upfront, including a detailed description of personality,
+ * motivations, and speaking style, which serves as a brief for other AI tools.
  *
- * - parseDialogue - A function that takes story text as input and returns dialogue segments, character descriptions, emotions, and voice assignments.
- * - ParseDialogueInput - The input type for the parseDialogue function (story text).
- * - ParseDialogueOutput - The return type for theparseDialogue function.
+ * - parseDialogue - A function that takes story text and returns dialogue segments and detailed character profiles.
+ * - ParseDialogueInput - The input type for the parseDialogue function.
+ * - ParseDialogueOutput - The return type for the parseDialogue function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -40,15 +42,19 @@ const parseDialoguePrompt = ai.definePrompt({
   name: 'parseDialoguePrompt',
   input: {schema: ParseDialogueInputSchema},
   output: {schema: ParseDialogueOutputSchema},
-  prompt: `You are an expert in literary analysis and a casting director for a major film studio. Your task is to process a story script, identify all characters, create casting profiles for them, and then break the script into a clean, ordered list of dialogue and narration segments.
+  prompt: `You are an expert in literary analysis and a casting director for a major film studio. Your task is to process a story script, identify all characters, create detailed casting profiles for them, and then break the script into a clean, ordered list of dialogue and narration segments.
 
 **PART 1: CHARACTER ANALYSIS & CASTING**
 
 First, read the entire story text to understand the plot, characters, and overall tone. Based on this holistic understanding, compile a list of all unique characters mentioned.
 
 For each character (including the 'Narrator'), provide:
-1.  A detailed physical 'description' based on any details mentioned or implied in the text. If no description is available, infer a plausible one based on their personality.
-2.  A 'voiceId' selected from the list of available voices below. As a casting director, your choice is critical. Choose the voice that best fits the character's description, personality, and role in the story. You must assign a unique voice to each character if possible.
+1.  A rich, detailed 'description' that can serve as an actor's brief. This should synthesize all available information from the text (dialogue, actions, narrator descriptions) to cover:
+    - **Personality & Traits:** Are they brave, witty, cynical, naive? What are their core characteristics?
+    - **Motivations:** What do they seem to want in the story?
+    - **Speaking Style:** Do they speak in long, elaborate sentences or short, clipped ones? Are they formal or informal?
+    - **Physical Appearance:** Include any physical details mentioned or clearly implied. If none, infer a plausible appearance based on their personality.
+2.  A 'voiceId' selected from the list of available voices below. As a casting director, your choice is critical. Choose the voice that best fits the character's comprehensive description. You must assign a unique voice to each character if possible.
 
 **PART 2: SCRIPT SEGMENTATION**
 
@@ -62,53 +68,6 @@ For each segment, provide:
 **CRITICAL INSTRUCTIONS:**
 - Return a single JSON object with two keys: 'characters' (an array of character objects) and 'segments' (an array of dialogue segment objects).
 - The 'segments' array must be in the exact chronological order of the story.
-
-**High-Quality Example:**
-- **Input Story Text:**
-  \`\`\`
-  Narrator: The flickering neon sign cast long shadows across the alley. Arthur ran a hand through his graying hair, his tie askew.
-  Detective Miller: You look nervous, Arthur. Anything you want to tell me?
-  Arthur: I'm fine. Just a long night.
-  \`\`\`
-- **Your Perfect JSON Output:**
-  \`\`\`json
-  {
-    "segments": [
-      {
-        "character": "Narrator",
-        "dialogue": "The flickering neon sign cast long shadows across the alley. Arthur ran a hand through his graying hair, his tie askew.",
-        "emotion": "Tense"
-      },
-      {
-        "character": "Detective Miller",
-        "dialogue": "You look nervous, Arthur. Anything you want to tell me?",
-        "emotion": "Intrigued"
-      },
-      {
-        "character": "Arthur",
-        "dialogue": "I'm fine. Just a long night.",
-        "emotion": "Anxious"
-      }
-    ],
-    "characters": [
-      {
-        "name": "Narrator",
-        "description": "An omniscient narrator setting a tense, noir scene.",
-        "voiceId": "en-US-Standard-D"
-      },
-      {
-        "name": "Arthur",
-        "description": "A nervous man with graying hair and a disheveled appearance, likely under stress.",
-        "voiceId": "en-US-Standard-B"
-      },
-      {
-        "name": "Detective Miller",
-        "description": "An observant and inquisitive detective, likely calm and in control of the situation.",
-        "voiceId": "en-US-Standard-G"
-      }
-    ]
-  }
-  \`\`\`
 
 **Available Voices for Casting:**
 ${availableVoices.join(', ')}

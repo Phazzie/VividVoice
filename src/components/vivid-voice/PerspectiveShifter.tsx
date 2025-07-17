@@ -58,7 +58,7 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
                     How would the story change if your villain was the hero? This tool rewrites a summary of your plot from the perspective of a different character, casting them in a new role.
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 bg-muted/30 rounded-lg">
                 <Select onValueChange={setSelectedCharacter} disabled={characters.length === 0}>
                     <SelectTrigger>
                         <SelectValue placeholder="Select a character..." />
@@ -70,7 +70,7 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
                     </SelectContent>
                 </Select>
                 
-                 <RadioGroup defaultValue="Protagonist" onValueChange={(v) => setSelectedRole(v as any)} className="flex items-center space-x-4">
+                 <RadioGroup defaultValue="Protagonist" onValueChange={(v) => setSelectedRole(v as any)} className="flex items-center space-x-4 justify-center">
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem value="Protagonist" id="r-protagonist" />
                         <Label htmlFor="r-protagonist">As Protagonist</Label>
@@ -98,7 +98,7 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
             {result && (
                 <div className="space-y-4 animate-in fade-in-50 duration-500 pt-4">
                     <h3 className="text-center font-headline text-2xl">
-                        The Story According to <span className="text-primary font-bold">{result.character}</span> (The {result.role})
+                        The Story According to <span className="text-primary font-bold">{result.character}</span> (as the {result.role})
                     </h3>
                    <div className="p-6 rounded-lg bg-muted/50 border border-border/50">
                         <p className="font-body text-lg leading-relaxed">{result.summary}</p>

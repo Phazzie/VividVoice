@@ -10,14 +10,14 @@ vi.mock('@/lib/actions');
 
 describe('ActorStudio', () => {
     const mockCharacters = [
-        { name: 'Alice', description: 'A hero', voiceId: 'v1' },
-        { name: 'Bob', description: 'A villain', voiceId: 'v2' },
+        { name: 'Alice', description: 'A hero, brave and noble.', voiceId: 'v1' },
+        { name: 'Bob', description: 'A villain, cunning and sly.', voiceId: 'v2' },
     ];
-    const storyText = 'Alice and Bob talk.';
+    const storyText = 'Alice and Bob talk.'; // storyText is passed but no longer directly used in the component logic being tested
 
     it('should allow selecting a character and sending a message', async () => {
         const user = userEvent.setup();
-        const characterResponse = 'This is my response.';
+        const characterResponse = 'This is my response as Alice.';
         (actions.getCharacterResponse as vi.Mock).mockResolvedValue(characterResponse);
 
         render(<ActorStudio characters={mockCharacters} storyText={storyText} />);
@@ -42,7 +42,9 @@ describe('ActorStudio', () => {
         // Verify user message appears
         expect(screen.getByText('Hello Alice')).toBeInTheDocument();
         // Verify loading state appears
-        expect(sendButton).toBeDisabled();
+        await waitFor(() => {
+            expect(screen.getByRole('button', {name: ''})).toBeDisabled();
+        })
 
         // Verify AI response appears
         await waitFor(() => {
@@ -50,8 +52,7 @@ describe('ActorStudio', () => {
         });
         
         expect(actions.getCharacterResponse).toHaveBeenCalledWith(
-            mockCharacters[0], // Alice
-            storyText,
+            mockCharacters[0], // Alice's full character object
             [{ isUser: true, message: 'Hello Alice' }], // History includes user message
             'Hello Alice'
         );

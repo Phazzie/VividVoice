@@ -188,14 +188,13 @@ describe('Server Actions Tests', () => {
         it('should call the character chat flow and return its result', async () => {
             const mockInput = {
                 character: { name: 'Alice', description: 'desc', voiceId: 'v1' },
-                storyText: 'story',
                 history: [],
                 userMessage: 'hello'
             };
             const mockResult = { response: 'Hello back!' };
             (characterChatFlow as vi.Mock).mockResolvedValue(mockResult);
 
-            const result = await getCharacterResponse(mockInput.character, mockInput.storyText, mockInput.history, mockInput.userMessage);
+            const result = await getCharacterResponse(mockInput.character, mockInput.history, mockInput.userMessage);
 
             expect(characterChatFlow).toHaveBeenCalledWith(mockInput);
             expect(result).toEqual(mockResult.response);

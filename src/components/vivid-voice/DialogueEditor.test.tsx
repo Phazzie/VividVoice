@@ -1,7 +1,9 @@
+
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DialogueEditor, emotionOptions } from './DialogueEditor';
 import { userEvent } from '@testing-library/user-event';
+import { Character } from '@/lib/actions';
 
 // Mock child components that are complex and not relevant to this test
 vi.mock('@/components/vivid-voice/LiteraryAnalysis', () => ({
@@ -41,6 +43,11 @@ const mockSegments = [
   { character: 'Alice', dialogue: 'Hello there.', emotion: 'Happy' },
 ];
 
+const mockCharacters: Character[] = [
+    { name: 'Narrator', description: 'Narrator desc', voiceId: 'v-narr' },
+    { name: 'Alice', description: 'Alice desc', voiceId: 'v-alice' },
+]
+
 const mockPortraits = [
     { name: 'Alice', portraitDataUri: 'data:image/png;base64,alice' }
 ]
@@ -52,6 +59,7 @@ describe('DialogueEditor', () => {
         storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
+        characters={mockCharacters}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={false}
@@ -72,6 +80,7 @@ describe('DialogueEditor', () => {
         storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
+        characters={mockCharacters}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={false}
@@ -92,6 +101,7 @@ describe('DialogueEditor', () => {
         storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
+        characters={mockCharacters}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={false}
@@ -121,6 +131,7 @@ describe('DialogueEditor', () => {
         storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
+        characters={mockCharacters}
         characterPortraits={mockPortraits}
         onGenerateAudio={handleGenerateAudio}
         isLoading={false}
@@ -149,6 +160,7 @@ describe('DialogueEditor', () => {
         storyId="1"
         storyText="Story text"
         initialSegments={mockSegments}
+        characters={mockCharacters}
         characterPortraits={mockPortraits}
         onGenerateAudio={() => {}}
         isLoading={true}

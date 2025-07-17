@@ -27,7 +27,6 @@ import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consi
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
-import { generateCharacterBrief as generateCharacterBriefFlow } from '@/ai/flows/generate-character-brief';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -67,12 +66,12 @@ export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
 
 /**
  * Parses the dialogue from a story text. This is the first critical step in the story
- * processing pipeline.
+ * processing pipeline. It now generates rich character profiles upfront.
  * @param storyText The raw story text.
  * @returns A promise resolving to the parsed segments and characters.
  */
 export async function getParsedStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
-    console.log('Starting story parsing and AI casting...');
+    console.log('Starting story parsing and comprehensive character profile generation...');
      if (!storyText.trim()) {
         const errorMsg = 'Validation Error: Story text cannot be empty.';
         console.error({ action: 'getParsedStory', error: errorMsg });
@@ -86,7 +85,7 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
             console.error({ action: 'getParsedStory', error: errorMsg });
             throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
         }
-        console.log('Story parsing and AI casting successful.');
+        console.log('Story parsing and character profiling successful.');
         return parsedResult;
     } catch (error) {
         console.error('Fatal Error during getParsedStory action:', { error });
@@ -189,27 +188,12 @@ export async function invertTropes(storyText: string): Promise<{tropes: Trope[]}
 }
 
 /**
- * One-time analysis to generate a character summary for the Actor's Studio.
- * @returns A promise resolving to the character's summary brief.
+ * Interaction: Chats with a character from the story using their rich, pre-generated profile.
  */
-export async function getCharacterBrief(characterName: string, storyText: string): Promise<string> {
-    console.log(`Calling getCharacterBrief action for ${characterName}...`);
-    try {
-      const result = await generateCharacterBriefFlow({ characterName, storyText });
-      return result.characterBrief;
-    } catch (e: any) {
-        console.error('Error in getCharacterBrief action:', { error: e });
-        throw new Error('Failed to generate character brief.');
-    }
-}
-
-/**
- * Interaction: Chats with a character from the story using an efficient character brief.
- */
-export async function getCharacterResponse(characterName: string, characterBrief: string, history: ChatMessage[], userMessage: string): Promise<string> {
+export async function getCharacterResponse(character: Character, history: ChatMessage[], userMessage: string): Promise<string> {
     console.log('Calling getCharacterResponse action...');
     try {
-      const result = await characterChatFlow({ characterName, characterBrief, history, userMessage });
+      const result = await characterChatFlow({ character, history, userMessage });
       return result.response;
     } catch (e: any) {
         console.error('Error in getCharacterResponse action:', { error: e });

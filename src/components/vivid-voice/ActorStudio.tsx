@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { type Character, type ChatMessage, getCharacterResponse, getCharacterBrief } from '@/lib/actions';
+import { type Character, type ChatMessage, getCharacterResponse } from '@/lib/actions';
 import { Loader2, Send, Users, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,46 +21,20 @@ interface ActorStudioProps {
 
 export function ActorStudio({ characters, storyText }: ActorStudioProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-    const [characterBrief, setCharacterBrief] = useState<string | null>(null);
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const [userMessage, setUserMessage] = useState('');
     const { toast } = useToast();
 
-    // Effect to generate character brief when a new character is selected
-    useEffect(() => {
-        if (selectedCharacter) {
-            const generateBrief = async () => {
-                setIsGeneratingBrief(true);
-                setChatHistory([]);
-                setCharacterBrief(null);
-                try {
-                    const brief = await getCharacterBrief(selectedCharacter.name, storyText);
-                    setCharacterBrief(brief);
-                } catch (e: any) {
-                     toast({
-                        variant: "destructive",
-                        title: "Character Analysis Error",
-                        description: e.message || "Could not generate a brief for this character.",
-                    });
-                    setSelectedCharacter(null); // Deselect on error
-                } finally {
-                    setIsGeneratingBrief(false);
-                }
-            };
-            generateBrief();
-        }
-    }, [selectedCharacter, storyText, toast]);
-
     const handleCharacterChange = (characterName: string) => {
         const char = characters.find(c => c.name === characterName) || null;
         setSelectedCharacter(char);
+        setChatHistory([]); // Reset chat history when character changes
     };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedCharacter || !characterBrief || !userMessage.trim()) return;
+        if (!selectedCharacter || !userMessage.trim()) return;
 
         const newHistory: ChatMessage[] = [...chatHistory, { isUser: true, message: userMessage }];
         setChatHistory(newHistory);
@@ -69,7 +43,7 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
         setIsLoading(true);
 
         try {
-            const response = await getCharacterResponse(selectedCharacter.name, characterBrief, newHistory, currentMessage);
+            const response = await getCharacterResponse(selectedCharacter, newHistory, currentMessage);
             setChatHistory(prev => [...prev, { isUser: false, message: response }]);
         } catch (e: any) {
             toast({
@@ -83,6 +57,9 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
             setIsLoading(false);
         }
     };
+    
+    // We only want to interact with characters, not the Narrator
+    const interactableCharacters = characters.filter(c => c.name.toLowerCase() !== 'narrator');
 
     return (
         <div className="space-y-4 h-full flex flex-col">
@@ -90,36 +67,29 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
                 <Users className="w-10 h-10 text-primary" />
                 <h3 className="text-xl font-headline">AI Actor's Studio</h3>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  Need to flesh out a character? Interview them directly. The AI adopts your character's persona based on their dialogue and actions, allowing you to discover their true voice.
+                  Need to flesh out a character? Interview them directly. The AI adopts your character's persona based on their rich profile from the story.
                 </p>
             </div>
 
-            <Select onValueChange={handleCharacterChange} disabled={characters.length === 0 || isGeneratingBrief}>
+            <Select onValueChange={handleCharacterChange} disabled={interactableCharacters.length === 0}>
                 <SelectTrigger>
                     <SelectValue placeholder="Select a character to interview..." />
                 </SelectTrigger>
                 <SelectContent>
-                    {characters.map(char => (
+                    {interactableCharacters.map(char => (
                         <SelectItem key={char.name} value={char.name}>{char.name}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
-
-            {isGeneratingBrief && (
-                 <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    <p className="font-headline">Analyzing {selectedCharacter?.name}'s persona...</p>
-                 </div>
-            )}
             
-            {selectedCharacter && characterBrief && !isGeneratingBrief && (
+            {selectedCharacter && (
                 <Card className="flex-1 flex flex-col animate-in fade-in-50">
                     <ScrollArea className="flex-1 p-4">
                         <div className="space-y-4">
                             {chatHistory.length === 0 && (
-                                <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground flex items-center gap-3">
-                                    <Sparkles className="w-5 h-5 text-accent flex-shrink-0" />
-                                    <p>I've reviewed the script. I am ready for your questions.</p>
+                                <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground flex items-start gap-3">
+                                    <Sparkles className="w-8 h-8 text-accent flex-shrink-0" />
+                                    <p>I've reviewed my part and understand my motivations based on the script. I am ready for your questions.</p>
                                 </div>
                             )}
                             {chatHistory.map((msg, index) => (
@@ -139,6 +109,16 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
                                     )}
                                 </div>
                             ))}
+                             {isLoading && (
+                                <div className="flex items-start gap-3 justify-start">
+                                    <Avatar className="h-10 w-10 border-2" style={{ borderColor: getCharacterColor(selectedCharacter.name)}}>
+                                        <AvatarFallback className="text-white" style={{backgroundColor: getCharacterColor(selectedCharacter.name)}}>{selectedCharacter.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="max-w-xs md:max-w-md p-3 rounded-lg bg-muted flex items-center">
+                                       <Loader2 className="w-5 h-5 animate-spin"/>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </ScrollArea>
                     <CardContent className="p-4 border-t">
