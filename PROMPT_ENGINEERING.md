@@ -45,9 +45,9 @@ All AI prompts in the application have been upgraded to a robust, structured for
 > Now, analyze the following story text using the same process.
 >
 > **Story Text to Analyze:**
-> \`\`\`
+> ```
 > {{{storyText}}}
-> \`\`\`
+> ```
 
 ---
 
