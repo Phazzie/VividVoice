@@ -1,9 +1,8 @@
-
 # Product Requirements Document: Staging Stories with the Skeptical Wombat
 
 **Author:** AI Coding Partner, Firebase Studio
-**Version:** 1.0
-**Status:** Finalized for Initial Launch
+**Version:** 1.1 (Feature Complete)
+**Status:** Finalized for Launch
 
 ---
 
@@ -36,9 +35,9 @@ The primary target audience includes:
 
 ## 4. Feature Specification
 
-### 4.1. Core Experience
+All features listed below are considered **implemented** for the initial launch.
 
-These features form the main user workflow from story submission to audio playback.
+### 4.1. Core Experience
 
 | Feature ID | Feature Name | Description | User Story |
 | :--- | :--- | :--- | :--- |
@@ -49,8 +48,9 @@ These features form the main user workflow from story submission to audio playba
 | **CE-05** | **Dialogue Editor** | An interactive UI where users can review the parsed segments, edit the text, and fine-tune the `emotion` for each line to guide the TTS performance. | "As a user, I want to be able to correct any parsing errors and set the emotional tone for each line before generating the audio." |
 | **CE-06** | **Multi-Voice Audio Generation** | The system generates a single, cohesive audio file for the entire scene using SSML, with different voices for each character. | "As a user, I want a single audio file that sounds like a radio play, with seamless transitions between characters." |
 | **CE-07** | **Synchronized Highlighting** | During playback, the system highlights the exact words being spoken in the story text in real-time, karaoke-style, based on a detailed transcript. | "As a user, I want to follow along with the text as the audio plays, so I can see exactly which words are being spoken." |
-| **CE-08** | **AI-Powered Sound Design** | The AI scans the narrative for sound cues (e.g., "a door creaked open") and automatically layers in sound effects to enhance immersion. | "As a user, I want the app to automatically add sound effects to my story to make it more immersive." |
+| **CE-08** | **AI-Powered Sound Design** | The AI scans the narrative for sound cues (e.g., "a door creaked open") and automatically layers in sound effects to enhance immersion. Implemented with a placeholder sound library. | "As a user, I want the app to automatically add sound effects to my story to make it more immersive." |
 | **CE-09** | **Audio Playback Controls** | The story display includes controls for play/pause, seek forward/backward, playback speed, and volume. | "As a user, I want standard playback controls to manage my listening experience." |
+| **CE-10** | **User Accounts & Story Persistence** | Users can sign up/log in with a Google account. They can save their stories with a title and view them in a personal dashboard. | "As a user, I want to save my work and access it later." |
 
 ### 4.2. The Director's Room: Advanced Analysis Suite
 
@@ -78,13 +78,13 @@ This is a tabbed interface within the editor providing a suite of AI-powered ana
 *   **UI:** React, TypeScript, ShadCN UI, Tailwind CSS
 *   **Charting:** Recharts
 *   **State Management:** React Hooks (`useState`)
+*   **Authentication & Database:** Firebase (Auth, Firestore)
 *   **Hosting:** Firebase App Hosting
 
 ## 6. Future Considerations (Post-Launch Roadmap)
 
-*   **Comprehensive Testing:** Implement the full, ROI-ranked test suite documented in `TESTING_PLAN.md` to ensure application stability and prevent regressions.
-*   **Few-Shot Prompting:** Evolve the AI prompts to include high-quality examples ("few-shot" prompting) to further improve the accuracy and consistency of AI-generated results.
-*   **User Accounts & Saved Stories:** Allow users to create accounts, save their stories, and manage a library of their work.
-*   **Real-time Sound Effect Library:** Integrate with a licensed sound effect API to provide a wider variety of contextually appropriate sounds instead of a single placeholder.
-
----
+*   **Production Sound Effect Library:** Integrate with a licensed sound effect API (e.g., Artlist, Epidemic Sound) to provide a wider variety of contextually appropriate sounds instead of the current placeholder library.
+*   **User Sound Uploads:** Allow users to upload their own audio files for sound effects.
+*   **Advanced Few-Shot Prompting:** Evolve all remaining AI prompts to include high-quality examples ("few-shot" prompting) to further improve the accuracy and consistency of AI-generated results.
+*   **"Apply Suggestion" Button Polish:** Add the "Apply" button to all relevant analysis tools (like the Trope Inverter) for a consistent user experience.
+*   **Comprehensive Error Message Polish:** Review all user-facing `toast` notifications to ensure they are helpful, non-technical, and consistent.

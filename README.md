@@ -43,4 +43,5 @@ The Wombat's true genius lies in his critical eye. Go beyond simple playback wit
 *   **UI**: React, TypeScript, ShadCN UI, Tailwind CSS
 *   **Charting**: Recharts
 *   **State Management**: React Hooks
+*   **Authentication & Database**: Firebase
 *   **Hosting**: Firebase App Hosting

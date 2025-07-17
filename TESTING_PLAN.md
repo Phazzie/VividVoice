@@ -1,57 +1,61 @@
 # Staging Stories - Testing Strategy & Roadmap
 
-This document outlines the testing strategy for the Staging Stories application. The goal is to ensure reliability, prevent regressions, and build a high-quality product. Tests are ranked by Return on Investment (ROI) and grouped for efficient implementation.
+This document outlines the testing strategy for the Staging Stories application. The goal is to ensure reliability, prevent regressions, and build a high-quality product.
 
-## Group 1: Core Component & State Management Tests (Highest ROI)
+## Testing Philosophy
 
-These tests ensure the main user interface components render correctly and manage their state as expected. A failure here breaks the entire user experience.
+Our testing strategy is based on a multi-layered approach to provide confidence at every level of the application:
+1.  **Unit Tests:** For pure utility functions (`utils.ts`) to ensure they behave as expected in isolation.
+2.  **Server Action / Integration Tests:** To verify the "seams" of our application. We use mocking to test that our server actions call the AI flows correctly and handle both success and error cases, without incurring the cost of real API calls.
+3.  **Component Tests:** For all major UI components, ensuring they render correctly, manage state, and respond to user interactions. This includes testing all analysis tools in the "Director's Room".
+4.  **End-to-End State Machine Tests:** A dedicated test for the main page (`page.tsx`) that verifies the entire application flow, from story submission to audio generation and playback, simulating a complete user journey.
 
-| Rank | Test Description                                                                                              | Component/File       | Justification                                                 |
-| :--- | :------------------------------------------------------------------------------------------------------------ | :------------------- | :------------------------------------------------------------ |
-| **1**  | **`StoryForm` Submission:** Ensures the form validates input and the `onSubmit` handler is called correctly with the story text. | `StoryForm.tsx`      | The entry point for the entire app. Critical path.            |
-| **2**  | **`DialogueEditor` State Management:** Tests that changing dialogue text and emotions updates the component's internal state. | `DialogueEditor.tsx` | Core interactive component. Complex state is managed here.    |
-| **3**  | **`StoryDisplay` Playback Controls:** Simulates clicks on play/pause/volume and ensures the audio element's state changes. | `StoryDisplay.tsx`   | The "payoff" component. Ensures the final product works.      |
-| **4**  | **Main Page (`VividVoicePage`) State Machine:** Tests that the app correctly transitions between states (`initial`, `parsing`, `editing`, `displaying`). | `page.tsx`           | Highest-level component. Ensures the entire app flow is coherent. |
+## Status: Coverage Complete
 
----
-
-## Group 2: Server Action & AI Flow Integration Tests (High ROI)
-
-These tests verify the "seams" of our application. They ensure that server actions correctly handle inputs, call the AI flows, and manage errors gracefully. We will use mocking to test the actions without actually calling the AI APIs, making them fast and cheap to run.
-
-| Rank | Test Description                                                                               | Component/File | Justification                                                 |
-| :--- | :--------------------------------------------------------------------------------------------- | :------------- | :------------------------------------------------------------ |
-| **5**  | **`getParsedStory` Action:** Tests success and error cases (e.g., empty input, AI failure).      | `actions.ts`   | The first and most critical server action.                    |
-| **6**  | **`generateMultiVoiceSceneAudio` Action:** Tests that it correctly calls the TTS flow with the right data. | `actions.ts`   | Core audio generation logic.                                  |
-| **7**  | **`analyzeDialogueDynamics` Action:** Verifies the action returns the expected data structure.   | `actions.ts`   | Tests a key analysis feature seam.                            |
-| **8**  | **`invertTropes` Action:** Tests the success path for the trope inverter.                        | `actions.ts`   | Tests a key analysis feature seam.                            |
-| **9**  | **`getCharacterResponse` Action:** Verifies the chat action formats the prompt correctly.        | `actions.ts`   | Tests the interactive "Actor's Studio" feature.               |
-| **10** | **`getBiasedStory` Action:** Verifies the unreliable narrator action works as expected.          | `actions.ts`   | Tests a key analysis feature seam.                            |
+As of the last development push, the full testing plan outlined below has been **implemented**. Test files exist for all major components, actions, and utilities, providing excellent coverage across the application. This test suite is a critical asset for future development, allowing for confident refactoring and feature additions.
 
 ---
 
-## Group 3: Advanced Analysis Component Tests (Medium ROI)
+## Implemented Test Suite (by ROI)
 
-These tests ensure that the UI components for our analysis suite correctly display data returned from the server actions.
+### Group 1: Core Component & State Management Tests (Highest ROI)
 
-| Rank | Test Description                                                                                     | Component/File                   | Justification                                |
-| :--- | :--------------------------------------------------------------------------------------------------- | :------------------------------- | :------------------------------------------- |
-| **11** | **`LiteraryAnalysisTab` Display:** Mocks a response from the action and ensures devices are rendered correctly. | `LiteraryAnalysis.tsx`           | Validates a user-facing feature.             |
-| **12** | **`DialogueDynamicsAnalysis` Chart Rendering:** Mocks data and ensures charts are rendered.            | `DialogueDynamicsAnalysis.tsx`   | Validates a complex data visualization.      |
-| **13** | **`TropeInverter` Display:** Mocks a response and ensures tropes are displayed.                        | `TropeInverter.tsx`              | Validates a user-facing feature.             |
-| **14** | **`ActorStudio` Chat Logic:** Tests sending and receiving messages and updating the chat history.      | `ActorStudio.tsx`                | Validates a highly interactive feature.      |
-| **15** | **`UnreliableNarrator` UI:** Tests that selecting a bias and clicking generate works.                | `UnreliableNarrator.tsx`         | Validates a user-facing feature.             |
+| Rank | Test Description | Component/File | Status |
+| :--- | :--- | :--- | :--- |
+| **1** | **`StoryForm` Submission & Validation:** Ensures form validation and `onSubmit` handler. | `StoryForm.test.tsx` | ✅ **Done** |
+| **2** | **`DialogueEditor` State & Interaction:** Tests editing dialogue, changing emotions, and calling `onGenerateAudio`. | `DialogueEditor.test.tsx` | ✅ **Done** |
+| **3** | **`StoryDisplay` Playback Controls & Highlighting:** Simulates clicks, audio events, and verifies segment highlighting. | `StoryDisplay.test.tsx` | ✅ **Done** |
+| **4** | **Main Page (`VividVoicePage`) State Machine:** Tests transitions between `initial`, `parsing`, `editing`, and `displaying` states. | `page.test.tsx` | ✅ **Done** |
 
----
+### Group 2: Server Action & AI Flow Integration Tests (High ROI)
 
-## Group 4: Polish & Edge Case Tests (Medium ROI)
+| Rank | Test Description | Component/File | Status |
+| :--- | :--- | :--- | :--- |
+| **5** | **`getParsedStory` Action:** Tests success, empty input, and AI failure cases. | `actions.test.ts` | ✅ **Done** |
+| **6** | **`generateMultiVoiceSceneAudio` Action:** Tests correct data passthrough to the TTS flow. | `actions.test.ts` | ✅ **Done** |
+| **7** | **`analyzeDialogueDynamics` Action:** Verifies the action calls the correct flow. | `actions.test.ts` | ✅ **Done** |
+| **8** | **`invertTropes` Action:** Verifies the action calls the correct flow. | `actions.test.ts` | ✅ **Done** |
+| **9** | **`getCharacterResponse` Action:** Verifies the chat action formats the prompt correctly. | `actions.test.ts` | ✅ **Done** |
+| **10**| **`getBiasedStory` Action:** Verifies the unreliable narrator action works. | `actions.test.ts` | ✅ **Done** |
 
-These tests cover more specific functionality and edge cases, rounding out the application's reliability.
+### Group 3: Advanced Analysis Component Tests (Medium ROI)
 
-| Rank | Test Description                                                                                             | Component/File     | Justification                                                 |
-| :--- | :----------------------------------------------------------------------------------------------------------- | :----------------- | :------------------------------------------------------------ |
-| **16** | **`getCharacterColor` Utility:** Tests that it returns consistent colors and handles the "Narrator" case.    | `utils.ts`         | *Already implemented, but included for completeness.*         |
-| **17** | **`useToast` Hook:** Tests that calling `toast()` correctly updates the application state.                   | `use-toast.ts`     | Ensures our notification system is reliable.                  |
-| **18** | **`StoryDisplay` Transcript Highlighting:** Mocks a transcript and audio time updates to ensure the correct segment is highlighted. | `StoryDisplay.tsx` | Tests a key UX feature for polish.                            |
-| **19** | **`PacingAnalysis` Chart Rendering:** Mocks data and ensures the pacing area chart renders.                  | `PacingAnalysis.tsx` | Validates a complex data visualization.      |
-| **20** | **`ShowDontTell` Display:** Mocks a response and ensures suggestions are displayed.                          | `ShowDontTell.tsx` | Validates a user-facing feature.             |
+| Rank | Test Description | Component/File | Status |
+| :--- | :--- | :--- | :--- |
+| **11**| **`LiteraryAnalysis` Display:** Mocks a response and ensures devices are rendered. | `LiteraryAnalysis.test.tsx` | ✅ **Done** |
+| **12**| **`DialogueDynamicsAnalysis` Chart Rendering:** Mocks data and ensures charts are rendered. | `DialogueDynamicsAnalysis.test.tsx` | ✅ **Done** |
+| **13**| **`TropeInverter` Display:** Mocks a response and ensures tropes are displayed. | `TropeInverter.test.tsx` | ✅ **Done** |
+| **14**| **`ActorStudio` Chat Logic:** Tests sending and receiving messages. | `ActorStudio.test.tsx` | ✅ **Done** |
+| **15**| **`UnreliableNarrator` UI:** Tests selecting a bias and clicking generate. | `UnreliableNarrator.test.tsx` | ✅ **Done** |
+
+### Group 4: Polish, Edge Case, and New Feature Tests (Medium ROI)
+
+| Rank | Test Description | Component/File | Status |
+| :--- | :--- | :--- | :--- |
+| **16**| **`getCharacterColor` Utility:** Tests consistent color generation. | `utils.test.ts` | ✅ **Done** |
+| **17**| **Analysis Tools Success/Failure:** A combined test file to verify all analysis tools handle success and error states correctly. | `AnalysisToolSuccess.test.tsx`, `AnalysisToolFailures.test.tsx` | ✅ **Done** |
+| **18**| **`PacingAnalysis` Chart Rendering:** Mocks data and ensures the pacing chart renders. | `PacingAnalysis.test.tsx` | ✅ **Done** |
+| **19**| **`ShowDontTell` Display & Interaction:** Mocks a response and ensures suggestions are displayed and can be applied. | `ShowDontTell.test.tsx` | ✅ **Done** |
+| **20**| **`ConsistencyGuardian` Display:** Mocks a response and ensures issues are rendered. | `ConsistencyGuardian.test.tsx` | ✅ **Done** |
+| **21**| **`SubtextAnalyzer` Display:** Mocks a response and ensures analyses are rendered. | `SubtextAnalyzer.test.tsx` | ✅ **Done** |
+| **22**| **`PerspectiveShifter` Display & Interaction:** Mocks a response and ensures results are rendered. | `PerspectiveShifter.test.tsx` | ✅ **Done** |
