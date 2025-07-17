@@ -13,14 +13,14 @@ describe('SubtextAnalyzer', () => {
 
     it('should render the button and handle successful analysis', async () => {
         const user = userEvent.setup();
-        const mockAnalyses = [{
+        const mockResponse = {analyses: [{
             character: 'Alice',
             dialogue: 'Fine.',
             literalMeaning: 'Everything is okay.',
             subtext: 'Everything is not okay.',
             explanation: 'The context suggests anger.'
-        }];
-        (actions.analyzeSubtext as vi.Mock).mockResolvedValue(mockAnalyses);
+        }]};
+        (actions.analyzeSubtext as vi.Mock).mockResolvedValue(mockResponse);
 
         render(<SubtextAnalyzer storyText={storyText} />);
 

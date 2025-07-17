@@ -165,7 +165,7 @@ describe('Server Actions Tests', () => {
             const result = await analyzeLiteraryDevices(storyText);
 
             expect(analyzeLiteraryDevicesFlow).toHaveBeenCalledWith({ storyText });
-            expect(result).toEqual(mockResult.devices);
+            expect(result).toEqual(mockResult);
         });
     });
 
@@ -179,7 +179,7 @@ describe('Server Actions Tests', () => {
             const result = await invertTropes(storyText);
 
             expect(invertTropesFlow).toHaveBeenCalledWith({ storyText });
-            expect(result).toEqual(mockResult.tropes);
+            expect(result).toEqual(mockResult);
         });
     });
 
@@ -227,7 +227,7 @@ describe('Server Actions Tests', () => {
             const result = await analyzeStoryPacing(storyText);
 
             expect(analyzePacingFlow).toHaveBeenCalledWith({ storyText });
-            expect(result).toEqual(mockResult.segments);
+            expect(result).toEqual(mockResult);
         });
     });
 
@@ -241,7 +241,7 @@ describe('Server Actions Tests', () => {
             const result = await getShowDontTellSuggestions(storyText);
 
             expect(getShowDontTellSuggestionsFlow).toHaveBeenCalledWith({ storyText });
-            expect(result).toEqual(mockResult.suggestions);
+            expect(result).toEqual(mockResult);
         });
     });
 
@@ -255,7 +255,7 @@ describe('Server Actions Tests', () => {
             const result = await findInconsistencies(storyText);
 
             expect(findInconsistenciesFlow).toHaveBeenCalledWith({ storyText });
-            expect(result).toEqual(mockResult.issues);
+            expect(result).toEqual(mockResult);
         });
     });
 
@@ -269,7 +269,7 @@ describe('Server Actions Tests', () => {
             const result = await analyzeSubtext(storyText);
 
             expect(analyzeSubtextFlow).toHaveBeenCalledWith({ storyText });
-            expect(result).toEqual(mockResult.analyses);
+            expect(result).toEqual(mockResult);
         });
     });
 
@@ -295,7 +295,7 @@ describe('Server Actions Tests', () => {
             const storyText = "A door creaked.";
             const mockResult = { soundEffects: [{ segmentIndex: 0, description: '...', soundQuery: 'door creak' }] };
             (generateSoundDesignFlow as vi.Mock).mockResolvedValue(mockResult);
-            const placeholderSoundUrl = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg';
+            const placeholderSoundUrl = 'https://actions.google.com/sounds/v1/doors/creaking_door_opening.ogg';
 
             const result = await getSoundDesign(storyText);
 

@@ -14,11 +14,11 @@ describe('ShowDontTell', () => {
 
     it('should render the button and handle successful analysis', async () => {
         const user = userEvent.setup();
-        const mockSuggestions = [{
+        const mockResponse = {suggestions: [{
             tellingSentence: 'She was angry.',
             showingSuggestion: 'Her knuckles turned white.'
-        }];
-        (actions.getShowDontTellSuggestions as vi.Mock).mockResolvedValue(mockSuggestions);
+        }]};
+        (actions.getShowDontTellSuggestions as vi.Mock).mockResolvedValue(mockResponse);
 
         render(<ShowDontTell storyText={storyText} onApplySuggestion={onApply} />);
 
@@ -35,11 +35,11 @@ describe('ShowDontTell', () => {
 
      it('should call onApplySuggestion when apply button is clicked', async () => {
         const user = userEvent.setup();
-        const mockSuggestions = [{
+        const mockResponse = {suggestions: [{
             tellingSentence: 'She was angry.',
             showingSuggestion: 'Her knuckles turned white.'
-        }];
-        (actions.getShowDontTellSuggestions as vi.Mock).mockResolvedValue(mockSuggestions);
+        }]};
+        (actions.getShowDontTellSuggestions as vi.Mock).mockResolvedValue(mockResponse);
 
         render(<ShowDontTell storyText={storyText} onApplySuggestion={onApply} />);
         

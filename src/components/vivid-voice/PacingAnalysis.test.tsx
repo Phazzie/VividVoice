@@ -25,10 +25,10 @@ describe('PacingAnalysis', () => {
 
     it('should render the button and handle successful analysis', async () => {
         const user = userEvent.setup();
-        const mockAnalysis = [
+        const mockAnalysis = { segments: [
             { type: 'Narration', wordCount: 10 },
             { type: 'Dialogue', wordCount: 20 },
-        ];
+        ]};
         (actions.analyzeStoryPacing as vi.Mock).mockResolvedValue(mockAnalysis);
 
         render(<PacingAnalysis storyText={storyText} />);

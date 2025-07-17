@@ -13,12 +13,12 @@ describe('ConsistencyGuardian', () => {
 
     it('should render the button and handle successful analysis', async () => {
         const user = userEvent.setup();
-        const mockIssues = [{
+        const mockResponse = {issues: [{
             issue: 'Character eye color changed',
             quote: 'Her eyes were blue. ... her eyes were brown.',
             explanation: 'The character\'s eye color changes without explanation.'
-        }];
-        (actions.findInconsistencies as vi.Mock).mockResolvedValue(mockIssues);
+        }]};
+        (actions.findInconsistencies as vi.Mock).mockResolvedValue(mockResponse);
 
         render(<ConsistencyGuardian storyText={storyText} />);
 

@@ -2,8 +2,7 @@
 'use server';
 
 /**
- * @fileOverview An AI agent that identifies "telling" sentences and suggests "showing" alternatives,
- * now enhanced with a few-shot example for better accuracy.
+ * @fileOverview An AI agent that identifies "telling" sentences and suggests "showing" alternatives.
  * 
  * - getShowDontTellSuggestions - A function that handles the analysis.
  * - GetShowDontTellSuggestionsInput - The input type for the function.
