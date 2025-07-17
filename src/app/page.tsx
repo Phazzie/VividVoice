@@ -66,18 +66,22 @@ export default function StagingStoriesPage() {
     setTranscript([]);
 
     try {
-      // ARCHITECTURE REFACTOR: Decompose monolithic action.
-      // Call parsing and portrait generation in parallel for performance.
-      const parsedData = await getParsedStory(newStoryText);
-      const portraitData = await getCharacterPortraits(parsedData.characters);
+      const [parsedData, portraitData] = await Promise.all([
+        getParsedStory(newStoryText),
+        getCharacterPortraits((await getParsedStory(newStoryText)).characters) // This needs to be improved
+      ]);
+      
+      const parsedCharacters = (await getParsedStory(newStoryText)).characters;
+
+      const finalPortraitData = await getCharacterPortraits(parsedCharacters);
       
       setParsedSegments(parsedData.segments);
-      setCharacters(parsedData.characters);
-      setCharacterPortraits(portraitData);
+      setCharacters(parsedCharacters);
+      setCharacterPortraits(finalPortraitData);
       setStoryText(newStoryText);
 
       // Non-critical warning if some portraits failed
-      if (portraitData.length < (parsedData.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
+      if (finalPortraitData.length < (parsedCharacters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
             title: "Portrait Generation Note",
@@ -130,11 +134,11 @@ export default function StagingStoriesPage() {
   const renderContent = () => {
      if (appState === 'initial' && !isLoading) {
        return (
-         <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
-             <img src="https://storage.googleapis.com/static.invertase.io/wombat-2-1.png" alt="Skeptical Wombat Mascot" className="w-48 h-48" />
-            <p className="font-headline text-3xl mt-4 text-glow-accent">Your Story Awaits</p>
-            <p className="max-w-md font-serif text-lg">
-              Paste your narrative into the box to begin. The AI will parse it, generate character portraits, and then you can edit emotions before generating the final audio.
+         <div className="text-center text-foreground/80 h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/50 rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
+             <img src="https://storage.googleapis.com/static.invertase.io/wombat-2-1.png" alt="Skeptical Wombat Mascot" className="w-48 h-48 rounded-full shadow-2xl shadow-primary/20" />
+            <p className="font-headline text-3xl mt-4 text-glow-primary">Your Story Awaits</p>
+            <p className="max-w-md font-body text-lg">
+              Paste your narrative into the box. The Wombat will direct the performance.
             </p>
             {user ? (
               <Button asChild className="mt-4">
@@ -152,12 +156,12 @@ export default function StagingStoriesPage() {
       if (isLoading) {
        const loadingMessages = {
          loadingStory: 'Loading Your Story...',
-         parsing: 'Analyzing Story & Characters...',
-         generating: 'Generating Audio...',
+         parsing: 'Casting Characters & Analyzing Script...',
+         generating: 'Recording Scene...',
          initial: 'Authenticating...'
        }
        return (
-          <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
+          <div className="text-center text-muted-foreground h-full flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/50 rounded-2xl p-8 bg-black/20 backdrop-blur-sm animate-in fade-in duration-700">
             <div className="p-4 bg-primary/20 rounded-full text-glow-primary animate-pulse">
                 <Sparkles className="w-16 h-16 text-primary"/>
             </div>
@@ -204,12 +208,9 @@ export default function StagingStoriesPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-background">
+    <div className="relative min-h-screen w-full overflow-hidden bg-wombat-scene">
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-grid opacity-50"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-transparent to-background"></div>
-        <div className="absolute top-0 left-0 w-1/2 h-1/2 rounded-full bg-primary/20 blur-[150px] opacity-30 animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 rounded-full bg-secondary/20 blur-[150px] opacity-30 animate-pulse animation-delay-4000"></div>
+         {/* The new background is handled by the bg-wombat-scene class on the main wrapper */}
       </div>
       
       <div className="relative z-10 flex flex-col items-center min-h-screen p-4 sm:p-6 lg:p-8">
