@@ -23,8 +23,8 @@ export function SubtextAnalyzer({ storyText }: { storyText: string }) {
         setError(null);
         try {
             const result = await analyzeSubtext(storyText);
-            setAnalyses(result);
-            if (result.length === 0) {
+            setAnalyses(result.analyses);
+            if (result.analyses.length === 0) {
                  toast({ title: "Analysis Complete", description: "No significant subtext was detected." });
             }
         } catch (e: any) {

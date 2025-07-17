@@ -20,8 +20,8 @@ export function ConsistencyGuardian({ storyText }: { storyText: string }) {
         setError(null);
         try {
             const result = await findInconsistencies(storyText);
-            setIssues(result);
-            if (result.length === 0) {
+            setIssues(result.issues);
+            if (result.issues.length === 0) {
                  toast({ title: "Analysis Complete", description: "No consistency issues were found." });
             }
         } catch (e: any) {

@@ -21,8 +21,8 @@ export function TropeInverter({ storyText }: { storyText: string }) {
         setError(null);
         try {
             const result = await invertTropes(storyText);
-            setTropes(result);
-            if (result.length === 0) {
+            setTropes(result.tropes);
+            if (result.tropes.length === 0) {
                  toast({ title: "Analysis Complete", description: "No specific tropes were identified to invert." });
             }
         } catch (e: any) {

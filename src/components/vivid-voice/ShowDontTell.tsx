@@ -27,8 +27,8 @@ export function ShowDontTell({ storyText, onApplySuggestion }: ShowDontTellProps
         setError(null);
         try {
             const result = await getShowDontTellSuggestions(storyText);
-            setSuggestions(result);
-            if (result.length === 0) {
+            setSuggestions(result.suggestions);
+            if (result.suggestions.length === 0) {
                  toast({ title: "Analysis Complete", description: "No specific 'telling' sentences were identified." });
             }
         } catch (e: any) {

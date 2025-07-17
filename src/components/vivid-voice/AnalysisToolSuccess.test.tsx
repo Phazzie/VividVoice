@@ -68,38 +68,47 @@ describe('Analysis Tools Success Path Handling', () => {
     };
 
     it('should show results for LiteraryAnalysisTab', async () => {
-        await testSuccessCase(LiteraryAnalysisTab, { storyText }, 'analyzeLiteraryDevices', 'Analyze for Literary Devices', [{ device: 'Metaphor', quote: 'is a test', explanation: '...'}], 'Metaphor');
+        const mockResponse = { devices: [{ device: 'Metaphor', quote: 'is a test', explanation: '...'}]};
+        await testSuccessCase(LiteraryAnalysisTab, { storyText }, 'analyzeLiteraryDevices', 'Analyze for Literary Devices', mockResponse, 'Metaphor');
     });
 
     it('should show results for DialogueDynamicsAnalysis', async () => {
-        await testSuccessCase(DialogueDynamicsAnalysis, { storyText }, 'analyzeDialogueDynamics', 'Analyze Dialogue Dynamics', { summary: 'This is a summary.'}, 'This is a summary.');
+        const mockResponse = { summary: 'This is a summary.', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] }};
+        await testSuccessCase(DialogueDynamicsAnalysis, { storyText }, 'analyzeDialogueDynamics', 'Analyze Dialogue Dynamics', mockResponse, 'This is a summary.');
     });
     
     it('should show results for TropeInverter', async () => {
-        await testSuccessCase(TropeInverter, { storyText }, 'invertTropes', 'Analyze for Tropes', [{ trope: 'The Mentor', quote: 'a quote', inversionSuggestion: 'the suggestion' }], 'The Mentor');
+        const mockResponse = { tropes: [{ trope: 'The Mentor', quote: 'a quote', inversionSuggestion: 'the suggestion' }]};
+        await testSuccessCase(TropeInverter, { storyText }, 'invertTropes', 'Analyze for Tropes', mockResponse, 'The Mentor');
     });
 
     it('should show results for UnreliableNarrator', async () => {
-         await testSuccessCase(UnreliableNarrator, { storyText }, 'getBiasedStory', 'Apply Bias', 'This is the biased story.', 'This is the biased story.');
+        const mockResponse = { biasedStoryText: 'This is the biased story.' };
+         await testSuccessCase(UnreliableNarrator, { storyText }, 'getBiasedStory', 'Apply Bias', mockResponse, 'This is the biased story.');
     });
 
     it('should show results for PacingAnalysis', async () => {
-        await testSuccessCase(PacingAnalysis, { storyText }, 'analyzeStoryPacing', 'Analyze Story Pacing', [{ type: 'Dialogue', wordCount: 10 }], 'Pacing Visualization');
+        const mockResponse = { segments: [{ type: 'Dialogue', wordCount: 10 }]};
+        await testSuccessCase(PacingAnalysis, { storyText }, 'analyzeStoryPacing', 'Analyze Story Pacing', mockResponse, 'Pacing Visualization');
     });
 
     it('should show results for ShowDontTell', async () => {
-        await testSuccessCase(ShowDontTell, { storyText, onApplySuggestion: vi.fn() }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', [{ tellingSentence: 'a sentence', showingSuggestion: 'a suggestion' }], /Original "Telling" Sentence:/i);
+        const mockResponse = { suggestions: [{ tellingSentence: 'a sentence', showingSuggestion: 'a suggestion' }]};
+        await testSuccessCase(ShowDontTell, { storyText, onApplySuggestion: vi.fn() }, 'getShowDontTellSuggestions', 'Find "Telling" Sentences', mockResponse, /Original "Telling" Sentence:/i);
     });
 
     it('should show results for ConsistencyGuardian', async () => {
-        await testSuccessCase(ConsistencyGuardian, { storyText }, 'findInconsistencies', 'Check for Inconsistencies', [{ issue: 'The issue', quote: 'a quote', explanation: 'an explanation' }], 'The issue');
+        const mockResponse = { issues: [{ issue: 'The issue', quote: 'a quote', explanation: 'an explanation' }]};
+        await testSuccessCase(ConsistencyGuardian, { storyText }, 'findInconsistencies', 'Check for Inconsistencies', mockResponse, 'The issue');
     });
 
     it('should show results for SubtextAnalyzer', async () => {
-        await testSuccessCase(SubtextAnalyzer, { storyText }, 'analyzeSubtext', 'Analyze for Subtext', [{ character: 'Alice', dialogue: 'Fine.', literalMeaning: 'Ok', subtext: 'Not ok', explanation: '...' }], /Subtext \\(What's Really Meant\\)/i);
+        const mockResponse = { analyses: [{ character: 'Alice', dialogue: 'Fine.', literalMeaning: 'Ok', subtext: 'Not ok', explanation: '...' }]};
+        await testSuccessCase(SubtextAnalyzer, { storyText }, 'analyzeSubtext', 'Analyze for Subtext', mockResponse, /Subtext \\(What's Really Meant\\)/i);
     });
     
     it('should show results for PerspectiveShifter', async () => {
-        await testSuccessCase(PerspectiveShifter, { storyText, characters: mockCharacters }, 'shiftPerspective', 'Shift Perspective', { character: 'Alice', role: 'Protagonist', summary: 'A new summary'}, /The Story According to/i);
+        const mockResponse = { character: 'Alice', role: 'Protagonist', summary: 'A new summary'};
+        await testSuccessCase(PerspectiveShifter, { storyText, characters: mockCharacters }, 'shiftPerspective', 'Shift Perspective', mockResponse, /The Story According to/i);
     });
 });

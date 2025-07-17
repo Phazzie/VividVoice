@@ -20,8 +20,8 @@ export function LiteraryAnalysisTab({ storyText }: { storyText: string }) {
         setError(null);
         try {
             const result = await analyzeLiteraryDevices(storyText);
-            setDevices(result);
-            if (result.length === 0) {
+            setDevices(result.devices);
+            if (result.devices.length === 0) {
                  toast({ title: "Analysis Complete", description: "No specific literary devices were identified in the text." });
             }
         } catch (e: any) {

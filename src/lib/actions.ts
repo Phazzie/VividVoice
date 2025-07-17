@@ -149,11 +149,11 @@ export async function generateMultiVoiceSceneAudio(
 /**
  * Analysis: Scans the story for literary devices.
  */
-export async function analyzeLiteraryDevices(storyText: string): Promise<LiteraryDevice[]> {
+export async function analyzeLiteraryDevices(storyText: string): Promise<{devices: LiteraryDevice[]}> {
     console.log('Calling analyzeLiteraryDevices action...');
     try {
         const result = await analyzeLiteraryDevicesFlow({ storyText });
-        return result.devices;
+        return result;
     } catch (e: any) {
         console.error('Error in analyzeLiteraryDevices action:', { error: e });
         throw new Error('Failed to analyze literary devices.');
@@ -176,11 +176,11 @@ export async function analyzeDialogueDynamics(storyText: string): Promise<Dialog
 /**
  * Analysis: Identifies and suggests inversions for literary tropes.
  */
-export async function invertTropes(storyText: string): Promise<Trope[]> {
+export async function invertTropes(storyText: string): Promise<{tropes: Trope[]}> {
     console.log('Calling invertTropes action...');
     try {
         const result = await invertTropesFlow({ storyText });
-        return result.tropes;
+        return result;
     } catch (e: any) {
         console.error('Error in invertTropes action:', { error: e });
         throw new Error('Failed to analyze tropes.');
@@ -219,11 +219,11 @@ export async function getBiasedStory(storyText: string, bias: NarratorBias): Pro
 /**
  * Analysis: Analyzes story pacing.
  */
-export async function analyzeStoryPacing(storyText: string): Promise<PacingSegment[]> {
+export async function analyzeStoryPacing(storyText: string): Promise<{segments: PacingSegment[]}> {
     console.log('Calling analyzeStoryPacing action...');
     try {
         const result = await analyzePacingFlow({ storyText });
-        return result.segments;
+        return result;
     } catch (e: any) {
         console.error('Error in analyzeStoryPacing action:', { error: e });
         throw new Error('Failed to analyze story pacing.');
@@ -236,11 +236,11 @@ export async function analyzeStoryPacing(storyText: string): Promise<PacingSegme
  * @param storyText The full text of the story.
  * @returns A promise resolving to an array of suggestions.
  */
-export async function getShowDontTellSuggestions(storyText: string): Promise<ShowDontTellSuggestion[]> {
+export async function getShowDontTellSuggestions(storyText: string): Promise<{suggestions: ShowDontTellSuggestion[]}> {
   console.log('Calling getShowDontTellSuggestions action...');
   try {
     const result = await getShowDontTellSuggestionsFlow({ storyText });
-    return result.suggestions;
+    return result;
   } catch(e: any) {
     console.error('Error in getShowDontTellSuggestions action:', { error: e });
     throw new Error('Failed to get "Show, Don\'t Tell" suggestions.');
@@ -252,11 +252,11 @@ export async function getShowDontTellSuggestions(storyText: string): Promise<Sho
  * @param storyText The full text of the story.
  * @returns A promise resolving to an array of identified inconsistencies.
  */
-export async function findInconsistencies(storyText: string): Promise<ConsistencyIssue[]> {
+export async function findInconsistencies(storyText: string): Promise<{issues: ConsistencyIssue[]}> {
   console.log('Calling findInconsistencies action...');
    try {
     const result = await findInconsistenciesFlow({ storyText });
-    return result.issues;
+    return result;
   } catch(e: any) {
     console.error('Error in findInconsistencies action:', { error: e });
     throw new Error('Failed to find inconsistencies.');
@@ -268,11 +268,11 @@ export async function findInconsistencies(storyText: string): Promise<Consistenc
  * @param storyText The full text of the story.
  * @returns A promise resolving to an array of subtext analyses.
  */
-export async function analyzeSubtext(storyText: string): Promise<SubtextAnalysis[]> {
+export async function analyzeSubtext(storyText: string): Promise<{analyses: SubtextAnalysis[]}> {
   console.log('Calling analyzeSubtext action...');
   try {
     const result = await analyzeSubtextFlow({ storyText });
-    return result.analyses;
+    return result;
   } catch(e: any) {
     console.error('Error in analyzeSubtext action:', { error: e });
     throw new Error('Failed to analyze subtext.');
@@ -296,6 +296,22 @@ export async function shiftPerspective(storyText: string, characterName: string,
   }
 }
 
+
+const soundLibrary: Record<string, string> = {
+  'door creak': 'https://actions.google.com/sounds/v1/doors/creaking_door_opening.ogg',
+  'wind': 'https://actions.google.com/sounds/v1/weather/windy_day.ogg',
+  'rain': 'https://actions.google.com/sounds/v1/weather/rain.ogg',
+  'thunder': 'https://actions.google.com/sounds/v1/weather/thunder_crack.ogg',
+  'footsteps': 'https://actions.google.com/sounds/v1/movement/footsteps_on_wood.ogg',
+  'glass break': 'https://actions.google.com/sounds/v1/impacts/glass_breaking.ogg',
+  'scream': 'https://actions.google.com/sounds/v1/human_voices/scream.ogg',
+  'whisper': 'https://actions.google.com/sounds/v1/human_voices/whisper.ogg',
+  'clock tick': 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg',
+  'fire crackle': 'https://actions.google.com/sounds/v1/fire/fire.ogg',
+};
+const defaultSound = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg';
+
+
 /**
  * Scans the story for sound effect cues and provides placeholder URLs.
  * @param storyText The full text of the story.
@@ -309,16 +325,19 @@ export async function getSoundDesign(storyText: string): Promise<SoundEffectWith
     if (soundEffects.length === 0) {
       return [];
     }
-
+    
     // In a real application, you would use the `soundQuery` to search a
     // licensed audio library API and get a real URL.
-    // For this demo, we will use a consistent, high-quality placeholder sound.
-    const placeholderSoundUrl = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg';
-
-    return soundEffects.map(effect => ({
-      ...effect,
-      soundUrl: placeholderSoundUrl,
-    }));
+    // For this demo, we will map the query to our small, curated library.
+    return soundEffects.map(effect => {
+      const lowerQuery = effect.soundQuery.toLowerCase();
+      // Find the best match in our library
+      const matchedKey = Object.keys(soundLibrary).find(key => lowerQuery.includes(key));
+      return {
+        ...effect,
+        soundUrl: matchedKey ? soundLibrary[matchedKey] : defaultSound,
+      }
+    });
   } catch (e: any) {
     console.error('Error in getSoundDesign action:', { error: e });
     // Return empty array on failure as this is a non-critical enhancement.

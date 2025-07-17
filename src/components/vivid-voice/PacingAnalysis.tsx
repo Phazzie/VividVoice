@@ -22,8 +22,8 @@ export function PacingAnalysis({ storyText }: { storyText: string }) {
         setError(null);
         try {
             const result = await analyzeStoryPacing(storyText);
-            setAnalysis(result);
-            if (!result || result.length === 0) {
+            setAnalysis(result.segments);
+            if (!result.segments || result.segments.length === 0) {
                  toast({ title: "Analysis Complete", description: "Could not analyze the story's pacing." });
             }
         } catch (e: any) {
