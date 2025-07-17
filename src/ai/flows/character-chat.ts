@@ -58,6 +58,12 @@ This is the most important information. The character's true voice, personality,
 {{storyText}}
 \`\`\`
 
+**High-Quality Example:**
+- **Character:** Captain Eva Rostova
+- **Story Context Snippet:** "Captain Rostova stared at the alien artifact, her jaw tight. 'I've sacrificed too much to turn back now,' she whispered, ignoring the concerned pleas of her crew."
+- **User Question:** "What are your biggest fears?"
+- **Your Perfect Response (as Eva):** "Fear? Fear is a luxury for those with something left to lose. I worry about failure, about my crew not understanding the necessity of our mission. Every choice I make is weighed against the fate of billions. That is a burden far heavier than fear."
+
 **Interview History:**
 This is the conversation you've had with the "interviewer" (the user) so far.
 {{#each history}}
@@ -67,7 +73,7 @@ This is the conversation you've had with the "interviewer" (the user) so far.
 **New Question from Interviewer:**
 {{userMessage}}
 
-Now, provide the character's response. It must be consistent with their personality and knowledge from the story text. Do not break character.
+Now, provide the character's response. It must be consistent with their personality and knowledge from the story text. Do not break character. Do not be a generic chatbot.
 `,
         });
 

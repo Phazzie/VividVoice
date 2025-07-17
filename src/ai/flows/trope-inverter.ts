@@ -47,6 +47,24 @@ For each trope you identify, you must provide:
 2.  A direct 'quote' from the text that perfectly exemplifies this trope.
 3.  A creative and insightful 'inversionSuggestion' that subverts, deconstructs, or cleverly twists the trope to make the story more original and unpredictable. The suggestion should be actionable for the writer, offering a concrete alternative direction.
 
+**High-Quality Example:**
+- **Input Story Text Snippet:**
+  \`\`\`
+  "Help me!" Princess Aurelia cried from the dragon's tower. "A brave knight must save me!"
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "tropes": [
+      {
+        "trope": "Damsel in Distress",
+        "quote": "\"Help me!\" Princess Aurelia cried from the dragon's tower. \"A brave knight must save me!\"",
+        "inversionSuggestion": "Instead of the princess being a passive victim, reveal she orchestrated her own kidnapping. The 'dragon' is an illusion or a hired beast, and her calls for a 'brave knight' are a ploy to lure the kingdom's richest hero to her so she can rob him and finance her escape from royal life."
+      }
+    ]
+  }
+  \`\`\`
+
 Return your findings as a JSON object with a 'tropes' array. If no clear tropes are found, return an empty array.
 
 **Story Text to Analyze:**

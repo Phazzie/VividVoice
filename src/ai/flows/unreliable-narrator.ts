@@ -48,6 +48,21 @@ const applyNarratorBiasFlow = ai.defineFlow(
 3.  The bias should be woven into the narrative subtly. Show, don't tell the bias. For example, if the bias is "Jealous of Main Character," describe the character's successes with a hint of sarcasm or downplay their achievements.
 4.  Preserve the original plot points. The sequence of events should remain the same.
 
+**High-Quality Example:**
+- **Input Story Text:**
+  \`\`\`
+  Narrator: The hero, John, stood tall, his armor gleaming in the sun.
+  John: I am here to save you!
+  Narrator: He bravely fought the monster.
+  \`\`\`
+- **Input Bias:** "Jealous of Main Character"
+- **Your Perfect Output Text:**
+  \`\`\`
+  Narrator: John, if you could call him a 'hero', posed dramatically, making sure the sun glinted off his polished armor.
+  John: I am here to save you!
+  Narrator: He flailed wildly at the creature, getting in a lucky shot or two.
+  \`\`\`
+
 **Specified Bias to Apply:**
 {{bias}}
 
