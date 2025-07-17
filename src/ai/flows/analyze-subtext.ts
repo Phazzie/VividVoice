@@ -51,7 +51,17 @@ For each instance of subtext you find, provide:
 4.  The 'subtext' (what is really meant, felt, or intended).
 5.  A brief but insightful 'explanation' of the contextual clues (previous events, character relationships, tone, what is NOT being said) that point to this subtext.
 
-Your analysis should be deep and nuanced. Return your findings as a JSON object with an 'analyses' array. If no significant subtext is found, return an empty array.
+**High-Quality Example:**
+- **Context:** A character, Jane, has just lost a competition she desperately wanted to win. Her friend asks if she's okay.
+- **Dialogue Line:** "Jane: I'm fine."
+- **Your Analysis:**
+  - **character:** "Jane"
+  - **dialogue:** "I'm fine."
+  - **literalMeaning:** "I am okay / not hurt."
+  - **subtext:** "I am deeply disappointed and hurt, but I don't want to talk about it."
+  - **explanation:** "The word 'fine' is often used to deflect conversation about true feelings, especially after a significant negative event. The context of her recent loss makes it highly probable that she is masking her true emotional state."
+
+Your analysis should be this deep and nuanced. Return your findings as a JSON object with an 'analyses' array. If no significant subtext is found, return an empty array.
 
 **Story Text to Analyze:**
 \`\`\`
@@ -64,3 +74,4 @@ Your analysis should be deep and nuanced. Return your findings as a JSON object 
         return output!;
     }
 );
+
