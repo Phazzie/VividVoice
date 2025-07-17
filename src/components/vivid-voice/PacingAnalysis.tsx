@@ -10,37 +10,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { AreaChart, Area, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export function PacingAnalysis({ storyText }: { storyText: string }) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [analysis, setAnalysis] = useState<PacingSegment[] | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const { toast } = useToast();
-
-    const handleAnalyze = async () => {
-        setIsLoading(true);
-        setAnalysis(null);
-        setError(null);
-        try {
-            const result = await analyzeStoryPacing(storyText);
-            setAnalysis(result.segments);
-            if (!result.segments || result.segments.length === 0) {
-                 toast({ title: "Analysis Complete", description: "Could not analyze the story's pacing." });
-            }
-        } catch (e: any) {
-            const errorMessage = e.message || "An unexpected error occurred during analysis.";
-            setError(errorMessage);
-            toast({
-                variant: "destructive",
-                title: "Analysis Error",
-                description: errorMessage,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+export function PacingAnalysis({ pacing, error }: { pacing: { segments: PacingSegment[] } | null, error?: string }) {
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Analysis Failed</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )
+    }
     
     // Process data for the chart
-    const chartData = analysis?.map((segment, index) => ({
+    const chartData = pacing?.segments?.map((segment, index) => ({
       name: `Seg ${index + 1}`,
       Dialogue: segment.type === 'Dialogue' ? segment.wordCount : 0,
       Narration: segment.type === 'Narration' ? segment.wordCount : 0,
@@ -54,23 +38,17 @@ export function PacingAnalysis({ storyText }: { storyText: string }) {
                 <p className="text-sm text-muted-foreground max-w-md">
                    Is your story dragging or rushing? This tool creates a chart that visualizes the flow between narration and dialogue, helping you spot pacing problems at a glance.
                 </p>
-                <Button onClick={handleAnalyze} disabled={isLoading} className="mt-2">
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
-                    Analyze Story Pacing
-                </Button>
             </div>
 
-            {error && (
-                 <Alert variant="destructive">
+            {!pacing || !chartData || chartData.length === 0 ? (
+                <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>Analysis Not Available</AlertTitle>
                     <AlertDescription>
-                        {error}
+                        Pacing analysis could not be performed. This may be because the story is too short or lacks a mix of dialogue and narration.
                     </AlertDescription>
                 </Alert>
-            )}
-            
-            {analysis && chartData && (
+            ) : (
                 <div className="space-y-8 animate-in fade-in-50 duration-500">
                     <Card>
                         <CardHeader>

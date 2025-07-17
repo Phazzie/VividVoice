@@ -9,45 +9,22 @@ import * as actions from '@/lib/actions';
 vi.mock('@/lib/actions');
 
 describe('TropeInverter', () => {
-    const storyText = 'He was the chosen one.';
-
-    it('should render the button and handle successful analysis', async () => {
-        const user = userEvent.setup();
+    it('should render the analysis results when tropes are provided', () => {
         const mockTropes = [{
             trope: 'The Chosen One',
             quote: 'He was the chosen one.',
             inversionSuggestion: 'Turns out, he was chosen by the villains.'
         }];
-        (actions.invertTropes as vi.Mock).mockResolvedValue(mockTropes);
+        render(<TropeInverter tropes={mockTropes} />);
 
-        render(<TropeInverter storyText={storyText} />);
-
-        const analyzeButton = screen.getByRole('button', { name: /Analyze for Tropes to Invert/i });
-        await user.click(analyzeButton);
-
-        // Check for loading state
-        expect(screen.getByText(/Analyze for Tropes to Invert/i)).toBeDisabled();
-
-        // Check for results
-        await waitFor(() => {
-            expect(screen.getByText('The Chosen One')).toBeInTheDocument();
-            expect(screen.getByText('Inversion Suggestion:')).toBeInTheDocument();
-            expect(screen.getByText('Turns out, he was chosen by the villains.')).toBeInTheDocument();
-        });
+        expect(screen.getByText('The Chosen One')).toBeInTheDocument();
+        expect(screen.getByText('Inversion Suggestion:')).toBeInTheDocument();
+        expect(screen.getByText('Turns out, he was chosen by the villains.')).toBeInTheDocument();
     });
 
-    it('should display an error alert if analysis fails', async () => {
-        const user = userEvent.setup();
-        const errorMessage = 'Trope analysis failed';
-        (actions.invertTropes as vi.Mock).mockRejectedValue(new Error(errorMessage));
+    it('should display a message when no tropes are found', () => {
+        render(<TropeInverter tropes={[]} />);
 
-        render(<TropeInverter storyText={storyText} />);
-        
-        await user.click(screen.getByRole('button', { name: /Analyze for Tropes to Invert/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Error')).toBeInTheDocument();
-            expect(screen.getByText(errorMessage)).toBeInTheDocument();
-        });
+        expect(screen.getByText('No Tropes Identified')).toBeInTheDocument();
     });
 });

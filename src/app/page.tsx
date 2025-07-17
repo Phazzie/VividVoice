@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment } from "@/lib/actions";
+import { getFullStoryAnalysis, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment, type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from "@/lib/actions";
 import { getStoryById } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -15,8 +15,22 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 
-type AppState = 'initial' | 'loadingStory' | 'parsing' | 'editing' | 'generating' | 'displaying';
-type DialogueSegment = any;
+type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
+type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
+
+interface FullAnalysis {
+  segments: DialogueSegment[];
+  characters: Character[];
+  characterPortraits: CharacterPortrait[];
+  dialogueDynamics: DialogueDynamics;
+  literaryDevices: { devices: LiteraryDevice[] };
+  pacing: { segments: PacingSegment[] };
+  tropes: { tropes: Trope[] };
+  showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
+  consistencyIssues: { issues: ConsistencyIssue[] };
+  subtextAnalyses: { analyses: SubtextAnalysis[] };
+  soundEffects: SoundEffectWithUrl[];
+}
 
 export default function StagingStoriesPage() {
   const { user, loading: authLoading } = useAuth();
@@ -26,22 +40,21 @@ export default function StagingStoriesPage() {
   const [appState, setAppState] = useState<AppState>('initial');
   const [storyId, setStoryId] = useState<string | null>(storyIdToLoad);
   const [storyText, setStoryText] = useState<string>('');
-  const [parsedSegments, setParsedSegments] = useState<DialogueSegment[]>([]);
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [characterPortraits, setCharacterPortraits] = useState<CharacterPortrait[]>([]);
+  const [fullAnalysis, setFullAnalysis] = useState<FullAnalysis | null>(null);
+  const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
   const [sceneAudioUri, setSceneAudioUri] = useState<string>('');
   const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
+    useEffect(() => {
     if (storyIdToLoad && user) {
       const loadStory = async () => {
         setAppState('loadingStory');
         try {
           const story = await getStoryById(storyIdToLoad);
           if (story && story.userId === user.uid) {
-            await handleParseStory(story.storyText, story.id);
+            await handleFullAnalysis(story.storyText, story.id);
           } else {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story or you do not have permission to view it.'});
             setAppState('initial');
@@ -55,30 +68,32 @@ export default function StagingStoriesPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyIdToLoad, user]);
-  
-  const handleParseStory = async (newStoryText: string, existingStoryId: string | null = null) => {
-    setAppState('parsing');
+  const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
+    setAppState('analyzing');
     setError(null);
     setStoryId(existingStoryId);
-    setParsedSegments([]);
-    setCharacterPortraits([]);
+    setFullAnalysis(null);
     setStoryText('');
     setTranscript([]);
 
     try {
-      // The main parsing now returns rich character data, so we can run portrait generation in parallel.
-      const parsedResult = await getParsedStory(newStoryText);
-      const portraitPromise = getCharacterPortraits(parsedResult.characters);
+      const analysisResult = await getFullStoryAnalysis(newStoryText);
 
-      const [portraitData] = await Promise.all([portraitPromise]);
-
-      setParsedSegments(parsedResult.segments);
-      setCharacters(parsedResult.characters);
-      setCharacterPortraits(portraitData);
+      setFullAnalysis(analysisResult);
       setStoryText(newStoryText);
+      setAnalysisErrors(analysisResult.errors);
+
+      const errorCount = Object.keys(analysisResult.errors).length;
+      if (errorCount > 0) {
+        toast({
+          variant: "destructive",
+          title: `Analysis Incomplete`,
+          description: `Encountered ${errorCount} error(s) during analysis. Some tabs may be empty.`
+        })
+      }
 
       // Non-critical warning if some portraits failed
-      if (portraitData.length < (parsedResult.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
+      if (!analysisResult.characterPortraits || analysisResult.characterPortraits.length < (analysisResult.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
             title: "Portrait Generation Note",
@@ -88,12 +103,12 @@ export default function StagingStoriesPage() {
 
       setAppState('editing');
     } catch (e: any) {
-      const errorMessage = e.message || "An unexpected error occurred during parsing.";
+      const errorMessage = e.message || "An unexpected error occurred during analysis.";
       setError(errorMessage);
       setAppState('initial');
       toast({
         variant: "destructive",
-        title: "Parsing Error",
+        title: "Analysis Error",
         description: errorMessage,
       });
     }
@@ -127,7 +142,7 @@ export default function StagingStoriesPage() {
     setTranscript([]);
   }
 
-  const isLoading = ['parsing', 'generating', 'loadingStory'].includes(appState) || authLoading;
+  const isLoading = ['analyzing', 'generating', 'loadingStory'].includes(appState) || authLoading;
 
   const renderContent = () => {
      if (appState === 'initial' && !isLoading) {
@@ -154,12 +169,12 @@ export default function StagingStoriesPage() {
       if (isLoading) {
        const loadingMessages = {
          loadingStory: 'Loading Your Story...',
-         parsing: 'Casting Characters & Analyzing Script...',
+         analyzing: 'Analyzing Script & Director Notes...',
          generating: 'Recording Scene...',
          initial: 'Authenticating...'
        }
-       const currentMessage = appState === 'parsing' 
-        ? 'Casting Characters & Analyzing Script...'
+       const currentMessage = appState === 'analyzing'
+        ? 'Analyzing Script & Director Notes...'
         : authLoading 
           ? 'Authenticating...'
           : loadingMessages[appState as keyof typeof loadingMessages] || 'Loading...';
@@ -176,15 +191,24 @@ export default function StagingStoriesPage() {
        );
      }
 
-     if (appState === 'editing') {
+     if (appState === 'editing' && fullAnalysis) {
        return (
          <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
            <DialogueEditor 
              storyId={storyId}
              storyText={storyText}
-             initialSegments={parsedSegments}
-             characters={characters} // Pass the rich character data
-             characterPortraits={characterPortraits}
+             initialSegments={fullAnalysis.segments}
+             characters={fullAnalysis.characters}
+             characterPortraits={fullAnalysis.characterPortraits}
+             dialogueDynamics={fullAnalysis.dialogueDynamics}
+             literaryDevices={fullAnalysis.literaryDevices.devices}
+             pacing={fullAnalysis.pacing}
+             tropes={fullAnalysis.tropes?.tropes || []}
+             showDontTellSuggestions={fullAnalysis.showDontTellSuggestions?.suggestions || []}
+             consistencyIssues={fullAnalysis.consistencyIssues?.issues || []}
+             subtextAnalyses={fullAnalysis.subtextAnalyses?.analyses || []}
+             soundEffects={fullAnalysis.soundEffects || []}
+             analysisErrors={analysisErrors}
              onGenerateAudio={handleGenerateAudio}
              isLoading={appState === 'generating'}
              onStorySave={(id) => setStoryId(id)}
@@ -193,13 +217,13 @@ export default function StagingStoriesPage() {
        );
      }
 
-     if (appState === 'displaying' && sceneAudioUri) {
+     if (appState === 'displaying' && sceneAudioUri && fullAnalysis) {
         return (
           <div className="animate-in fade-in zoom-in-95 duration-700 slide-in-from-right-8">
             <StoryDisplay 
-             segments={parsedSegments} 
-             characterPortraits={characterPortraits}
-             characters={characters}
+             segments={fullAnalysis.segments}
+             characterPortraits={fullAnalysis.characterPortraits}
+             characters={fullAnalysis.characters}
              storyText={storyText}
              sceneAudioUri={sceneAudioUri}
              transcript={transcript}
@@ -226,7 +250,7 @@ export default function StagingStoriesPage() {
               "lg:col-span-2 lg:sticky lg:top-8 space-y-8 transition-all duration-700 animate-in fade-in slide-in-from-left-8",
               (appState !== 'initial' && !isLoading) && "lg:opacity-50 lg:pointer-events-none"
             )}>
-              <StoryForm onSubmit={(text) => handleParseStory(text)} isLoading={isLoading} />
+              <StoryForm onSubmit={(text) => handleFullAnalysis(text)} isLoading={isLoading} />
             </div>
             
             <div className="lg:col-span-3 min-h-[60vh]">

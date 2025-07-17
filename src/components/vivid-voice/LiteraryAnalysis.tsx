@@ -8,35 +8,19 @@ import { Loader2, FlaskConical, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
-export function LiteraryAnalysisTab({ storyText }: { storyText: string }) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [devices, setDevices] = useState<LiteraryDevice[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const { toast } = useToast();
+export function LiteraryAnalysisTab({ devices, error }: { devices: LiteraryDevice[], error?: string }) {
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Analysis Failed</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )
+    }
 
-    const handleAnalyze = async () => {
-        setIsLoading(true);
-        setDevices([]);
-        setError(null);
-        try {
-            const result = await analyzeLiteraryDevices(storyText);
-            setDevices(result.devices);
-            if (result.devices.length === 0) {
-                 toast({ title: "Analysis Complete", description: "No specific literary devices were identified in the text." });
-            }
-        } catch (e: any) {
-            const errorMessage = e.message || "An unexpected error occurred during analysis.";
-            setError(errorMessage);
-            toast({
-                variant: "destructive",
-                title: "Analysis Error",
-                description: errorMessage,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
     return (
         <div className="space-y-4">
             <div className="flex flex-col items-center justify-center text-center gap-2 mb-6">
@@ -45,23 +29,17 @@ export function LiteraryAnalysisTab({ storyText }: { storyText: string }) {
                 <p className="text-sm text-muted-foreground max-w-md">
                     Find literary devices like metaphors, similes, and foreshadowing in your text. The AI will provide the quote and explain how the device is being used.
                 </p>
-                <Button onClick={handleAnalyze} disabled={isLoading} className="mt-2">
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
-                    Analyze for Literary Devices
-                </Button>
             </div>
 
-            {error && (
-                 <Alert variant="destructive">
+            {devices.length === 0 ? (
+                <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>No Devices Found</AlertTitle>
                     <AlertDescription>
-                        {error}
+                        The initial analysis did not identify any prominent literary devices.
                     </AlertDescription>
                 </Alert>
-            )}
-
-            {devices.length > 0 && (
+            ) : (
                 <div className="space-y-4">
                     {devices.map((device, index) => (
                         <div key={index} className="p-4 rounded-lg bg-muted/50 border border-border/50">

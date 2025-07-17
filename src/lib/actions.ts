@@ -70,6 +70,102 @@ export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
  * @param storyText The raw story text.
  * @returns A promise resolving to the parsed segments and characters.
  */
+export async function getFullStoryAnalysis(storyText: string): Promise<{
+  segments: DialogueSegment[];
+  characters: Character[];
+  characterPortraits: CharacterPortrait[];
+  dialogueDynamics: DialogueDynamics;
+  literaryDevices: { devices: LiteraryDevice[] };
+  pacing: { segments: PacingSegment[] };
+  tropes: { tropes: Trope[] };
+  showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
+  consistencyIssues: { issues: ConsistencyIssue[] };
+  subtextAnalyses: { analyses: SubtextAnalysis[] };
+  soundEffects: SoundEffectWithUrl[] | null;
+  errors: Record<string, string>;
+}> {
+  console.log('Starting full story analysis...');
+  if (!storyText.trim()) {
+    const errorMsg = 'Validation Error: Story text cannot be empty.';
+    console.error({ action: 'getFullStoryAnalysis', error: errorMsg });
+    throw new Error(errorMsg);
+  }
+
+  try {
+    // 1. Get the foundational parsed story
+    const parsedStory = await getParsedStory(storyText);
+    if (!parsedStory || !parsedStory.segments || parsedStory.segments.length === 0) {
+      const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
+      console.error({ action: 'getFullStoryAnalysis', error: errorMsg });
+      throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
+    }
+
+    const { segments, characters } = parsedStory;
+
+    // 2. Orchestrate all other analyses in parallel
+    const results = await Promise.allSettled([
+      getCharacterPortraits(characters),
+      analyzeDialogueDynamicsFlow({ storyText }),
+      analyzeLiteraryDevicesFlow({ storyText }),
+      analyzeStoryPacingFlow({ storyText }),
+      invertTropesFlow({ storyText }),
+      getShowDontTellSuggestionsFlow({ storyText }),
+      findInconsistenciesFlow({ storyText }),
+      analyzeSubtextFlow({ storyText }),
+      getSoundDesign(storyText),
+    ]);
+
+    const [
+      characterPortraits,
+      dialogueDynamics,
+      literaryDevices,
+      pacing,
+      tropes,
+      showDontTellSuggestions,
+      consistencyIssues,
+      subtextAnalyses,
+      soundEffects,
+    ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
+
+    const errors: Record<string, string> = {};
+    if (results[1].status === 'rejected') errors.dialogueDynamics = results[1].reason.message;
+    if (results[2].status === 'rejected') errors.literaryDevices = results[2].reason.message;
+    if (results[3].status === 'rejected') errors.pacing = results[3].reason.message;
+    if (results[4].status === 'rejected') errors.tropes = results[4].reason.message;
+    if (results[5].status === 'rejected') errors.showDontTell = results[5].reason.message;
+    if (results[6].status === 'rejected') errors.consistency = results[6].reason.message;
+    if (results[7].status === 'rejected') errors.subtext = results[7].reason.message;
+    if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message;
+
+    console.log('Full story analysis successful.');
+
+    // 3. Consolidate and return all results
+    return {
+      segments,
+      characters,
+      characterPortraits: characterPortraits || [],
+      dialogueDynamics,
+      literaryDevices,
+      pacing,
+      tropes,
+      showDontTellSuggestions,
+      consistencyIssues,
+      subtextAnalyses,
+      soundEffects,
+      errors,
+    };
+  } catch (error) {
+    console.error('Fatal Error during getFullStoryAnalysis action:', { error });
+    throw new Error('Failed to process the story.');
+  }
+}
+
+/**
+ * Parses the dialogue from a story text. This is the first critical step in the story
+ * processing pipeline. It now generates rich character profiles upfront.
+ * @param storyText The raw story text.
+ * @returns A promise resolving to the parsed segments and characters.
+ */
 export async function getParsedStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
     console.log('Starting story parsing and comprehensive character profile generation...');
      if (!storyText.trim()) {
@@ -146,46 +242,6 @@ export async function generateMultiVoiceSceneAudio(
   }
 }
 
-/**
- * Analysis: Scans the story for literary devices.
- */
-export async function analyzeLiteraryDevices(storyText: string): Promise<{devices: LiteraryDevice[]}> {
-    console.log('Calling analyzeLiteraryDevices action...');
-    try {
-        const result = await analyzeLiteraryDevicesFlow({ storyText });
-        return result;
-    } catch (e: any) {
-        console.error('Error in analyzeLiteraryDevices action:', { error: e });
-        throw new Error('Failed to analyze literary devices.');
-    }
-}
-
-/**
- * Analysis: Analyzes dialogue dynamics.
- */
-export async function analyzeDialogueDynamics(storyText: string): Promise<DialogueDynamics> {
-    console.log('Calling analyzeDialogueDynamics action...');
-    try {
-       return await analyzeDialogueDynamicsFlow({ storyText });
-    } catch (e: any) {
-        console.error('Error in analyzeDialogueDynamics action:', { error: e });
-        throw new Error('Failed to analyze dialogue dynamics.');
-    }
-}
-
-/**
- * Analysis: Identifies and suggests inversions for literary tropes.
- */
-export async function invertTropes(storyText: string): Promise<{tropes: Trope[]}> {
-    console.log('Calling invertTropes action...');
-    try {
-        const result = await invertTropesFlow({ storyText });
-        return result;
-    } catch (e: any) {
-        console.error('Error in invertTropes action:', { error: e });
-        throw new Error('Failed to analyze tropes.');
-    }
-}
 
 /**
  * Interaction: Chats with a character from the story using their rich, pre-generated profile.
@@ -216,68 +272,6 @@ export async function getBiasedStory(storyText: string, bias: NarratorBias): Pro
 }
 
 
-/**
- * Analysis: Analyzes story pacing.
- */
-export async function analyzeStoryPacing(storyText: string): Promise<{segments: PacingSegment[]}> {
-    console.log('Calling analyzeStoryPacing action...');
-    try {
-        const result = await analyzeStoryPacingFlow({ storyText });
-        return result;
-    } catch (e: any) {
-        console.error('Error in analyzeStoryPacing action:', { error: e });
-        throw new Error('Failed to analyze story pacing.');
-    }
-}
-
-
-/**
- * Suggests "showing" alternatives for "telling" sentences.
- * @param storyText The full text of the story.
- * @returns A promise resolving to an array of suggestions.
- */
-export async function getShowDontTellSuggestions(storyText: string): Promise<{suggestions: ShowDontTellSuggestion[]}> {
-  console.log('Calling getShowDontTellSuggestions action...');
-  try {
-    const result = await getShowDontTellSuggestionsFlow({ storyText });
-    return result;
-  } catch(e: any) {
-    console.error('Error in getShowDontTellSuggestions action:', { error: e });
-    throw new Error('Failed to get "Show, Don\'t Tell" suggestions.');
-  }
-}
-
-/**
- * Scans the entire story for continuity errors or character inconsistencies.
- * @param storyText The full text of the story.
- * @returns A promise resolving to an array of identified inconsistencies.
- */
-export async function findInconsistencies(storyText: string): Promise<{issues: ConsistencyIssue[]}> {
-  console.log('Calling findInconsistencies action...');
-   try {
-    const result = await findInconsistenciesFlow({ storyText });
-    return result;
-  } catch(e: any) {
-    console.error('Error in findInconsistencies action:', { error: e });
-    throw new Error('Failed to find inconsistencies.');
-  }
-}
-
-/**
- * Analyzes dialogue for subtext—the unspoken emotion behind the words.
- * @param storyText The full text of the story.
- * @returns A promise resolving to an array of subtext analyses.
- */
-export async function analyzeSubtext(storyText: string): Promise<{analyses: SubtextAnalysis[]}> {
-  console.log('Calling analyzeSubtext action...');
-  try {
-    const result = await analyzeSubtextFlow({ storyText });
-    return result;
-  } catch(e: any) {
-    console.error('Error in analyzeSubtext action:', { error: e });
-    throw new Error('Failed to analyze subtext.');
-  }
-}
 
 /**
  * Rewrites a summary of the story from a different character's perspective.

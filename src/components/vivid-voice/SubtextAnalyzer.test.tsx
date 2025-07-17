@@ -9,43 +9,24 @@ import * as actions from '@/lib/actions';
 vi.mock('@/lib/actions');
 
 describe('SubtextAnalyzer', () => {
-    const storyText = 'Alice: Fine.';
-
-    it('should render the button and handle successful analysis', async () => {
-        const user = userEvent.setup();
-        const mockResponse = {analyses: [{
+    it('should render analyses when provided', () => {
+        const mockAnalyses = [{
             character: 'Alice',
             dialogue: 'Fine.',
             literalMeaning: 'Everything is okay.',
             subtext: 'Everything is not okay.',
             explanation: 'The context suggests anger.'
-        }]};
-        (actions.analyzeSubtext as vi.Mock).mockResolvedValue(mockResponse);
+        }];
+        render(<SubtextAnalyzer analyses={mockAnalyses} />);
 
-        render(<SubtextAnalyzer storyText={storyText} />);
-
-        const analyzeButton = screen.getByRole('button', { name: /Analyze for Subtext/i });
-        await user.click(analyzeButton);
-        
-        await waitFor(() => {
-            expect(screen.getByText('Alice says:')).toBeInTheDocument();
-            expect(screen.getByText(/"Fine."/i)).toBeInTheDocument();
-            expect(screen.getByText('Everything is not okay.')).toBeInTheDocument();
-        });
+        expect(screen.getByText('Alice says:')).toBeInTheDocument();
+        expect(screen.getByText(/"Fine."/i)).toBeInTheDocument();
+        expect(screen.getByText('Everything is not okay.')).toBeInTheDocument();
     });
 
-     it('should display an error alert if analysis fails', async () => {
-        const user = userEvent.setup();
-        const errorMessage = 'Subtext analysis failed';
-        (actions.analyzeSubtext as vi.Mock).mockRejectedValue(new Error(errorMessage));
+    it('should display a message when no analyses are found', () => {
+        render(<SubtextAnalyzer analyses={[]} />);
 
-        render(<SubtextAnalyzer storyText={storyText} />);
-        
-        await user.click(screen.getByRole('button', { name: /Analyze for Subtext/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Error')).toBeInTheDocument();
-            expect(screen.getByText(errorMessage)).toBeInTheDocument();
-        });
+        expect(screen.getByText('No Subtext Detected')).toBeInTheDocument();
     });
 });
