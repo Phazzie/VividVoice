@@ -97,26 +97,10 @@
 
   /* This is our new "scenery" background */
   .bg-wombat-scene {
-    background-color: hsl(var(--background));
-    background-image: radial-gradient(
-      at 20% 20%,
-      hsl(45 55% 40% / 0.3),
-      hsl(45 55% 40% / 0) 50%
-    ),
-    radial-gradient(
-      at 80% 20%,
-      hsl(25 35% 12% / 1),
-      hsl(25 35% 12% / 0) 50%
-    ),
-    radial-gradient(
-      at 20% 80%,
-      hsl(25 35% 12% / 1),
-      hsl(25 35% 12% / 0) 50%
-    ),
-    radial-gradient(
-      at 80% 80%,
-      hsl(35 60% 50% / 0.15),
-      hsl(35 60% 50% / 0) 50%
-    );
+    background-color: hsl(210 30% 15%);
+    background-image: 
+      radial-gradient(at 15% 20%, hsl(var(--secondary) / 0.3), transparent 50%),
+      radial-gradient(at 85% 30%, hsl(var(--primary) / 0.2), transparent 50%),
+      radial-gradient(at 50% 80%, hsl(var(--accent) / 0.15), transparent 50%);
   }
 }
