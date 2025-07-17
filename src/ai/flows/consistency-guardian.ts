@@ -53,6 +53,25 @@ For each distinct issue you find, provide:
 2.  The relevant 'quote' (or quotes) from the text that best illustrates the inconsistency.
 3.  A brief 'explanation' of why it's a potential problem and how it impacts the narrative's integrity.
 
+**High-Quality Example:**
+- **Input Story Text Snippet:**
+  \`\`\`
+  Narrator: Her blue eyes scanned the horizon. A chapter later...
+  Narrator: He looked into her brown eyes and saw the truth.
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "issues": [
+      {
+        "issue": "Character's eye color changes",
+        "quote": "Her blue eyes scanned the horizon. ... He looked into her brown eyes...",
+        "explanation": "The character's eye color is described as 'blue' in one part of the story and 'brown' in another. This is a direct contradiction that can break reader immersion."
+      }
+    ]
+  }
+  \`\`\`
+
 Return your findings as a JSON object with an 'issues' array. If no inconsistencies are found after a thorough review, return an empty array.
 
 **Story Text to Analyze:**

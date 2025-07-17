@@ -50,6 +50,34 @@ Go through the text and identify contiguous blocks of 'Dialogue' and 'Narration'
 - Dialogue is any line prefixed with a character name and a colon (e.g., "Alice:"). Everything else is Narration.
 - Your output must be an array of segments that covers the entire story from beginning to end.
 
+**High-Quality Example:**
+- **Input Story Text:**
+  \`\`\`
+  Narrator: The sun set. It was cold now.
+  Alice: Are you there?
+  Bob: I'm here.
+  Narrator: A shadow moved in the corner.
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "segments": [
+      {
+        "type": "Narration",
+        "wordCount": 7
+      },
+      {
+        "type": "Dialogue",
+        "wordCount": 6
+      },
+      {
+        "type": "Narration",
+        "wordCount": 6
+      }
+    ]
+  }
+  \`\`\`
+
 Return the results as a JSON object with a single key 'segments' containing an array of these segment objects.
 
 **Story Text:**
