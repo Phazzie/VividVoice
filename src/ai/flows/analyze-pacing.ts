@@ -4,7 +4,7 @@
 /**
  * @fileOverview Implements an AI agent that analyzes the pacing of a story.
  * 
- * - analyzePacing - A function that handles the story pacing analysis.
+ * - analyzeStoryPacing - A function that handles the story pacing analysis.
  * - AnalyzePacingInput - The input type for the function.
  * - AnalyzePacingOutput - The return type for the function.
  */
@@ -24,7 +24,7 @@ const AnalyzePacingOutputSchema = z.object({
 export type AnalyzePacingOutput = z.infer<typeof AnalyzePacingOutputSchema>;
 
 
-export async function analyzePacing(input: AnalyzePacingInput): Promise<AnalyzePacingOutput> {
+export async function analyzeStoryPacing(input: AnalyzePacingInput): Promise<AnalyzePacingOutput> {
     return analyzePacingFlow(input);
 }
 

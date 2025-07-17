@@ -21,7 +21,7 @@ import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flo
 import { invertTropes as invertTropesFlow } from '@/ai/flows/trope-inverter';
 import { characterChat as characterChatFlow } from '@/ai/flows/character-chat';
 import { applyNarratorBias as applyNarratorBiasFlow } from '@/ai/flows/unreliable-narrator';
-import { analyzePacing as analyzePacingFlow } from '@/ai/flows/analyze-pacing';
+import { analyzeStoryPacing as analyzeStoryPacingFlow } from '@/ai/flows/analyze-pacing';
 import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/ai/flows/show-dont-tell';
 import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
@@ -222,7 +222,7 @@ export async function getBiasedStory(storyText: string, bias: NarratorBias): Pro
 export async function analyzeStoryPacing(storyText: string): Promise<{segments: PacingSegment[]}> {
     console.log('Calling analyzeStoryPacing action...');
     try {
-        const result = await analyzePacingFlow({ storyText });
+        const result = await analyzeStoryPacingFlow({ storyText });
         return result;
     } catch (e: any) {
         console.error('Error in analyzeStoryPacing action:', { error: e });
