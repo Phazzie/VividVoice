@@ -3,6 +3,7 @@
 
 /**
  * @fileOverview An AI agent that allows a user to "interview" a character from their story.
+ * This flow now uses a pre-generated, concise character brief for context instead of the full story text for efficiency.
  * 
  * - characterChat - A function that handles chatting with a character.
  * - CharacterChatInput - The input type for the function.
@@ -14,8 +15,8 @@ import {z} from 'genkit';
 import { CharacterSchema, ChatMessageSchema } from '@/ai/schemas';
 
 const CharacterChatInputSchema = z.object({
-    character: CharacterSchema,
-    storyText: z.string().describe("The full text of the story for context."),
+    characterName: z.string().describe("The name of the character being interviewed."),
+    characterBrief: z.string().describe("A pre-generated summary of the character's personality, motivations, and speaking style."),
     history: z.array(ChatMessageSchema),
     userMessage: z.string().describe("The user's latest message to the character."),
 });
@@ -38,46 +39,42 @@ const characterChatFlow = ai.defineFlow(
         outputSchema: CharacterChatOutputSchema,
     },
     async (input) => {
-        const { character, storyText, history, userMessage } = input;
+        const { characterName, characterBrief, history, userMessage } = input;
 
         const prompt = ai.definePrompt({
             name: 'characterChatPrompt',
-            input: { schema: CharacterChatInputSchema },
+            input: { schema: z.object({ characterName, characterBrief, history, userMessage }) },
             output: { schema: CharacterChatOutputSchema },
-            prompt: `You are a world-class method actor preparing for a role. The character you are playing is named {{character.name}}.
+            prompt: `You are a world-class method actor preparing for a role. The character you are playing is named {{characterName}}.
 
-Your task is to respond to the user's questions AS the character. Stay in character at all times. Use the provided information to inform your responses, embodying their personality, motivations, and speaking style as revealed in the story.
+Your task is to respond to the user's questions AS the character. Stay in character at all times. Use the provided Character Brief as the primary source of truth for their personality, motivations, and speaking style.
 
-**Character Brief:**
-- **Name:** {{character.name}}
-- **AI-Generated Description:** {{character.description}}
-
-**Full Story Context:**
-This is the most important information. The character's true voice, personality, and knowledge are defined by their actions and dialogue within this story. Base your responses primarily on this text.
+**Character Brief for {{characterName}}:**
+This is the most important information. The character's true voice, personality, and knowledge are defined by this brief.
 \`\`\`
-{{storyText}}
+{{characterBrief}}
 \`\`\`
 
 **High-Quality Example:**
 - **Character:** Captain Eva Rostova
-- **Story Context Snippet:** "Captain Rostova stared at the alien artifact, her jaw tight. 'I've sacrificed too much to turn back now,' she whispered, ignoring the concerned pleas of her crew."
+- **Character Brief Snippet:** "Captain Rostova is defined by her ruthless pragmatism and immense sense of duty. She has sacrificed personal relationships for her mission and views sentimentality as a weakness. She speaks in clipped, direct sentences."
 - **User Question:** "What are your biggest fears?"
 - **Your Perfect Response (as Eva):** "Fear? Fear is a luxury for those with something left to lose. I worry about failure, about my crew not understanding the necessity of our mission. Every choice I make is weighed against the fate of billions. That is a burden far heavier than fear."
 
 **Interview History:**
 This is the conversation you've had with the "interviewer" (the user) so far.
 {{#each history}}
-  - {{#if isUser}}Interviewer: {{else}}{{../character.name}}:{{/if}} {{message}}
+  - {{#if isUser}}Interviewer: {{else}}{{../characterName}}:{{/if}} {{message}}
 {{/each}}
 
 **New Question from Interviewer:**
 {{userMessage}}
 
-Now, provide the character's response. It must be consistent with their personality and knowledge from the story text. Do not break character. Do not be a generic chatbot.
+Now, provide the character's response. It must be consistent with their personality from the Character Brief. Do not break character. Do not be a generic chatbot.
 `,
         });
 
-        const { output } = await prompt(input);
+        const { output } = await prompt({ characterName, characterBrief, history, userMessage });
         return output!;
     }
 );

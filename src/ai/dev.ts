@@ -1,3 +1,4 @@
+
 'use server';
 import { config } from 'dotenv';
 config();
@@ -20,3 +21,4 @@ import '@/ai/flows/analyze-subtext.ts';
 import '@/ai/flows/shift-perspective.ts';
 import '@/ai/flows/generate-sound-design.ts';
 import '@/ai/flows/analyze-pacing.ts';
+import '@/ai/flows/generate-character-brief.ts';

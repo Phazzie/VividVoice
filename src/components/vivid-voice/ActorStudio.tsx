@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { type Character, type ChatMessage, getCharacterResponse } from '@/lib/actions';
-import { Loader2, Send, Users } from 'lucide-react';
+import { type Character, type ChatMessage, getCharacterResponse, getCharacterBrief } from '@/lib/actions';
+import { Loader2, Send, Users, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,28 +21,55 @@ interface ActorStudioProps {
 
 export function ActorStudio({ characters, storyText }: ActorStudioProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+    const [characterBrief, setCharacterBrief] = useState<string | null>(null);
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const [userMessage, setUserMessage] = useState('');
     const { toast } = useToast();
 
+    // Effect to generate character brief when a new character is selected
+    useEffect(() => {
+        if (selectedCharacter) {
+            const generateBrief = async () => {
+                setIsGeneratingBrief(true);
+                setChatHistory([]);
+                setCharacterBrief(null);
+                try {
+                    const brief = await getCharacterBrief(selectedCharacter.name, storyText);
+                    setCharacterBrief(brief);
+                } catch (e: any) {
+                     toast({
+                        variant: "destructive",
+                        title: "Character Analysis Error",
+                        description: e.message || "Could not generate a brief for this character.",
+                    });
+                    setSelectedCharacter(null); // Deselect on error
+                } finally {
+                    setIsGeneratingBrief(false);
+                }
+            };
+            generateBrief();
+        }
+    }, [selectedCharacter, storyText, toast]);
+
     const handleCharacterChange = (characterName: string) => {
         const char = characters.find(c => c.name === characterName) || null;
         setSelectedCharacter(char);
-        setChatHistory([]); // Reset chat history when character changes
     };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedCharacter || !userMessage.trim()) return;
+        if (!selectedCharacter || !characterBrief || !userMessage.trim()) return;
 
         const newHistory: ChatMessage[] = [...chatHistory, { isUser: true, message: userMessage }];
         setChatHistory(newHistory);
+        const currentMessage = userMessage;
         setUserMessage('');
         setIsLoading(true);
 
         try {
-            const response = await getCharacterResponse(selectedCharacter, storyText, newHistory, userMessage);
+            const response = await getCharacterResponse(selectedCharacter.name, characterBrief, newHistory, currentMessage);
             setChatHistory(prev => [...prev, { isUser: false, message: response }]);
         } catch (e: any) {
             toast({
@@ -67,7 +94,7 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
                 </p>
             </div>
 
-            <Select onValueChange={handleCharacterChange} disabled={characters.length === 0}>
+            <Select onValueChange={handleCharacterChange} disabled={characters.length === 0 || isGeneratingBrief}>
                 <SelectTrigger>
                     <SelectValue placeholder="Select a character to interview..." />
                 </SelectTrigger>
@@ -78,10 +105,23 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
                 </SelectContent>
             </Select>
 
-            {selectedCharacter && (
-                <Card className="flex-1 flex flex-col">
+            {isGeneratingBrief && (
+                 <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <p className="font-headline">Analyzing {selectedCharacter?.name}'s persona...</p>
+                 </div>
+            )}
+            
+            {selectedCharacter && characterBrief && !isGeneratingBrief && (
+                <Card className="flex-1 flex flex-col animate-in fade-in-50">
                     <ScrollArea className="flex-1 p-4">
                         <div className="space-y-4">
+                            {chatHistory.length === 0 && (
+                                <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground flex items-center gap-3">
+                                    <Sparkles className="w-5 h-5 text-accent flex-shrink-0" />
+                                    <p>I've reviewed the script. I am ready for your questions.</p>
+                                </div>
+                            )}
                             {chatHistory.map((msg, index) => (
                                 <div key={index} className={cn("flex items-start gap-3", msg.isUser ? "justify-end" : "justify-start")}>
                                     {!msg.isUser && (

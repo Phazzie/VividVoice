@@ -27,6 +27,7 @@ import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consi
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
+import { generateCharacterBrief as generateCharacterBriefFlow } from '@/ai/flows/generate-character-brief';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -188,12 +189,27 @@ export async function invertTropes(storyText: string): Promise<{tropes: Trope[]}
 }
 
 /**
- * Interaction: Chats with a character from the story.
+ * One-time analysis to generate a character summary for the Actor's Studio.
+ * @returns A promise resolving to the character's summary brief.
  */
-export async function getCharacterResponse(character: Character, storyText: string, history: ChatMessage[], userMessage: string): Promise<string> {
+export async function getCharacterBrief(characterName: string, storyText: string): Promise<string> {
+    console.log(`Calling getCharacterBrief action for ${characterName}...`);
+    try {
+      const result = await generateCharacterBriefFlow({ characterName, storyText });
+      return result.characterBrief;
+    } catch (e: any) {
+        console.error('Error in getCharacterBrief action:', { error: e });
+        throw new Error('Failed to generate character brief.');
+    }
+}
+
+/**
+ * Interaction: Chats with a character from the story using an efficient character brief.
+ */
+export async function getCharacterResponse(characterName: string, characterBrief: string, history: ChatMessage[], userMessage: string): Promise<string> {
     console.log('Calling getCharacterResponse action...');
     try {
-      const result = await characterChatFlow({ character, storyText, history, userMessage });
+      const result = await characterChatFlow({ characterName, characterBrief, history, userMessage });
       return result.response;
     } catch (e: any) {
         console.error('Error in getCharacterResponse action:', { error: e });
