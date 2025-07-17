@@ -52,20 +52,42 @@ const mockPortraits = [
     { name: 'Alice', portraitDataUri: 'data:image/png;base64,alice' }
 ]
 
+const mockDialogueDynamics = {
+    powerBalance: [],
+    pacing: { overallWordsPerTurn: 0, characterPacing: [] },
+    summary: 'A summary'
+};
+const mockLiteraryDevices = [];
+const mockPacing = { segments: [] };
+const mockTropes = [];
+const mockShowDontTell = [];
+const mockConsistency = [];
+const mockSubtext = [];
+const mockSoundEffects = [];
+
+
 describe('DialogueEditor', () => {
+  const defaultProps = {
+    storyId: "1",
+    storyText: "Story text",
+    initialSegments: mockSegments,
+    characters: mockCharacters,
+    characterPortraits: mockPortraits,
+    dialogueDynamics: mockDialogueDynamics,
+    literaryDevices: mockLiteraryDevices,
+    pacing: mockPacing,
+    tropes: mockTropes,
+    showDontTellSuggestions: mockShowDontTell,
+    consistencyIssues: mockConsistency,
+    subtextAnalyses: mockSubtext,
+    soundEffects: mockSoundEffects,
+    onGenerateAudio: () => {},
+    isLoading: false,
+    onStorySave: () => {},
+  };
+
   it('should render initial segments correctly', () => {
-    render(
-      <DialogueEditor
-        storyId="1"
-        storyText="Story text"
-        initialSegments={mockSegments}
-        characters={mockCharacters}
-        characterPortraits={mockPortraits}
-        onGenerateAudio={() => {}}
-        isLoading={false}
-        onStorySave={() => {}}
-      />
-    );
+    render(<DialogueEditor {...defaultProps} />);
 
     expect(screen.getByText('Narrator')).toBeInTheDocument();
     expect(screen.getByText('Alice')).toBeInTheDocument();
@@ -75,18 +97,7 @@ describe('DialogueEditor', () => {
 
   it('should allow editing dialogue text', async () => {
     const user = userEvent.setup();
-    render(
-      <DialogueEditor
-        storyId="1"
-        storyText="Story text"
-        initialSegments={mockSegments}
-        characters={mockCharacters}
-        characterPortraits={mockPortraits}
-        onGenerateAudio={() => {}}
-        isLoading={false}
-        onStorySave={() => {}}
-      />
-    );
+    render(<DialogueEditor {...defaultProps} />);
 
     const firstTextarea = screen.getByDisplayValue('The beginning.');
     await user.clear(firstTextarea);
@@ -96,18 +107,7 @@ describe('DialogueEditor', () => {
 
   it('should allow changing an emotion', async () => {
     const user = userEvent.setup();
-    render(
-      <DialogueEditor
-        storyId="1"
-        storyText="Story text"
-        initialSegments={mockSegments}
-        characters={mockCharacters}
-        characterPortraits={mockPortraits}
-        onGenerateAudio={() => {}}
-        isLoading={false}
-        onStorySave={() => {}}
-      />
-    );
+    render(<DialogueEditor {...defaultProps} />);
 
     // There will be multiple emotion dropdowns, we target the second one (for Alice)
     const emotionSelects = screen.getAllByRole('combobox');
@@ -126,18 +126,7 @@ describe('DialogueEditor', () => {
   it('should call onGenerateAudio with the updated segments when button is clicked', async () => {
     const user = userEvent.setup();
     const handleGenerateAudio = vi.fn();
-    render(
-      <DialogueEditor
-        storyId="1"
-        storyText="Story text"
-        initialSegments={mockSegments}
-        characters={mockCharacters}
-        characterPortraits={mockPortraits}
-        onGenerateAudio={handleGenerateAudio}
-        isLoading={false}
-        onStorySave={() => {}}
-      />
-    );
+    render(<DialogueEditor {...defaultProps} onGenerateAudio={handleGenerateAudio} />);
 
     const firstTextarea = screen.getByDisplayValue('The beginning.');
     await user.clear(firstTextarea);
@@ -155,18 +144,7 @@ describe('DialogueEditor', () => {
   });
 
   it('should disable the generate button when isLoading is true', () => {
-    render(
-      <DialogueEditor
-        storyId="1"
-        storyText="Story text"
-        initialSegments={mockSegments}
-        characters={mockCharacters}
-        characterPortraits={mockPortraits}
-        onGenerateAudio={() => {}}
-        isLoading={true}
-        onStorySave={() => {}}
-      />
-    );
+    render(<DialogueEditor {...defaultProps} isLoading={true} />);
     const generateButton = screen.getByRole('button', { name: /Generating Audio.../i });
     expect(generateButton).toBeDisabled();
   });

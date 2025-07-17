@@ -15,34 +15,21 @@ interface ShowDontTellProps {
     onApplySuggestion: (originalText: string, newText: string) => void;
 }
 
-export function ShowDontTell({ storyText, onApplySuggestion }: ShowDontTellProps) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [suggestions, setSuggestions] = useState<ShowDontTellSuggestion[]>([]);
-    const [error, setError] = useState<string | null>(null);
+export function ShowDontTell({ suggestions, onApplySuggestion, error }: { suggestions: ShowDontTellSuggestion[], onApplySuggestion: (originalText: string, newText: string) => void, error?: string }) {
+    const [displaySuggestions, setDisplaySuggestions] = useState(suggestions);
     const { toast } = useToast();
 
-    const handleAnalyze = async () => {
-        setIsLoading(true);
-        setSuggestions([]);
-        setError(null);
-        try {
-            const result = await getShowDontTellSuggestions(storyText);
-            setSuggestions(result.suggestions);
-            if (result.suggestions.length === 0) {
-                 toast({ title: "Analysis Complete", description: "No specific 'telling' sentences were identified." });
-            }
-        } catch (e: any) {
-            const errorMessage = e.message || "An unexpected error occurred during analysis.";
-            setError(errorMessage);
-            toast({
-                variant: "destructive",
-                title: "Analysis Error",
-                description: errorMessage,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Analysis Failed</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )
+    }
 
     const handleApply = (suggestion: ShowDontTellSuggestion) => {
         onApplySuggestion(suggestion.tellingSentence, suggestion.showingSuggestion);
@@ -51,7 +38,7 @@ export function ShowDontTell({ storyText, onApplySuggestion }: ShowDontTellProps
             description: "The dialogue has been updated in the editor.",
         });
         // Remove the applied suggestion from the list
-        setSuggestions(prev => prev.filter(s => s.tellingSentence !== suggestion.tellingSentence));
+        setDisplaySuggestions(prev => prev.filter(s => s.tellingSentence !== suggestion.tellingSentence));
     };
     
     return (
@@ -62,25 +49,19 @@ export function ShowDontTell({ storyText, onApplySuggestion }: ShowDontTellProps
                 <p className="text-sm text-muted-foreground max-w-md">
                    Find "telling" sentences in your narration (e.g., "She was angry") and get detailed "showing" paragraphs that convey the same emotion through action and sensory detail.
                 </p>
-                <Button onClick={handleAnalyze} disabled={isLoading} className="mt-2">
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
-                    Find "Telling" Sentences
-                </Button>
             </div>
 
-            {error && (
-                 <Alert variant="destructive">
+            {displaySuggestions.length === 0 ? (
+                <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>No "Telling" Sentences Found</AlertTitle>
                     <AlertDescription>
-                        {error}
+                        The initial analysis did not identify any sentences that could be improved by "showing" more.
                     </AlertDescription>
                 </Alert>
-            )}
-            
-            {suggestions.length > 0 && (
+            ) : (
                 <div className="space-y-4 animate-in fade-in-50 duration-500">
-                    {suggestions.map((suggestion, index) => (
+                    {displaySuggestions.map((suggestion, index) => (
                         <Card key={index} className="bg-muted/30">
                             <CardHeader>
                                 <CardDescription>Original "Telling" Sentence:</CardDescription>

@@ -21,38 +21,25 @@ vi.mock('recharts', async () => {
 
 
 describe('PacingAnalysis', () => {
-    const storyText = 'Narration. Alice: Dialogue.';
-
-    it('should render the button and handle successful analysis', async () => {
-        const user = userEvent.setup();
-        const mockAnalysis = { segments: [
+    it('should render the pacing chart when analysis data is provided', () => {
+        const mockPacing = { segments: [
             { type: 'Narration', wordCount: 10 },
             { type: 'Dialogue', wordCount: 20 },
         ]};
-        (actions.analyzeStoryPacing as vi.Mock).mockResolvedValue(mockAnalysis);
+        render(<PacingAnalysis pacing={mockPacing} />);
 
-        render(<PacingAnalysis storyText={storyText} />);
-
-        const analyzeButton = screen.getByRole('button', { name: /Analyze Story Pacing/i });
-        await user.click(analyzeButton);
-
-        await waitFor(() => {
-            expect(screen.getByText('Pacing Visualization')).toBeInTheDocument();
-        });
+        expect(screen.getByText('Pacing Visualization')).toBeInTheDocument();
     });
 
-    it('should display an error alert if analysis fails', async () => {
-        const user = userEvent.setup();
-        const errorMessage = 'Pacing analysis failed';
-        (actions.analyzeStoryPacing as vi.Mock).mockRejectedValue(new Error(errorMessage));
+    it('should display a message when no analysis data is provided', () => {
+        render(<PacingAnalysis pacing={null} />);
 
-        render(<PacingAnalysis storyText={storyText} />);
-        
-        await user.click(screen.getByRole('button', { name: /Analyze Story Pacing/i }));
+        expect(screen.getByText('Analysis Not Available')).toBeInTheDocument();
+    });
 
-        await waitFor(() => {
-            expect(screen.getByText('Error')).toBeInTheDocument();
-            expect(screen.getByText(errorMessage)).toBeInTheDocument();
-        });
+    it('should display a message when analysis data is empty', () => {
+        render(<PacingAnalysis pacing={{ segments: [] }} />);
+
+        expect(screen.getByText('Analysis Not Available')).toBeInTheDocument();
     });
 });

@@ -40,12 +40,23 @@ import { SubtextAnalyzer } from './SubtextAnalyzer';
 import { PerspectiveShifter } from './PerspectiveShifter';
 import { PlaceholderTool } from './PlaceholderTool';
 
+import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
+
 type DialogueEditorProps = {
   storyId: string | null;
   storyText: string;
   initialSegments: DialogueSegment[];
   characters: Character[];
   characterPortraits: CharacterPortrait[];
+  dialogueDynamics: DialogueDynamics;
+  literaryDevices: LiteraryDevice[];
+  pacing: { segments: PacingSegment[] };
+  tropes: Trope[];
+  showDontTellSuggestions: ShowDontTellSuggestion[];
+  consistencyIssues: ConsistencyIssue[];
+  subtextAnalyses: SubtextAnalysis[];
+  soundEffects: SoundEffectWithUrl[];
+  analysisErrors: Record<string, string>;
   onGenerateAudio: (segments: DialogueSegment[]) => void;
   isLoading: boolean;
   onStorySave: (id: string) => void;
@@ -55,7 +66,25 @@ export const emotionOptions = [
   "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
 ];
 
-export function DialogueEditor({ storyId, storyText, initialSegments, characters, characterPortraits, onGenerateAudio, isLoading, onStorySave }: DialogueEditorProps) {
+export function DialogueEditor({
+  storyId,
+  storyText,
+  initialSegments,
+  characters,
+  characterPortraits,
+  dialogueDynamics,
+  literaryDevices,
+  pacing,
+  tropes,
+  showDontTellSuggestions,
+  consistencyIssues,
+  subtextAnalyses,
+  soundEffects,
+  analysisErrors,
+  onGenerateAudio,
+  isLoading,
+  onStorySave,
+}: DialogueEditorProps) {
   const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments);
   const [storyTitle, setStoryTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -180,73 +209,84 @@ export function DialogueEditor({ storyId, storyText, initialSegments, characters
           </TabsList>
         </ScrollArea>
         <ScrollArea className="h-[55vh]">
-            <TabsContent value="dialogue" className="p-4 md:p-6 space-y-4 bg-grid bg-[length:30px_30px] bg-card/10">
-                {segments.map((segment, index) => (
-                <div key={index} className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-border/50 items-start">
-                    <Avatar className="h-16 w-16 border-2 shrink-0" style={{ borderColor: getCharacterColor(segment.character) }}>
-                        <AvatarImage src={getPortrait(segment.character)} alt={`Portrait of ${segment.character}`} />
-                        <AvatarFallback className="text-xl font-bold text-white" style={{ backgroundColor: getCharacterColor(segment.character) }}>
-                        {segment.character.toLowerCase() === 'narrator' 
-                            ? <BookText size={28}/> 
-                            : segment.character.includes(' ')
-                            ? `${segment.character.split(' ')[0][0]}${segment.character.split(' ')[1][0]}`
-                            : segment.character.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-2">
-                    <div className='flex items-center justify-between'>
-                        <Label className="font-headline text-lg" style={{ color: getCharacterColor(segment.character) }}>{segment.character}</Label>
-                        <Select value={segment.emotion} onValueChange={(value) => handleEmotionChange(index, value)}>
-                            <SelectTrigger className="w-40 bg-background/70 h-9">
-                                <SelectValue placeholder="Select emotion" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {emotionOptions.map(opt => (
-                                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <Textarea
-                        value={segment.dialogue}
-                        onChange={(e) => handleDialogueChange(index, e.target.value)}
-                        className="w-full bg-background/70 font-body text-base"
-                        rows={3}
-                    />
+            {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                        <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+                        <h3 className="mt-2 text-sm font-medium text-muted-foreground">Analyzing...</h3>
                     </div>
                 </div>
-                ))}
-            </TabsContent>
-            <TabsContent value="literaryAnalysis" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <LiteraryAnalysisTab storyText={storyText} />
-            </TabsContent>
-             <TabsContent value="dialogueDynamics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <DialogueDynamicsAnalysis storyText={storyText} />
-            </TabsContent>
-            <TabsContent value="pacing" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <PacingAnalysis storyText={storyText} />
-            </TabsContent>
-            <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <TropeInverter storyText={storyText} />
-            </TabsContent>
-            <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ActorStudio characters={characters} storyText={storyText} />
-            </TabsContent>
-            <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />
-            </TabsContent>
-            <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ShowDontTell storyText={storyText} onApplySuggestion={handleApplySuggestion} />
-            </TabsContent>
-            <TabsContent value="consistency" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                 <ConsistencyGuardian storyText={storyText} />
-            </TabsContent>
-            <TabsContent value="subtext" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                 <SubtextAnalyzer storyText={storyText} />
-            </TabsContent>
-            <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <PerspectiveShifter characters={interactableCharacters} storyText={storyText} />
-            </TabsContent>
+            ) : (
+                <>
+                    <TabsContent value="dialogue" className="p-4 md:p-6 space-y-4 bg-grid bg-[length:30px_30px] bg-card/10">
+                        {segments.map((segment, index) => (
+                        <div key={index} className="flex gap-4 p-4 rounded-xl bg-muted/50 border border-border/50 items-start">
+                            <Avatar className="h-16 w-16 border-2 shrink-0" style={{ borderColor: getCharacterColor(segment.character) }}>
+                                <AvatarImage src={getPortrait(segment.character)} alt={`Portrait of ${segment.character}`} />
+                                <AvatarFallback className="text-xl font-bold text-white" style={{ backgroundColor: getCharacterColor(segment.character) }}>
+                                {segment.character.toLowerCase() === 'narrator'
+                                    ? <BookText size={28}/>
+                                    : segment.character.includes(' ')
+                                    ? `${segment.character.split(' ')[0][0]}${segment.character.split(' ')[1][0]}`
+                                    : segment.character.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-2">
+                            <div className='flex items-center justify-between'>
+                                <Label className="font-headline text-lg" style={{ color: getCharacterColor(segment.character) }}>{segment.character}</Label>
+                                <Select value={segment.emotion} onValueChange={(value) => handleEmotionChange(index, value)}>
+                                    <SelectTrigger className="w-40 bg-background/70 h-9">
+                                        <SelectValue placeholder="Select emotion" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {emotionOptions.map(opt => (
+                                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Textarea
+                                value={segment.dialogue}
+                                onChange={(e) => handleDialogueChange(index, e.target.value)}
+                                className="w-full bg-background/70 font-body text-base"
+                                rows={3}
+                            />
+                            </div>
+                        </div>
+                        ))}
+                    </TabsContent>
+                    <TabsContent value="literaryAnalysis" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <LiteraryAnalysisTab devices={literaryDevices} error={analysisErrors.literaryDevices} />
+                    </TabsContent>
+                     <TabsContent value="dialogueDynamics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <DialogueDynamicsAnalysis analysis={dialogueDynamics} error={analysisErrors.dialogueDynamics} />
+                    </TabsContent>
+                    <TabsContent value="pacing" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <PacingAnalysis pacing={pacing} error={analysisErrors.pacing} />
+                    </TabsContent>
+                    <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <TropeInverter tropes={tropes} error={analysisErrors.tropes} />
+                    </TabsContent>
+                    <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <ActorStudio characters={characters} storyText={storyText} />
+                    </TabsContent>
+                    <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />
+                    </TabsContent>
+                    <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <ShowDontTell suggestions={showDontTellSuggestions} onApplySuggestion={handleApplySuggestion} error={analysisErrors.showDontTell} />
+                    </TabsContent>
+                    <TabsContent value="consistency" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                         <ConsistencyGuardian issues={consistencyIssues} error={analysisErrors.consistency} />
+                    </TabsContent>
+                    <TabsContent value="subtext" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                         <SubtextAnalyzer analyses={subtextAnalyses} error={analysisErrors.subtext} />
+                    </TabsContent>
+                    <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <PerspectiveShifter characters={interactableCharacters} storyText={storyText} />
+                    </TabsContent>
+                </>
+            )}
         </ScrollArea>
       </Tabs>
       <CardFooter className="p-4 border-t-2 border-primary/20">

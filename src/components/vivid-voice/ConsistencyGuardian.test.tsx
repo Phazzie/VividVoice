@@ -9,41 +9,22 @@ import * as actions from '@/lib/actions';
 vi.mock('@/lib/actions');
 
 describe('ConsistencyGuardian', () => {
-    const storyText = 'Her eyes were blue. Later, her eyes were brown.';
-
-    it('should render the button and handle successful analysis', async () => {
-        const user = userEvent.setup();
-        const mockResponse = {issues: [{
+    it('should render issues when provided', () => {
+        const mockIssues = [{
             issue: 'Character eye color changed',
             quote: 'Her eyes were blue. ... her eyes were brown.',
             explanation: 'The character\'s eye color changes without explanation.'
-        }]};
-        (actions.findInconsistencies as vi.Mock).mockResolvedValue(mockResponse);
+        }];
+        render(<ConsistencyGuardian issues={mockIssues} />);
 
-        render(<ConsistencyGuardian storyText={storyText} />);
-
-        const analyzeButton = screen.getByRole('button', { name: /Check for Inconsistencies/i });
-        await user.click(analyzeButton);
-        
-        await waitFor(() => {
-            expect(screen.getByText('Character eye color changed')).toBeInTheDocument();
-            expect(screen.getByText(/"Her eyes were blue. ... her eyes were brown."/i)).toBeInTheDocument();
-            expect(screen.getByText('The character\'s eye color changes without explanation.')).toBeInTheDocument();
-        });
+        expect(screen.getByText('Character eye color changed')).toBeInTheDocument();
+        expect(screen.getByText(/"Her eyes were blue. ... her eyes were brown."/i)).toBeInTheDocument();
+        expect(screen.getByText('The character\'s eye color changes without explanation.')).toBeInTheDocument();
     });
 
-     it('should display an error alert if analysis fails', async () => {
-        const user = userEvent.setup();
-        const errorMessage = 'Consistency analysis failed';
-        (actions.findInconsistencies as vi.Mock).mockRejectedValue(new Error(errorMessage));
+    it('should display a message when no issues are found', () => {
+        render(<ConsistencyGuardian issues={[]} />);
 
-        render(<ConsistencyGuardian storyText={storyText} />);
-        
-        await user.click(screen.getByRole('button', { name: /Check for Inconsistencies/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Error')).toBeInTheDocument();
-            expect(screen.getByText(errorMessage)).toBeInTheDocument();
-        });
+        expect(screen.getByText('No Inconsistencies Found')).toBeInTheDocument();
     });
 });

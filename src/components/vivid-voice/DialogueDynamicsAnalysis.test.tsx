@@ -21,10 +21,7 @@ vi.mock('recharts', async () => {
 
 
 describe('DialogueDynamicsAnalysis', () => {
-    const storyText = 'Alice: Hello! Bob: Hi there.';
-
-    it('should render the button and handle successful analysis', async () => {
-        const user = userEvent.setup();
+    it('should render the analysis results when analysis data is provided', () => {
         const mockAnalysis = {
             summary: 'A balanced conversation.',
             powerBalance: [{
@@ -36,33 +33,17 @@ describe('DialogueDynamicsAnalysis', () => {
                 characterPacing: [{ character: 'Alice', wordsPerTurn: 1 }]
             }
         };
-        (actions.analyzeDialogueDynamics as vi.Mock).mockResolvedValue(mockAnalysis);
+        render(<DialogueDynamicsAnalysis analysis={mockAnalysis} />);
 
-        render(<DialogueDynamicsAnalysis storyText={storyText} />);
-
-        const analyzeButton = screen.getByRole('button', { name: /Analyze Dialogue Dynamics/i });
-        await user.click(analyzeButton);
-
-        await waitFor(() => {
-            expect(screen.getByText('Analysis Summary')).toBeInTheDocument();
-            expect(screen.getByText('A balanced conversation.')).toBeInTheDocument();
-            expect(screen.getByText('Power Balance')).toBeInTheDocument();
-            expect(screen.getByText('Pacing')).toBeInTheDocument();
-        });
+        expect(screen.getByText('Analysis Summary')).toBeInTheDocument();
+        expect(screen.getByText('A balanced conversation.')).toBeInTheDocument();
+        expect(screen.getByText('Power Balance')).toBeInTheDocument();
+        expect(screen.getByText('Pacing')).toBeInTheDocument();
     });
 
-    it('should display an error alert if analysis fails', async () => {
-        const user = userEvent.setup();
-        const errorMessage = 'AI analysis failed';
-        (actions.analyzeDialogueDynamics as vi.Mock).mockRejectedValue(new Error(errorMessage));
+    it('should display a message when no analysis data is provided', () => {
+        render(<DialogueDynamicsAnalysis analysis={null} />);
 
-        render(<DialogueDynamicsAnalysis storyText={storyText} />);
-        
-        await user.click(screen.getByRole('button', { name: /Analyze Dialogue Dynamics/i }));
-
-        await waitFor(() => {
-            expect(screen.getByText('Error')).toBeInTheDocument();
-            expect(screen.getByText(errorMessage)).toBeInTheDocument();
-        });
+        expect(screen.getByText('Analysis Not Available')).toBeInTheDocument();
     });
 });

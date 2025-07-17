@@ -11,34 +11,18 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cart
 import { getCharacterColor } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-export function DialogueDynamicsAnalysis({ storyText }: { storyText: string }) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [analysis, setAnalysis] = useState<DialogueDynamics | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const { toast } = useToast();
-
-    const handleAnalyze = async () => {
-        setIsLoading(true);
-        setAnalysis(null);
-        setError(null);
-        try {
-            const result = await analyzeDialogueDynamics(storyText);
-            setAnalysis(result);
-            if (!result) {
-                 toast({ title: "Analysis Complete", description: "Could not analyze the dialogue dynamics." });
-            }
-        } catch (e: any) {
-            const errorMessage = e.message || "An unexpected error occurred during analysis.";
-            setError(errorMessage);
-            toast({
-                variant: "destructive",
-                title: "Analysis Error",
-                description: errorMessage,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+export function DialogueDynamicsAnalysis({ analysis, error }: { analysis: DialogueDynamics | null, error?: string }) {
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Analysis Failed</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        )
+    }
     
     return (
         <div className="space-y-6">
@@ -48,23 +32,17 @@ export function DialogueDynamicsAnalysis({ storyText }: { storyText: string }) {
                 <p className="text-sm text-muted-foreground max-w-md">
                    Visualize the balance of power in your dialogue. This tool analyzes word count, turn-taking, and sentence types to reveal which characters are driving the conversation.
                 </p>
-                <Button onClick={handleAnalyze} disabled={isLoading} className="mt-2">
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
-                    Analyze Dialogue Dynamics
-                </Button>
             </div>
 
-            {error && (
-                 <Alert variant="destructive">
+            {!analysis ? (
+                <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>Analysis Not Available</AlertTitle>
                     <AlertDescription>
-                        {error}
+                        The dialogue dynamics could not be analyzed. This might happen if there is no dialogue in the text.
                     </AlertDescription>
                 </Alert>
-            )}
-            
-            {analysis && (
+            ) : (
                 <div className="space-y-8 animate-in fade-in-50 duration-500">
                     <Alert className="border-accent bg-accent/10">
                         <Zap className="h-4 w-4 text-accent" />
