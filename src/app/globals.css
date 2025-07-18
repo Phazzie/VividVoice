@@ -4,6 +4,7 @@
 @import './themes/living-manuscript.css';
 @import './themes/blueprint.css';
 @import './themes/sticker-book.css';
+@import './themes/skeptical-wombat.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -166,6 +167,9 @@
   }
   .sticker-book body {
     font-family: 'Baloo 2', cursive;
+  }
+  .skeptical-wombat body {
+    font-family: 'Noto Sans', sans-serif;
   }
 }
 
