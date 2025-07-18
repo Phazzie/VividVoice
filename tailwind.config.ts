@@ -48,6 +48,8 @@ const config: Config = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        'neon-green': '#39FF14',
+        'dark-purple': '#1a001a',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -71,10 +73,15 @@ const config: Config = {
             height: '0',
           },
         },
+        'flicker': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.5 },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'flicker': 'flicker 1.5s infinite',
       },
     },
   },
