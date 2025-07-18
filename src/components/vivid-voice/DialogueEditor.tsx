@@ -39,6 +39,7 @@ import { ConsistencyGuardian } from './ConsistencyGuardian';
 import { SubtextAnalyzer } from './SubtextAnalyzer';
 import { PerspectiveShifter } from './PerspectiveShifter';
 import { PlaceholderTool } from './PlaceholderTool';
+import { AudioPlayer } from './AudioPlayer';
 
 import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
 
@@ -85,9 +86,10 @@ export function DialogueEditor({
   isLoading,
   onStorySave,
 }: DialogueEditorProps) {
-  const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments);
+  const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments.map(s => ({ ...s, isGenerating: false })));
   const [storyTitle, setStoryTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [ttsEngine, setTtsEngine] = useState('standard');
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -117,8 +119,25 @@ export function DialogueEditor({
     });
   };
 
-  const handleSubmit = () => {
-    onGenerateAudio(segments);
+  const handleSubmit = async () => {
+    if (ttsEngine === 'elevenlabs') {
+      setSegments(segments.map(s => ({ ...s, isGenerating: true })));
+      const audioPromises = segments.map(async (segment) => {
+        if (segment.dialogue.trim() === '') {
+          return { ...segment, audioDataUri: '', isGenerating: false };
+        }
+        // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
+        const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice
+        const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
+        return { ...segment, audioDataUri, isGenerating: false };
+      });
+
+      const newSegments = await Promise.all(audioPromises);
+      setSegments(newSegments);
+      // We are not calling onGenerateAudio here because we are handling the audio generation in the component
+    } else {
+      onGenerateAudio(segments);
+    }
   };
 
   const handleSaveStory = async () => {
@@ -191,6 +210,18 @@ export function DialogueEditor({
               </DialogContent>
             </Dialog>
         </div>
+        <div className="flex items-center gap-4">
+            <Label>TTS Engine:</Label>
+            <Select value={ttsEngine} onValueChange={setTtsEngine}>
+                <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select TTS Engine" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="elevenlabs">ElevenLabs</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
       </CardHeader>
       <Tabs defaultValue="dialogue" className="w-full">
         <ScrollArea>
@@ -234,16 +265,20 @@ export function DialogueEditor({
                             <div className="flex-1 space-y-2">
                             <div className='flex items-center justify-between'>
                                 <Label className="font-headline text-lg" style={{ color: getCharacterColor(segment.character) }}>{segment.character}</Label>
-                                <Select value={segment.emotion} onValueChange={(value) => handleEmotionChange(index, value)}>
-                                    <SelectTrigger className="w-40 bg-background/70 h-9">
-                                        <SelectValue placeholder="Select emotion" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {emotionOptions.map(opt => (
-                                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                        <div className="flex items-center gap-2">
+                            {segment.isGenerating && <Loader2 className="h-5 w-5 animate-spin" />}
+                            {segment.audioDataUri && <AudioPlayer src={segment.audioDataUri} />}
+                            <Select value={segment.emotion} onValueChange={(value) => handleEmotionChange(index, value)}>
+                                <SelectTrigger className="w-40 bg-background/70 h-9">
+                                    <SelectValue placeholder="Select emotion" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {emotionOptions.map(opt => (
+                                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                             </div>
                             <Textarea
                                 value={segment.dialogue}
@@ -268,7 +303,7 @@ export function DialogueEditor({
                         <TropeInverter tropes={tropes} error={analysisErrors.tropes} />
                     </TabsContent>
                     <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <ActorStudio characters={characters} storyText={storyText} />
+                <ActorStudio characters={characters} />
                     </TabsContent>
                     <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />

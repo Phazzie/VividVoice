@@ -18,7 +18,7 @@ const biasOptions: NarratorBias[] = [
     "Hides a Key Fact"
 ];
 
-export function UnreliableNarrator({ storyText }: { storyText: string }) {
+export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText: string, onApplySuggestion: (originalText: string, newText: string) => void }) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedBias, setSelectedBias] = useState<NarratorBias>("Neutral");
     const [biasedText, setBiasedText] = useState(storyText);
