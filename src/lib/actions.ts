@@ -28,6 +28,7 @@ import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
+import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -103,7 +104,19 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
 
     const { segments, characters } = parsedStory;
 
-    // 2. Orchestrate all other analyses in parallel
+    // 2. Analyze emotional tone for each segment
+    const segmentsWithEmotions = await Promise.all(
+      segments.map(async (segment, index) => {
+        if (segment.character === 'Narrator') {
+          return segment;
+        }
+        const context = segments.slice(Math.max(0, index - 2), Math.min(segments.length, index + 3)).map(s => `${s.character}: ${s.dialogue}`).join('\n');
+        const { emotion } = await analyzeEmotionalToneFlow({ dialogue: segment.dialogue, context });
+        return { ...segment, emotion };
+      })
+    );
+
+    // 3. Orchestrate all other analyses in parallel
     const results = await Promise.allSettled([
       getCharacterPortraits(characters),
       analyzeDialogueDynamicsFlow({ storyText }),
@@ -140,9 +153,9 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
 
     console.log('Full story analysis successful.');
 
-    // 3. Consolidate and return all results
+    // 4. Consolidate and return all results
     return {
-      segments,
+      segments: segmentsWithEmotions,
       characters,
       characterPortraits: characterPortraits || [],
       dialogueDynamics,
