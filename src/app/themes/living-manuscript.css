@@ -1,0 +1,40 @@
+/* Living Manuscript Theme */
+.living-manuscript {
+  --background: url('/path/to/dark-wood-texture.jpg') no-repeat center center fixed;
+  --background-size: cover;
+  --foreground: #f5e6c8; /* Parchment color */
+  --card: url('/path/to/parchment-texture.jpg');
+  --card-foreground: #3a2a1a; /* Dark brown ink */
+  --popover: url('/path/to/parchment-texture.jpg');
+  --popover-foreground: #3a2a1a;
+  --primary: #c8a064; /* Old gold */
+  --primary-foreground: #3a2a1a;
+  --secondary: #8b4513; /* Saddle brown */
+  --secondary-foreground: #f5e6c8;
+  --muted: #f5e6c8;
+  --muted-foreground: #3a2a1a;
+  --accent: #c8a064;
+  --accent-foreground: #3a2a1a;
+  --destructive: #8b0000; /* Dark red */
+  --destructive-foreground: #f5e6c8;
+  --border: #8b4513;
+  --input: #f5e6c8;
+  --ring: #c8a064;
+  --radius: 0.5rem;
+}
+
+.living-manuscript body {
+  font-family: 'Cinzel', serif;
+}
+
+.living-manuscript .story-card {
+  border-radius: 0;
+  box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+  transform: rotate(-2deg);
+  transition: all 0.3s ease-in-out;
+}
+
+.living-manuscript .story-card:hover {
+  transform: rotate(0deg) scale(1.05);
+  z-index: 10;
+}

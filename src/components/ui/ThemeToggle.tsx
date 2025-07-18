@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Brush, Briefcase, Smile } from 'lucide-react';
+import { Moon, Sun, Brush, Briefcase, Smile, Book, Edit, Star } from 'lucide-react';
 
-type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful';
+type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book';
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('light');
@@ -12,7 +12,7 @@ export function ThemeToggle() {
   }, [theme]);
 
   const cycleTheme = () => {
-    const themes: Theme[] = ['light', 'dark', 'unconventional', 'crt', 'minimalist', 'corporate', 'playful'];
+    const themes: Theme[] = ['light', 'dark', 'unconventional', 'crt', 'minimalist', 'corporate', 'playful', 'living-manuscript', 'blueprint', 'sticker-book'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -27,6 +27,9 @@ export function ThemeToggle() {
       {theme === 'minimalist' && <span className="font-mono text-sm">M</span>}
       {theme === 'corporate' && <Briefcase className="h-[1.2rem] w-[1.2rem]" />}
       {theme === 'playful' && <Smile className="h-[1.2rem] w-[1.2rem]" />}
+      {theme === 'living-manuscript' && <Book className="h-[1.2rem] w-[1.2rem]" />}
+      {theme === 'blueprint' && <Edit className="h-[1.2rem] w-[1.2rem]" />}
+      {theme === 'sticker-book' && <Star className="h-[1.2rem] w-[1.2rem]" />}
       <span className="sr-only">Toggle theme</span>
     </Button>
   );

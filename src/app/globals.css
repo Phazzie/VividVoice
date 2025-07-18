@@ -1,6 +1,9 @@
 @import './themes/minimalist.css';
 @import './themes/corporate.css';
 @import './themes/playful.css';
+@import './themes/living-manuscript.css';
+@import './themes/blueprint.css';
+@import './themes/sticker-book.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -154,6 +157,15 @@
   }
   .playful body {
     font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif;
+  }
+  .living-manuscript body {
+    font-family: 'Cinzel', serif;
+  }
+  .blueprint body {
+    font-family: 'Roboto Mono', monospace;
+  }
+  .sticker-book body {
+    font-family: 'Baloo 2', cursive;
   }
 }
 

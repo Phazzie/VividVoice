@@ -1,0 +1,37 @@
+/* Sticker Book Theme */
+.sticker-book {
+  --background: #f7f7f7;
+  --foreground: #333333;
+  --card: #ffffff;
+  --card-foreground: #333333;
+  --popover: #ffffff;
+  --popover-foreground: #333333;
+  --primary: #ff6b6b;
+  --primary-foreground: #ffffff;
+  --secondary: #48dbfb;
+  --secondary-foreground: #ffffff;
+  --muted: #f0f0f0;
+  --muted-foreground: #555555;
+  --accent: #ffb480;
+  --accent-foreground: #ffffff;
+  --destructive: #ff4757;
+  --destructive-foreground: #ffffff;
+  --border: #dddddd;
+  --input: #eeeeee;
+  --ring: #ff6b6b;
+  --radius: 1rem;
+}
+
+.sticker-book body {
+  font-family: 'Baloo 2', cursive;
+}
+
+.sticker-book .story-card {
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.sticker-book .story-card:hover {
+  transform: translateY(-5px);
+}
