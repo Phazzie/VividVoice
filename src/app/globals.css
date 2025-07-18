@@ -1,3 +1,6 @@
+@import './themes/minimalist.css';
+@import './themes/corporate.css';
+@import './themes/playful.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -142,6 +145,15 @@
   }
   .crt body {
     font-family: 'Courier New', Courier, monospace;
+  }
+  .minimalist body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+  .corporate body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .playful body {
+    font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif;
   }
 }
 
