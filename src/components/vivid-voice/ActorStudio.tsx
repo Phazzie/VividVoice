@@ -16,10 +16,9 @@ import { User } from 'lucide-react';
 
 interface ActorStudioProps {
     characters: Character[];
-    storyText: string;
 }
 
-export function ActorStudio({ characters, storyText }: ActorStudioProps) {
+export function ActorStudio({ characters }: ActorStudioProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);

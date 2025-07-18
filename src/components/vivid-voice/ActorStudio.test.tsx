@@ -13,14 +13,12 @@ describe('ActorStudio', () => {
         { name: 'Alice', description: 'A hero, brave and noble.', voiceId: 'v1' },
         { name: 'Bob', description: 'A villain, cunning and sly.', voiceId: 'v2' },
     ];
-    const storyText = 'Alice and Bob talk.'; // storyText is passed but no longer directly used in the component logic being tested
-
     it('should allow selecting a character and sending a message', async () => {
         const user = userEvent.setup();
         const characterResponse = 'This is my response as Alice.';
         (actions.getCharacterResponse as vi.Mock).mockResolvedValue(characterResponse);
 
-        render(<ActorStudio characters={mockCharacters} storyText={storyText} />);
+        render(<ActorStudio characters={mockCharacters} />);
 
         // Select a character
         const selectTrigger = screen.getByRole('combobox');

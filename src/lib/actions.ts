@@ -27,6 +27,7 @@ import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consi
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
+import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -336,5 +337,22 @@ export async function getSoundDesign(storyText: string): Promise<SoundEffectWith
     console.error('Error in getSoundDesign action:', { error: e });
     // Return empty array on failure as this is a non-critical enhancement.
     return [];
+  }
+}
+
+/**
+ * Generates audio for a single text segment using ElevenLabs.
+ * @param text The text to be converted to speech.
+ * @param voiceId The ElevenLabs voice ID to use.
+ * @returns A promise resolving to the audio data URI.
+ */
+export async function generateElevenLabsAudio(text: string, voiceId: string): Promise<string> {
+  console.log('Calling generateElevenLabsAudio action...');
+  try {
+    const result = await generateElevenLabsTTSFlow({ text, voiceId });
+    return result.audioDataUri;
+  } catch (e: any) {
+    console.error('Error in generateElevenLabsAudio action:', { error: e });
+    throw new Error('Failed to generate audio with ElevenLabs.');
   }
 }
