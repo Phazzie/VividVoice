@@ -1,3 +1,10 @@
+@import './themes/minimalist.css';
+@import './themes/corporate.css';
+@import './themes/playful.css';
+@import './themes/living-manuscript.css';
+@import './themes/blueprint.css';
+@import './themes/sticker-book.css';
+@import './themes/skeptical-wombat.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -40,31 +47,95 @@
     /* Wombat's Workshop - Dark Mode */
     --background: 25 35% 12%; /* Deep, warm brown */
     --foreground: 35 45% 95%; /* Light sandy cream */
-    
+
     --card: 25 30% 16%; /* Slightly lighter warm brown for cards */
     --card-foreground: 35 45% 95%;
-    
+
     --popover: 25 35% 10%;
     --popover-foreground: 35 45% 95%;
-    
+
     --primary: 20 90% 60%; /* Vibrant rusty orange for primary actions */
     --primary-foreground: 20 100% 10%;
-    
+
     --secondary: 195 65% 55%; /* Rich teal for secondary actions */
     --secondary-foreground: 195 100% 10%;
-    
+
     --muted: 25 30% 20%;
     --muted-foreground: 35 40% 70%;
-    
+
     --accent: 195 75% 65%; /* Brighter teal for highlights */
     --accent-foreground: 195 100% 10%;
-    
+
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 25 25% 25%;
     --input: 25 25% 22%;
     --ring: 20 90% 60%;
+  }
+
+  .unconventional {
+    --background: 270 60% 95%; /* Pastel Lavender */
+    --foreground: 270 10% 20%; /* Dark Purple */
+
+    --card: 300 80% 90%; /* Light Pink */
+    --card-foreground: 300 10% 20%;
+
+    --popover: 300 80% 90%;
+    --popover-foreground: 300 10% 20%;
+
+    --primary: 330 100% 50%; /* Neon Pink */
+    --primary-foreground: 330 100% 95%;
+
+    --secondary: 180 100% 50%; /* Neon Cyan */
+    --secondary-foreground: 180 100% 5%;
+
+    --muted: 270 40% 90%;
+    --muted-foreground: 270 10% 40%;
+
+    --accent: 210 100% 50%; /* Bright Blue */
+    --accent-foreground: 210 100% 95%;
+
+    --destructive: 0 100% 50%; /* Bright Red */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 300 50% 80%;
+    --input: 300 60% 92%;
+    --ring: 330 100% 50%;
+
+    --radius: 1rem;
+  }
+
+  .crt {
+    --background: 270 100% 4%; /* Dark Purple */
+    --foreground: 120 100% 50%; /* Neon Green */
+
+    --card: 270 100% 8%;
+    --card-foreground: 120 100% 50%;
+
+    --popover: 270 100% 8%;
+    --popover-foreground: 120 100% 50%;
+
+    --primary: 120 100% 50%; /* Neon Green */
+    --primary-foreground: 270 100% 4%;
+
+    --secondary: 300 100% 50%; /* Neon Pink */
+    --secondary-foreground: 270 100% 4%;
+
+    --muted: 270 100% 12%;
+    --muted-foreground: 120 100% 70%;
+
+    --accent: 300 100% 50%;
+    --accent-foreground: 270 100% 4%;
+
+    --destructive: 0 100% 50%; /* Bright Red */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 120 100% 50%;
+    --input: 270 100% 12%;
+    --ring: 120 100% 50%;
+
+    --radius: 0.5rem;
   }
 }
 
@@ -75,6 +146,30 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+  }
+  .crt body {
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .minimalist body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+  .corporate body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .playful body {
+    font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif;
+  }
+  .living-manuscript body {
+    font-family: 'Cinzel', serif;
+  }
+  .blueprint body {
+    font-family: 'Roboto Mono', monospace;
+  }
+  .sticker-book body {
+    font-family: 'Baloo 2', cursive;
+  }
+  .skeptical-wombat body {
+    font-family: 'Noto Sans', sans-serif;
   }
 }
 
@@ -98,9 +193,49 @@
   /* This is our new "scenery" background */
   .bg-wombat-scene {
     background-color: hsl(210 30% 15%);
-    background-image: 
+    background-image:
       radial-gradient(at 15% 20%, hsl(var(--secondary) / 0.3), transparent 50%),
       radial-gradient(at 85% 30%, hsl(var(--primary) / 0.2), transparent 50%),
       radial-gradient(at 50% 80%, hsl(var(--accent) / 0.15), transparent 50%);
+  }
+
+  .text-glow {
+    @apply animate-glow;
+  }
+  .bg-holographic {
+    background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff, #00ffff);
+    background-size: 400% 400%;
+    animation: holographic 10s ease infinite;
+  }
+  @keyframes holographic {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .border-glow {
+    border: 2px solid transparent;
+    animation: border-glow 2s linear infinite;
+  }
+  @keyframes border-glow {
+    0% { border-color: hsl(var(--primary)); box-shadow: 0 0 5px hsl(var(--primary)); }
+    50% { border-color: hsl(var(--secondary)); box-shadow: 0 0 20px hsl(var(--secondary)); }
+    100% { border-color: hsl(var(--primary)); box-shadow: 0 0 5px hsl(var(--primary)); }
+  }
+
+  .text-flicker {
+    @apply animate-flicker;
+  }
+  .crt-lines::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
   }
 }

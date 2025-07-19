@@ -1,0 +1,85 @@
+/* Skeptical Wombat Theme */
+.skeptical-wombat {
+  --background: #e0e0e0;
+  --foreground: #333333;
+  --card: #ffffff;
+  --card-foreground: #333333;
+  --popover: #ffffff;
+  --popover-foreground: #333333;
+  --primary: #8d6e63; /* Wombat Brown */
+  --primary-foreground: #ffffff;
+  --secondary: #a1887f; /* Lighter Wombat Brown */
+  --secondary-foreground: #ffffff;
+  --muted: #f5f5f5;
+  --muted-foreground: #555555;
+  --accent: #ffb74d; /* Wombat Nose Orange */
+  --accent-foreground: #ffffff;
+  --destructive: #e57373; /* Grumpy Red */
+  --destructive-foreground: #ffffff;
+  --border: #c7c7c7;
+  --input: #f0f0f0;
+  --ring: #8d6e63;
+  --radius: 0.75rem;
+}
+
+.skeptical-wombat body {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.skeptical-wombat .story-card {
+  border: 2px solid var(--border);
+  position: relative;
+}
+
+/* Skepticism Level 1 */
+.skepticism-1 .story-card::after {
+  content: '😒';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 2rem;
+  transform: rotate(15deg);
+}
+
+/* Skepticism Level 2 */
+.skepticism-2 .story-card::after {
+  content: '😠';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 2rem;
+  transform: rotate(15deg);
+}
+
+.skepticism-2 body {
+  font-style: italic;
+}
+
+/* Skepticism Level 3 */
+.skepticism-3 .story-card::after {
+  content: url('/path/to/skeptical-wombat.png');
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 50px;
+  height: 50px;
+}
+
+.skepticism-3 .button-tooltip::after {
+  content: 'Really?';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.skepticism-3 .button-tooltip:hover::after {
+  opacity: 1;
+}

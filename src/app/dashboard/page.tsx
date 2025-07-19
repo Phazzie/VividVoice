@@ -1,6 +1,8 @@
 
 "use client";
 
+"use client";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,6 +13,8 @@ import { Loader2, PlusCircle, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SkepticismToggle } from "@/components/ui/SkepticismToggle";
 
 export default function DashboardPage() {
     const { user, loading: authLoading } = useAuth();
@@ -18,6 +22,7 @@ export default function DashboardPage() {
     const [stories, setStories] = useState<Story[]>([]);
     const [loadingStories, setLoadingStories] = useState(true);
     const { toast } = useToast();
+    const [theme, setTheme] = useState('light');
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -62,9 +67,13 @@ export default function DashboardPage() {
                     <h1 className="text-4xl font-bold font-headline">Your Stories</h1>
                     <p className="text-muted-foreground">Manage your saved narratives here.</p>
                 </div>
-                 <Button asChild>
-                    <Link href="/"><PlusCircle className="mr-2"/> New Story</Link>
-                </Button>
+                <div className="flex items-center gap-4">
+                    <ThemeToggle />
+                    {theme === 'skeptical-wombat' && <SkepticismToggle />}
+                    <Button asChild>
+                        <Link href="/"><PlusCircle className="mr-2"/> New Story</Link>
+                    </Button>
+                </div>
             </div>
             
             {stories.length === 0 ? (
@@ -80,7 +89,7 @@ export default function DashboardPage() {
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {stories.map(story => (
                         <Link href={`/?storyId=${story.id}`} key={story.id}>
-                            <Card className="hover:border-primary hover:shadow-lg transition-all h-full flex flex-col">
+                            <Card className="hover:border-primary hover:shadow-lg transition-all h-full flex flex-col story-card">
                                 <CardHeader>
                                     <CardTitle>{story.title}</CardTitle>
                                     <CardDescription>
