@@ -26,8 +26,23 @@ const AnalyzeEmotionalToneOutputSchema = z.object({
 });
 export type AnalyzeEmotionalToneOutput = z.infer<typeof AnalyzeEmotionalToneOutputSchema>;
 
+const emotionalTonePrompt = ai.definePrompt({
+  name: 'emotionalTonePrompt',
+  input: { schema: AnalyzeEmotionalToneInputSchema },
+  output: { schema: AnalyzeEmotionalToneOutputSchema },
+  prompt: (input) => `You are an expert script analyst. Your task is to determine the emotional tone of a line of dialogue based on the text and the surrounding context. Consider the character's personality, the situation, and the subtext. From the following list of emotions: [${emotionOptions.join(', ')}], choose the one that best fits the line. Your response MUST be a single word from this list.
+
+**Context:**
+${input.context}
+
+**Line to Analyze:**
+"${input.dialogue}"
+
+**Emotion:**`
+});
+
 export async function analyzeEmotionalTone(input: AnalyzeEmotionalToneInput): Promise<AnalyzeEmotionalToneOutput> {
-    return analyzeEmotionalToneFlow(input);
+  return analyzeEmotionalToneFlow(input);
 }
 
 const analyzeEmotionalToneFlow = ai.defineFlow(
@@ -37,24 +52,10 @@ const analyzeEmotionalToneFlow = ai.defineFlow(
     outputSchema: AnalyzeEmotionalToneOutputSchema,
   },
   async (input) => {
-    const { dialogue, context } = input;
-
-    const prompt = ai.definePrompt({
-        name: 'emotionalTonePrompt',
-        input: {schema: AnalyzeEmotionalToneInputSchema},
-        output: {schema: AnalyzeEmotionalToneOutputSchema},
-        prompt: `You are an expert script analyst. Your task is to determine the emotional tone of a line of dialogue based on the text and the surrounding context. Consider the character's personality, the situation, and the subtext. From the following list of emotions: [${emotionOptions.join(', ')}], choose the one that best fits the line. Your response MUST be a single word from this list.
-
-**Context:**
-${context}
-
-**Line to Analyze:**
-"${dialogue}"
-
-**Emotion:**`
-    });
-
-    const { output } = await prompt(input);
-    return output!;
+    const { output } = await emotionalTonePrompt(input);
+    if (!output) {
+      throw new Error('Failed to get a valid emotional tone from the AI model.');
+    }
+    return output;
   }
 );
