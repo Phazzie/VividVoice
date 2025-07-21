@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -44,6 +43,7 @@ const analyzePacingFlow = ai.defineFlow(
 Go through the text and identify contiguous blocks of 'Dialogue' and 'Narration'. For each block, provide:
 1.  The 'type' of the segment ('Dialogue' or 'Narration').
 2.  The 'wordCount' of that segment.
+3.  The 'pacingFeel' of the segment. Analyze the content of the segment to determine its narrative purpose and feel. Choose from: "Action", "Reflection", "Exposition", or "Tension".
 
 **CRITICAL INSTRUCTIONS:**
 - Combine consecutive lines of the same type into a single segment. For example, if there are three lines of narration followed by two lines of dialogue, you should return two segments.
@@ -53,10 +53,10 @@ Go through the text and identify contiguous blocks of 'Dialogue' and 'Narration'
 **High-Quality Example:**
 - **Input Story Text:**
   \`\`\`
-  Narrator: The sun set. It was cold now.
+  Narrator: The sun set, casting long shadows. It was cold now, and the old house seemed to hold its breath.
   Alice: Are you there?
-  Bob: I'm here.
-  Narrator: A shadow moved in the corner.
+  Bob: I'm here. He stepped out of the shadows, his knife gleaming.
+  Narrator: A shadow moved in the corner, and the floorboards creaked.
   \`\`\`
 - **Your Perfect JSON Output:**
   \`\`\`json
@@ -64,15 +64,18 @@ Go through the text and identify contiguous blocks of 'Dialogue' and 'Narration'
     "segments": [
       {
         "type": "Narration",
-        "wordCount": 7
+        "wordCount": 18,
+        "pacingFeel": "Tension"
       },
       {
         "type": "Dialogue",
-        "wordCount": 6
+        "wordCount": 13,
+        "pacingFeel": "Action"
       },
       {
         "type": "Narration",
-        "wordCount": 6
+        "wordCount": 11,
+        "pacingFeel": "Tension"
       }
     ]
   }
