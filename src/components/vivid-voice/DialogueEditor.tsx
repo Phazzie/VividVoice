@@ -315,7 +315,7 @@ export function DialogueEditor({
                         <TropeInverter tropes={tropes} error={analysisErrors.tropes} />
                     </TabsContent>
                     <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ActorStudio characters={characters} />
+                <ActorStudio characters={characters} storyText={storyText} />
                     </TabsContent>
                     <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />

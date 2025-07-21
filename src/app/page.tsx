@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
+import { chunkText } from "@/lib/chunking";
 
 type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
@@ -69,6 +70,11 @@ export default function StagingStoriesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyIdToLoad, user]);
   const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
+    const isProUser = true; // Simulated "Pro" tier check
+    if (isProUser && newStoryText.length > 10000) {
+      return handleFullAnalysisChunked(newStoryText, existingStoryId);
+    }
+
     setAppState('analyzing');
     setError(null);
     setStoryId(existingStoryId);
@@ -109,6 +115,56 @@ export default function StagingStoriesPage() {
       toast({
         variant: "destructive",
         title: "Analysis Error",
+        description: errorMessage,
+      });
+    }
+  };
+
+  const handleFullAnalysisChunked = async (newStoryText: string, existingStoryId: string | null = null) => {
+    setAppState('analyzing');
+    setError(null);
+    setStoryId(existingStoryId);
+    setFullAnalysis(null);
+    setStoryText('');
+    setTranscript([]);
+
+    try {
+      const chunks = chunkText(newStoryText, 10000);
+      let combinedAnalysis: FullAnalysis = {
+        segments: [],
+        characters: [],
+        characterPortraits: [],
+        dialogueDynamics: { characterInsights: {}, interactionMatrix: [], summary: '' },
+        literaryDevices: { devices: [] },
+        pacing: { segments: [] },
+        tropes: { tropes: [] },
+        showDontTellSuggestions: { suggestions: [] },
+        consistencyIssues: { issues: [] },
+        subtextAnalyses: { analyses: [] },
+        soundEffects: [],
+      };
+      let combinedErrors: Record<string, string> = {};
+
+      for (const chunk of chunks) {
+        const analysisResult = await getFullStoryAnalysis(chunk);
+        combinedAnalysis.segments.push(...analysisResult.segments);
+        combinedAnalysis.characters.push(...analysisResult.characters);
+        combinedAnalysis.characterPortraits.push(...analysisResult.characterPortraits);
+        // Note: This is a simplified combination strategy. A real implementation would need to merge these results more intelligently.
+        Object.assign(combinedErrors, analysisResult.errors);
+      }
+
+      setFullAnalysis(combinedAnalysis);
+      setStoryText(newStoryText);
+      setAnalysisErrors(combinedErrors);
+      setAppState('editing');
+    } catch (e: any) {
+      const errorMessage = e.message || "An unexpected error occurred during chunked analysis.";
+      setError(errorMessage);
+      setAppState('initial');
+      toast({
+        variant: "destructive",
+        title: "Chunked Analysis Error",
         description: errorMessage,
       });
     }

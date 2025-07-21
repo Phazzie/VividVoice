@@ -263,15 +263,20 @@ export async function generateMultiVoiceSceneAudio(
 /**
  * Interaction: Chats with a character from the story using their rich, pre-generated profile.
  */
-export async function getCharacterResponse(character: Character, history: ChatMessage[], userMessage: string): Promise<string> {
-    console.log('Calling getCharacterResponse action...');
-    try {
-      const result = await characterChatFlow({ character, history, userMessage });
-      return result.response;
-    } catch (e: unknown) {
-        console.error('Error in getCharacterResponse action:', { error: e });
-        throw new Error('Failed to get character response.');
-    }
+export async function getCharacterResponse(
+  character: Character,
+  history: ChatMessage[],
+  userMessage: string,
+  storyText: string
+): Promise<string> {
+  console.log('Calling getCharacterResponse action...');
+  try {
+    const result = await characterChatFlow({ character, history, userMessage, storyText });
+    return result.response;
+  } catch (e: unknown) {
+    console.error('Error in getCharacterResponse action:', { error: e });
+    throw new Error('Failed to get character response.');
+  }
 }
 
 /**
