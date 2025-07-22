@@ -67,7 +67,6 @@ const mockSoundEffects = [];
 
 
 describe('DialogueEditor', () => {
-  console.log('DialogueEditor test suite starting...');
   const defaultProps = {
     storyId: "1",
     storyText: "Story text",
@@ -88,10 +87,8 @@ describe('DialogueEditor', () => {
   };
 
   it('should render initial segments correctly', () => {
-    console.log('Test: should render initial segments correctly');
     render(<DialogueEditor {...defaultProps} />);
 
-    console.log('Rendered DialogueEditor');
     expect(screen.getByText('Narrator')).toBeInTheDocument();
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByDisplayValue('The beginning.')).toBeInTheDocument();
