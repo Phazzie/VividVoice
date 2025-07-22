@@ -1,9 +1,20 @@
 export const chunkText = (text: string, chunkSize: number): string[] => {
-  const chunks = [];
-  let i = 0;
-  while (i < text.length) {
-    chunks.push(text.substring(i, i + chunkSize));
-    i += chunkSize;
+  const chunks: string[] = [];
+  let currentChunk = "";
+  const words = text.split(/\b/); // Split text at word boundaries
+
+  for (const word of words) {
+    if ((currentChunk + word).length > chunkSize) {
+      chunks.push(currentChunk.trim());
+      currentChunk = word;
+    } else {
+      currentChunk += word;
+    }
   }
+
+  if (currentChunk) {
+    chunks.push(currentChunk.trim());
+  }
+
   return chunks;
 };

@@ -17,6 +17,7 @@ import { CharacterSchema, ChatMessageSchema } from '@/ai/schemas';
 import { FaissStore } from '@langchain/community/vectorstores/faiss';
 import { GoogleGenerativeAiEmbeddings } from '@langchain/google-genai';
 import { Document } from 'langchain/document';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 
 const CharacterChatInputSchema = z.object({
   character: CharacterSchema.describe(
@@ -33,6 +34,9 @@ const CharacterChatOutputSchema = z.object({
 });
 export type CharacterChatOutput = z.infer<typeof CharacterChatOutputSchema>;
 
+// In-memory cache for vector stores
+const vectorStoreCache = new Map<string, FaissStore>();
+
 export async function characterChat(input: CharacterChatInput): Promise<CharacterChatOutput> {
   return characterChatFlow(input);
 }
@@ -46,19 +50,32 @@ const characterChatFlow = ai.defineFlow(
   async (input) => {
     const { character, history, userMessage, storyText } = input;
 
-    // 1. Create a vector store from the story text
-    const vectorStore = await FaissStore.fromDocuments(
-      [new Document({ pageContent: storyText })],
-      new GoogleGenerativeAiEmbeddings({
-        apiKey: process.env.GOOGLE_GENAI_API_KEY,
-        model: 'text-embedding-004',
-      })
-    );
+    if (!process.env.GOOGLE_GENAI_API_KEY) {
+      throw new Error('GOOGLE_GENAI_API_KEY environment variable not set.');
+    }
 
-    // 2. Retrieve relevant context from the story
-    const retriever = vectorStore.asRetriever();
+    let vectorStore = vectorStoreCache.get(storyText);
+
+    if (!vectorStore) {
+      const textSplitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 200,
+      });
+      const docs = await textSplitter.createDocuments([storyText]);
+
+      vectorStore = await FaissStore.fromDocuments(
+        docs,
+        new GoogleGenerativeAiEmbeddings({
+          apiKey: process.env.GOOGLE_GENAI_API_KEY,
+          model: 'text-embedding-004',
+        })
+      );
+      vectorStoreCache.set(storyText, vectorStore);
+    }
+
+    const retriever = vectorStore.asRetriever({ k: 3 });
     const relevantDocs = await retriever.invoke(userMessage);
-    const storyContext = relevantDocs.map((doc) => doc.pageContent).join('\n\n');
+    const storyContext = relevantDocs.map((doc) => doc.pageContent).join('\n\n') || 'No relevant context found in the story.';
 
     const prompt = ai.definePrompt({
       name: 'characterChatPrompt',

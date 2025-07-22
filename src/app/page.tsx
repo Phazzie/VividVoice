@@ -69,9 +69,47 @@ export default function StagingStoriesPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyIdToLoad, user]);
+const CHUNK_THRESHOLD = 10000;
+
+export default function StagingStoriesPage() {
+  const { user, loading: authLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const storyIdToLoad = searchParams.get('storyId');
+
+  const [appState, setAppState] = useState<AppState>('initial');
+  const [storyId, setStoryId] = useState<string | null>(storyIdToLoad);
+  const [storyText, setStoryText] = useState<string>('');
+  const [fullAnalysis, setFullAnalysis] = useState<FullAnalysis | null>(null);
+  const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
+  const [sceneAudioUri, setSceneAudioUri] = useState<string>('');
+  const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+    useEffect(() => {
+    if (storyIdToLoad && user) {
+      const loadStory = async () => {
+        setAppState('loadingStory');
+        try {
+          const story = await getStoryById(storyIdToLoad);
+          if (story && story.userId === user.uid) {
+            await handleFullAnalysis(story.storyText, story.id);
+          } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story or you do not have permission to view it.'});
+            setAppState('initial');
+          }
+        } catch (e: any) {
+          toast({ variant: 'destructive', title: 'Error Loading Story', description: e.message });
+          setAppState('initial');
+        }
+      };
+      loadStory();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storyIdToLoad, user]);
   const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
-    const isProUser = true; // Simulated "Pro" tier check
-    if (isProUser && newStoryText.length > 10000) {
+    const isProUser = user?.isPro || false;
+    if (isProUser && newStoryText.length > CHUNK_THRESHOLD) {
       return handleFullAnalysisChunked(newStoryText, existingStoryId);
     }
 
@@ -150,9 +188,21 @@ export default function StagingStoriesPage() {
         combinedAnalysis.segments.push(...analysisResult.segments);
         combinedAnalysis.characters.push(...analysisResult.characters);
         combinedAnalysis.characterPortraits.push(...analysisResult.characterPortraits);
-        // Note: This is a simplified combination strategy. A real implementation would need to merge these results more intelligently.
+        combinedAnalysis.literaryDevices.devices.push(...analysisResult.literaryDevices.devices);
+        combinedAnalysis.pacing.segments.push(...analysisResult.pacing.segments);
+        combinedAnalysis.tropes.tropes.push(...analysisResult.tropes.tropes);
+        combinedAnalysis.showDontTellSuggestions.suggestions.push(...analysisResult.showDontTellSuggestions.suggestions);
+        combinedAnalysis.consistencyIssues.issues.push(...analysisResult.consistencyIssues.issues);
+        combinedAnalysis.subtextAnalyses.analyses.push(...analysisResult.subtextAnalyses.analyses);
+        combinedAnalysis.soundEffects.push(...analysisResult.soundEffects);
         Object.assign(combinedErrors, analysisResult.errors);
       }
+
+      // De-duplicate characters and portraits
+      const uniqueCharacters = Array.from(new Map(combinedAnalysis.characters.map(char => [char.name, char])).values());
+      combinedAnalysis.characters = uniqueCharacters;
+      const uniquePortraits = Array.from(new Map(combinedAnalysis.characterPortraits.map(p => [p.name, p])).values());
+      combinedAnalysis.characterPortraits = uniquePortraits;
 
       setFullAnalysis(combinedAnalysis);
       setStoryText(newStoryText);
