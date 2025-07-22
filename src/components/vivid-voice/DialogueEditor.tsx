@@ -40,6 +40,7 @@ import { SubtextAnalyzer } from './SubtextAnalyzer';
 import { PerspectiveShifter } from './PerspectiveShifter';
 import { PlaceholderTool } from './PlaceholderTool';
 import { AudioPlayer } from './AudioPlayer';
+import { SkepticalWombat } from './SkepticalWombat';
 
 import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
 
@@ -249,6 +250,7 @@ export function DialogueEditor({
               <TabsTrigger value="consistency" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><ShieldCheck className="mr-2"/>Consistency</TabsTrigger>
               <TabsTrigger value="subtext" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><MessageSquareQuote className="mr-2"/>Subtext</TabsTrigger>
               <TabsTrigger value="perspective" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Shuffle className="mr-2"/>Perspective</TabsTrigger>
+              <TabsTrigger value="skepticalWombat" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><img src="https://storage.googleapis.com/static.invertase.io/wombat-2-1.png" alt="Skeptical Wombat" className="w-6 h-6 mr-2" />Skeptical Wombat</TabsTrigger>
           </TabsList>
         </ScrollArea>
         <ScrollArea className="h-[55vh]">
@@ -331,6 +333,9 @@ export function DialogueEditor({
                     </TabsContent>
                     <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <PerspectiveShifter characters={interactableCharacters} storyText={storyText} />
+                    </TabsContent>
+                    <TabsContent value="skepticalWombat" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <SkepticalWombat storyText={storyText} />
                     </TabsContent>
                 </>
             )}

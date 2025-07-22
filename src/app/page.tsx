@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
-import { chunkText } from "@/lib/chunking";
+import { chunkTextByParagraph } from "@/lib/chunking";
 
 type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
@@ -167,7 +167,7 @@ export default function StagingStoriesPage() {
     setTranscript([]);
 
     try {
-      const chunks = chunkText(newStoryText, 10000);
+      const chunks = chunkTextByParagraph(newStoryText);
       let combinedAnalysis: FullAnalysis = {
         segments: [],
         characters: [],

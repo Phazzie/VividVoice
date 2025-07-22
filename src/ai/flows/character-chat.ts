@@ -54,23 +54,39 @@ const characterChatFlow = ai.defineFlow(
       throw new Error('GOOGLE_GENAI_API_KEY environment variable not set.');
     }
 
-    let vectorStore = vectorStoreCache.get(storyText);
+    let vectorStore = vectorStoreCache.get(`${storyText}-${character.name}`);
 
     if (!vectorStore) {
       const textSplitter = new RecursiveCharacterTextSplitter({
         chunkSize: 1000,
         chunkOverlap: 200,
       });
-      const docs = await textSplitter.createDocuments([storyText]);
+      const allDocs = await textSplitter.createDocuments([storyText], [], {
+        chunkHeader: "CHAPTER_HEADER",
+        appendChunkOverlapHeader: true,
+      });
 
-      vectorStore = await FaissStore.fromDocuments(
-        docs,
-        new GoogleGenerativeAiEmbeddings({
-          apiKey: process.env.GOOGLE_GENAI_API_KEY,
-          model: 'text-embedding-004',
-        })
-      );
-      vectorStoreCache.set(storyText, vectorStore);
+      const characterDocs = allDocs.filter(doc => doc.pageContent.includes(character.name));
+
+      if (characterDocs.length === 0) {
+        // If no specific documents for the character, use all documents
+        vectorStore = await FaissStore.fromDocuments(
+          allDocs,
+          new GoogleGenerativeAiEmbeddings({
+            apiKey: process.env.GOOGLE_GENAI_API_KEY,
+            model: 'text-embedding-004',
+          })
+        );
+      } else {
+        vectorStore = await FaissStore.fromDocuments(
+          characterDocs,
+          new GoogleGenerativeAiEmbeddings({
+            apiKey: process.env.GOOGLE_GENAI_API_KEY,
+            model: 'text-embedding-004',
+          })
+        );
+      }
+      vectorStoreCache.set(`${storyText}-${character.name}`, vectorStore);
     }
 
     const retriever = vectorStore.asRetriever({ k: 3 });

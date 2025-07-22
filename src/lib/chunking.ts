@@ -18,3 +18,7 @@ export const chunkText = (text: string, chunkSize: number): string[] => {
 
   return chunks;
 };
+
+export const chunkTextByParagraph = (text: string): string[] => {
+  return text.split('\n\n');
+};
