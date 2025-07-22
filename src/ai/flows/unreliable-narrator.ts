@@ -14,7 +14,10 @@ import { NarratorBiasSchema } from '@/ai/schemas';
 
 const ApplyNarratorBiasInputSchema = z.object({
   storyText: z.string().describe('The original, unbiased text of the story.'),
-  bias: NarratorBiasSchema.describe('The specific bias to apply to the narrator.'),
+  bias: z.object({
+    startBias: NarratorBiasEnum.describe("The narrator's bias at the beginning of the story."),
+    endBias: NarratorBiasEnum.describe("The narrator's bias at the end of the story."),
+  }).describe('The evolving bias to apply to the narrator.'),
 });
 export type ApplyNarratorBiasInput = z.infer<typeof ApplyNarratorBiasInputSchema>;
 

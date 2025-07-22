@@ -39,15 +39,15 @@ const shiftPerspectiveFlow = ai.defineFlow(
             name: 'shiftPerspectivePrompt',
             input: {schema: ShiftPerspectiveInputSchema},
             output: {schema: PerspectiveSchema},
-            prompt: `You are a master storyteller and literary analyst. Your task is to rewrite a summary of the provided story, but from the unique perspective of a specific character, casting them in a new light and in a specific format.
+prompt: `You are a master storyteller and literary analyst. Your task is to rewrite a section of the provided story, but from the unique perspective of a specific character, casting them in a new light and in a specific format.
 
 **Instructions:**
 1.  Read the entire original story text to fully understand the plot, events, and all characters.
 2.  Adopt the voice, worldview, and knowledge of the specified character: '{{characterName}}'.
-3.  Rewrite a one-paragraph summary of the story's main events as if '{{characterName}}' were the '{{role}}' of the story.
+3.  Rewrite a one-paragraph section of the story's main events as if '{{characterName}}' were the '{{role}}' of the story.
 4.  The rewritten text must be in the format of a '{{format}}'.
-5.  The summary must reflect their biases, motivations, and interpretation of events. For example, if they are the 'Antagonist', they might see the original hero's actions as villainous or misguided.
-6.  The summary should be compelling and written in a narrative style, not a dry list of events.
+5.  The rewritten text must reflect their biases, motivations, and interpretation of events. For example, if they are the 'Antagonist', they might see the original hero's actions as villainous or misguided.
+6.  The rewritten text should be compelling and written in a narrative style, not a dry list of events.
 
 **High-Quality Example:**
 - **Input Story Text:**

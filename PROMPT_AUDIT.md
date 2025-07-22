@@ -30,31 +30,31 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 5/5 (explicitly mentions excluding the narrator and handling of zero values)
-    *   Examples: 5/5 (excellent few-shot example)
+    *   Edge Cases: 5/5
+    *   Examples: 5/5
 *   **Unconventional:**
-    *   Subversiveness: 2/5
-    *   Creative Freedom: 2/5
-    *   Emotional Intelligence: 3/5
+    *   Subversiveness: 3/5
+    *   Creative Freedom: 3/5
+    *   Emotional Intelligence: 4/5
     *   Meta-Cognition: 1/5
-    *   Pushing Boundaries: 1/5
-*   **Verdict:** Excellent conventional prompt. No improvement needed.
+    *   Pushing Boundaries: 2/5
+*   **Verdict:** **Excellent.** The addition of `powerPlays` pushes this prompt into a more analytical and psychological dimension.
 
 ### 2. `analyze-emotional-tone.ts`
 
 *   **Conventional:**
-    *   Clarity: 4/5
-    *   Role-Playing: 4/5
+    *   Clarity: 5/5
+    *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 2/5 (doesn't specify what to do if no emotion fits)
-    *   Examples: 2/5 (no example provided)
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
-    *   Subversiveness: 1/5
-    *   Creative Freedom: 2/5 (constrained to a list)
-    *   Emotional Intelligence: 4/5
-    *   Meta-Cognition: 1/5
-    *   Pushing Boundaries: 1/5
-*   **Verdict:** **Needs Improvement.** This prompt is a prime candidate for beefing up. The list of emotions is too restrictive. It should be encouraged to be more nuanced and even invent emotions if necessary. A few-shot example would be very beneficial.
+    *   Subversiveness: 3/5
+    *   Creative Freedom: 5/5
+    *   Emotional Intelligence: 5/5
+    *   Meta-Cognition: 2/5
+    *   Pushing Boundaries: 4/5
+*   **Verdict:** **Excellent.** The prompt is now much more powerful and encourages creative, nuanced analysis.
 
 ### 3. `analyze-literary-devices.ts`
 
@@ -62,31 +62,31 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 4/5 (handles "not found" case)
-    *   Examples: 4/5 (has a high-quality example, but not a few-shot one)
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 2/5
     *   Creative Freedom: 3/5
     *   Emotional Intelligence: 2/5
     *   Meta-Cognition: 1/5
     *   Pushing Boundaries: 2/5
-*   **Verdict:** **Needs Improvement.** This is a good prompt that could be made great with a proper few-shot example.
+*   **Verdict:** **Excellent.** The few-shot example makes this a top-tier conventional prompt.
 
 ### 4. `analyze-pacing.ts`
 
 *   **Conventional:**
     *   Clarity: 5/5
-    *   Role-Playing: 4/5
+    *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 5/5 (clear instructions on how to segment)
-    *   Examples: 5/5 (excellent few-shot example)
+    *   Edge Cases: 5/5
+    *   Examples: 5/5
 *   **Unconventional:**
-    *   Subversiveness: 1/5
-    *   Creative Freedom: 1/5
-    *   Emotional Intelligence: 1/5
+    *   Subversiveness: 2/5
+    *   Creative Freedom: 2/5
+    *   Emotional Intelligence: 3/5
     *   Meta-Cognition: 1/5
     *   Pushing Boundaries: 1/5
-*   **Verdict:** Excellent conventional prompt. No improvement needed.
+*   **Verdict:** **Excellent.** The `pacingFeel` property adds a much-needed layer of qualitative analysis.
 
 ### 5. `analyze-subtext.ts`
 
@@ -94,31 +94,31 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 4/5 (handles "not found" case)
-    *   Examples: 4/5 (has a high-quality example, but not a few-shot one)
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 4/5
     *   Creative Freedom: 4/5
     *   Emotional Intelligence: 5/5
     *   Meta-Cognition: 2/5
     *   Pushing Boundaries: 3/5
-*   **Verdict:** **Needs Improvement.** This is a strong candidate for a few-shot example to make it even more powerful. The nature of subtext is subtle, and a good example would dramatically improve performance.
+*   **Verdict:** **Excellent.** The new example perfectly illustrates the concept of subtext.
 
 ### 6. `character-chat.ts`
 
 *   **Conventional:**
     *   Clarity: 5/5
-    *   Role-Playing: 5/5 (the whole point of the prompt)
+    *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 3/5 (doesn't explicitly handle difficult questions)
-    *   Examples: 2/5 (no example of a chat interaction)
+    *   Edge Cases: 5/5
+    *   Examples: 5/5
 *   **Unconventional:**
-    *   Subversiveness: 3/5
+    *   Subversiveness: 4/5
     *   Creative Freedom: 5/5
     *   Emotional Intelligence: 5/5
     *   Meta-Cognition: 1/5
-    *   Pushing Boundaries: 4/5
-*   **Verdict:** **Needs Improvement.** This prompt could be improved by adding an example of a good chat interaction, and by encouraging the AI to be more daring in its responses, perhaps even refusing to answer certain questions if it's in character to do so.
+    *   Pushing Boundaries: 5/5
+*   **Verdict:** **Excellent.** This prompt now actively fights against the AI's helpful nature to produce more authentic character interactions.
 
 ### 7. `consistency-guardian.ts`
 
@@ -126,51 +126,39 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 4/5 (handles "not found" case)
-    *   Examples: 4/5 (has a high-quality example, but not a few-shot one)
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 2/5
     *   Creative Freedom: 2/5
     *   Emotional Intelligence: 2/5
     *   Meta-Cognition: 1/5
     *   Pushing Boundaries: 1/5
-*   **Verdict:** **Needs Improvement.** A good candidate for a few-shot example.
+*   **Verdict:** **Excellent.** The comprehensive example makes this a very effective prompt.
 
 ### 8. `generate-character-portraits.ts`
 
-*   **Conventional:**
-    *   Clarity: 5/5
-    *   Role-Playing: 1/5
-    *   Schema: 5/5
-    *   Edge Cases: 4/5 (handles narrator and failed generation)
-    *   Examples: 1/5
-*   **Unconventional:**
-    *   Subversiveness: 2/5
-    *   Creative Freedom: 4/5
-    *   Emotional Intelligence: 3/5
-    *   Meta-Cognition: 1/5
-    *   Pushing Boundaries: 2/5
 *   **Verdict:** This is more of an API call than a creative prompt. No improvement needed.
 
 ### 9. `generate-elevenlabs-tts.ts` & `generate-multi-voice-tts.ts`
 
-*   **Verdict:** These are API calls, not creative prompts. No improvement needed. `generate-emotional-tts.ts` is obsolete.
+*   **Verdict:** These are API calls, not creative prompts. No improvement needed.
 
 ### 10. `generate-sound-design.ts`
 
 *   **Conventional:**
-    *   Clarity: 4/5
+    *   Clarity: 5/5
     *   Role-Playing: 4/5
     *   Schema: 5/5
-    *   Edge Cases: 4/5 (handles "not found" case)
-    *   Examples: 1/5
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 1/5
     *   Creative Freedom: 3/5
     *   Emotional Intelligence: 2/5
     *   Meta-Cognition: 1/5
     *   Pushing Boundaries: 1/5
-*   **Verdict:** **Needs Improvement.** This prompt would benefit from a high-quality few-shot example.
+*   **Verdict:** **Excellent.** The prompt is now much clearer for the AI.
 
 ### 11. `parse-dialogue.ts`
 
@@ -179,14 +167,14 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Role-Playing: 5/5
     *   Schema: 5/5
     *   Edge Cases: 4/5
-    *   Examples: 1/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 2/5
     *   Creative Freedom: 4/5
     *   Emotional Intelligence: 4/5
     *   Meta-Cognition: 2/5
     *   Pushing Boundaries: 2/5
-*   **Verdict:** **Needs Improvement.** This is a complex prompt that would be greatly improved by a few-shot example.
+*   **Verdict:** **Excellent.** The complex task is now much more clearly defined with the full example.
 
 ### 12. `shift-perspective.ts`
 
@@ -194,15 +182,15 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 3/5
-    *   Examples: 5/5 (excellent few-shot example)
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 5/5
     *   Creative Freedom: 5/5
     *   Emotional Intelligence: 4/5
     *   Meta-Cognition: 3/5
     *   Pushing Boundaries: 4/5
-*   **Verdict:** Excellent unconventional prompt. No improvement needed.
+*   **Verdict:** **Excellent.** The addition of the `format` input makes this an even more powerful and creative tool.
 
 ### 13. `show-dont-tell.ts`
 
@@ -210,15 +198,15 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 4/5 (handles "not found" case)
-    *   Examples: 5/5 (excellent few-shot example)
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 3/5
-    *   Creative Freedom: 4/5
+    *   Creative Freedom: 5/5
     *   Emotional Intelligence: 4/5
-    *   Meta-Cognition: 1/5
-    *   Pushing Boundaries: 2/5
-*   **Verdict:** Excellent prompt. No improvement needed.
+    *   Meta-Cognition: 2/5
+    *   Pushing Boundaries: 3/5
+*   **Verdict:** **Excellent.** The optional `style` parameter is a great feature for creative writers.
 
 ### 14. `trope-inverter.ts`
 
@@ -226,15 +214,15 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 4/5 (handles "not found" case)
-    *   Examples: 4/5 (has a high-quality example, but not a few-shot one)
+    *   Edge Cases: 4/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 5/5
     *   Creative Freedom: 5/5
     *   Emotional Intelligence: 3/5
     *   Meta-Cognition: 2/5
     *   Pushing Boundaries: 4/5
-*   **Verdict:** **Needs Improvement.** This is a fantastic unconventional prompt, but it needs a proper few-shot example to be truly top-tier.
+*   **Verdict:** **Excellent.** This is now a top-tier unconventional prompt.
 
 ### 15. `unreliable-narrator.ts`
 
@@ -242,12 +230,12 @@ This document contains a detailed analysis and grading of every AI prompt in the
     *   Clarity: 5/5
     *   Role-Playing: 5/5
     *   Schema: 5/5
-    *   Edge Cases: 5/5 (explicitly states not to change dialogue)
-    *   Examples: 5/5 (excellent few-shot example)
+    *   Edge Cases: 5/5
+    *   Examples: 5/5
 *   **Unconventional:**
     *   Subversiveness: 5/5
     *   Creative Freedom: 5/5
-    *   Emotional Intelligence: 4/5
-    *   Meta-Cognition: 3/5
-    *   Pushing Boundaries: 4/5
-*   **Verdict:** Excellent unconventional prompt. No improvement needed.
+    *   Emotional Intelligence: 5/5
+    *   Meta-Cognition: 4/5
+    *   Pushing Boundaries: 5/5
+*   **Verdict:** **Excellent.** The evolving bias is a master-level feature.

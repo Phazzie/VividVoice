@@ -109,25 +109,24 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 /**
  * Defines the schema for narrator bias modes.
  */
+const NARRATOR_BIAS_OPTIONS = [
+  "Neutral",
+  "Jealous of Main Character",
+  "Secretly the Villain",
+  "Admires Main Character",
+  "Completely Unreliable",
+  "Hides a Key Fact",
+] as const;
+
+export const NarratorBiasEnum = z.enum(NARRATOR_BIAS_OPTIONS);
+
 export const NarratorBiasSchema = z.object({
-    startBias: z.enum([
-        "Neutral",
-        "Jealous of Main Character",
-        "Secretly the Villain",
-        "Admires Main Character",
-        "Completely Unreliable",
-        "Hides a Key Fact"
-    ]).describe("The narrator's bias at the beginning of the story."),
-    endBias: z.enum([
-        "Neutral",
-        "Jealous of Main Character",
-        "Secretly the Villain",
-        "Admires Main Character",
-        "Completely Unreliable",
-        "Hides a Key Fact"
-    ]).describe("The narrator's bias at the end of the story."),
+  startBias: NarratorBiasEnum.describe("The narrator's bias at the beginning of the story."),
+  endBias:   NarratorBiasEnum.describe("The narrator's bias at the end of the story."),
 });
-export type NarratorBias = z.infer<typeof NarratorBiasSchema>;
+
+export type NarratorBias = z.infer<typeof NarratorBiasEnum>;
+export type NarratorBiasRange = z.infer<typeof NarratorBiasSchema>;
 
 /**
  * Defines the schema for a single segment used in pacing analysis.
@@ -135,7 +134,7 @@ export type NarratorBias = z.infer<typeof NarratorBiasSchema>;
 export const PacingSegmentSchema = z.object({
   type: z.enum(['Dialogue', 'Narration']).describe('The type of the segment.'),
   wordCount: z.number().describe('The number of words in this segment.'),
-  pacingFeel: z.enum(['Action', 'Reflection', 'Exposition', 'Tension']).describe('The narrative feel of the segment.'),
+  pacingFeel: z.enum(['Action', 'Reflection', 'Exposition', 'Tension']).optional().describe('The narrative feel of the segment.'),
 });
 export type PacingSegment = z.infer<typeof PacingSegmentSchema>;
 
