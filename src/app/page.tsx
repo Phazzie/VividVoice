@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
+import { chunkTextByParagraph } from "@/lib/chunking";
 
 type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
@@ -68,7 +69,50 @@ export default function StagingStoriesPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyIdToLoad, user]);
+const CHUNK_THRESHOLD = 10000;
+
+export default function StagingStoriesPage() {
+  const { user, loading: authLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const storyIdToLoad = searchParams.get('storyId');
+
+  const [appState, setAppState] = useState<AppState>('initial');
+  const [storyId, setStoryId] = useState<string | null>(storyIdToLoad);
+  const [storyText, setStoryText] = useState<string>('');
+  const [fullAnalysis, setFullAnalysis] = useState<FullAnalysis | null>(null);
+  const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
+  const [sceneAudioUri, setSceneAudioUri] = useState<string>('');
+  const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+    useEffect(() => {
+    if (storyIdToLoad && user) {
+      const loadStory = async () => {
+        setAppState('loadingStory');
+        try {
+          const story = await getStoryById(storyIdToLoad);
+          if (story && story.userId === user.uid) {
+            await handleFullAnalysis(story.storyText, story.id);
+          } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story or you do not have permission to view it.'});
+            setAppState('initial');
+          }
+        } catch (e: any) {
+          toast({ variant: 'destructive', title: 'Error Loading Story', description: e.message });
+          setAppState('initial');
+        }
+      };
+      loadStory();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storyIdToLoad, user]);
   const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
+    const isProUser = user?.isPro || false;
+    if (isProUser && newStoryText.length > CHUNK_THRESHOLD) {
+      return handleFullAnalysisChunked(newStoryText, existingStoryId);
+    }
+
     setAppState('analyzing');
     setError(null);
     setStoryId(existingStoryId);
@@ -109,6 +153,68 @@ export default function StagingStoriesPage() {
       toast({
         variant: "destructive",
         title: "Analysis Error",
+        description: errorMessage,
+      });
+    }
+  };
+
+  const handleFullAnalysisChunked = async (newStoryText: string, existingStoryId: string | null = null) => {
+    setAppState('analyzing');
+    setError(null);
+    setStoryId(existingStoryId);
+    setFullAnalysis(null);
+    setStoryText('');
+    setTranscript([]);
+
+    try {
+      const chunks = chunkTextByParagraph(newStoryText);
+      let combinedAnalysis: FullAnalysis = {
+        segments: [],
+        characters: [],
+        characterPortraits: [],
+        dialogueDynamics: { characterInsights: {}, interactionMatrix: [], summary: '' },
+        literaryDevices: { devices: [] },
+        pacing: { segments: [] },
+        tropes: { tropes: [] },
+        showDontTellSuggestions: { suggestions: [] },
+        consistencyIssues: { issues: [] },
+        subtextAnalyses: { analyses: [] },
+        soundEffects: [],
+      };
+      let combinedErrors: Record<string, string> = {};
+
+      for (const chunk of chunks) {
+        const analysisResult = await getFullStoryAnalysis(chunk);
+        combinedAnalysis.segments.push(...analysisResult.segments);
+        combinedAnalysis.characters.push(...analysisResult.characters);
+        combinedAnalysis.characterPortraits.push(...analysisResult.characterPortraits);
+        combinedAnalysis.literaryDevices.devices.push(...analysisResult.literaryDevices.devices);
+        combinedAnalysis.pacing.segments.push(...analysisResult.pacing.segments);
+        combinedAnalysis.tropes.tropes.push(...analysisResult.tropes.tropes);
+        combinedAnalysis.showDontTellSuggestions.suggestions.push(...analysisResult.showDontTellSuggestions.suggestions);
+        combinedAnalysis.consistencyIssues.issues.push(...analysisResult.consistencyIssues.issues);
+        combinedAnalysis.subtextAnalyses.analyses.push(...analysisResult.subtextAnalyses.analyses);
+        combinedAnalysis.soundEffects.push(...analysisResult.soundEffects);
+        Object.assign(combinedErrors, analysisResult.errors);
+      }
+
+      // De-duplicate characters and portraits
+      const uniqueCharacters = Array.from(new Map(combinedAnalysis.characters.map(char => [char.name, char])).values());
+      combinedAnalysis.characters = uniqueCharacters;
+      const uniquePortraits = Array.from(new Map(combinedAnalysis.characterPortraits.map(p => [p.name, p])).values());
+      combinedAnalysis.characterPortraits = uniquePortraits;
+
+      setFullAnalysis(combinedAnalysis);
+      setStoryText(newStoryText);
+      setAnalysisErrors(combinedErrors);
+      setAppState('editing');
+    } catch (e: any) {
+      const errorMessage = e.message || "An unexpected error occurred during chunked analysis.";
+      setError(errorMessage);
+      setAppState('initial');
+      toast({
+        variant: "destructive",
+        title: "Chunked Analysis Error",
         description: errorMessage,
       });
     }
