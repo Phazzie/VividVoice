@@ -43,8 +43,6 @@ import { AudioPlayer } from './AudioPlayer';
 
 import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
 
-const DEFAULT_ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
-
 type DialogueEditorProps = {
   storyId: string | null;
   storyText: string;
@@ -124,24 +122,14 @@ export function DialogueEditor({
   const handleSubmit = async () => {
     if (ttsEngine === 'elevenlabs') {
       setSegments(segments.map(s => ({ ...s, isGenerating: true })));
-      const audioPromises = segments.map(async (segment, index) => {
-        try {
-          if (segment.dialogue.trim() === '') {
-            return { ...segment, audioDataUri: '', isGenerating: false };
-          }
-          // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
-          const voiceId = DEFAULT_ELEVENLABS_VOICE_ID;
-          const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
-          return { ...segment, audioDataUri, isGenerating: false };
-        } catch (error) {
-          console.error(`Failed to generate audio for segment ${index}:`, error);
-          toast({
-            variant: 'destructive',
-            title: 'Audio Generation Failed',
-            description: `Could not generate audio for: "${segment.dialogue.substring(0, 20)}..."`,
-          });
+      const audioPromises = segments.map(async (segment) => {
+        if (segment.dialogue.trim() === '') {
           return { ...segment, audioDataUri: '', isGenerating: false };
         }
+        // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
+        const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice
+        const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
+        return { ...segment, audioDataUri, isGenerating: false };
       });
 
       const newSegments = await Promise.all(audioPromises);

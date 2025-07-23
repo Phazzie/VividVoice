@@ -105,15 +105,12 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     const { segments, characters } = parsedStory;
 
     // 2. Analyze emotional tone for each segment
-    const CONTEXT_WINDOW_BEFORE = 2;
-    const CONTEXT_WINDOW_AFTER = 3;
-
     const segmentsWithEmotions = await Promise.all(
       segments.map(async (segment, index) => {
         if (segment.character === 'Narrator') {
           return segment;
         }
-        const context = segments.slice(Math.max(0, index - CONTEXT_WINDOW_BEFORE), Math.min(segments.length, index + CONTEXT_WINDOW_AFTER)).map(s => `${s.character}: ${s.dialogue}`).join('\n');
+        const context = segments.slice(Math.max(0, index - 2), Math.min(segments.length, index + 3)).map(s => `${s.character}: ${s.dialogue}`).join('\n');
         const { emotion } = await analyzeEmotionalToneFlow({ dialogue: segment.dialogue, context });
         return { ...segment, emotion };
       })
@@ -268,7 +265,7 @@ export async function getCharacterResponse(character: Character, history: ChatMe
     try {
       const result = await characterChatFlow({ character, history, userMessage });
       return result.response;
-    } catch (e: unknown) {
+    } catch (e: any) {
         console.error('Error in getCharacterResponse action:', { error: e });
         throw new Error('Failed to get character response.');
     }
@@ -282,7 +279,7 @@ export async function getBiasedStory(storyText: string, bias: NarratorBias): Pro
     try {
       const result = await applyNarratorBiasFlow({ storyText, bias });
       return result.biasedStoryText;
-    } catch (e: unknown) {
+    } catch (e: any) {
         console.error('Error in getBiasedStory action:', { error: e });
         throw new Error('Failed to apply narrator bias.');
     }
@@ -301,7 +298,7 @@ export async function shiftPerspective(storyText: string, characterName: string,
   console.log('Calling shiftPerspective action...');
   try {
     return await shiftPerspectiveFlow({ storyText, characterName, role });
-  } catch(e: unknown) {
+  } catch(e: any) {
     console.error('Error in shiftPerspective action:', { error: e });
     throw new Error('Failed to shift perspective.');
   }
@@ -349,7 +346,7 @@ export async function getSoundDesign(storyText: string): Promise<SoundEffectWith
         soundUrl: matchedKey ? soundLibrary[matchedKey] : defaultSound,
       }
     });
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error('Error in getSoundDesign action:', { error: e });
     // Return empty array on failure as this is a non-critical enhancement.
     return [];
@@ -367,7 +364,7 @@ export async function generateElevenLabsAudio(text: string, voiceId: string): Pr
   try {
     const result = await generateElevenLabsTTSFlow({ text, voiceId });
     return result.audioDataUri;
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error('Error in generateElevenLabsAudio action:', { error: e });
     throw new Error('Failed to generate audio with ElevenLabs.');
   }

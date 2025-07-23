@@ -2,6 +2,13 @@
 
 This document tracks the major features and enhancements implemented in the Staging Stories application.
 
+## Version 1.4.0 - Advanced Prompt Engineering
+
+### Major Features
+
+*   **Comprehensive Prompt Audit & Overhaul**: Every AI prompt in the application was audited and significantly improved to a "beefed up" PSL-4 standard. This involved adding high-quality, few-shot examples to all prompts, encouraging more nuanced and creative outputs, and adding new features like conversational power play analysis, evolving narrator bias, and authorial style emulation.
+*   **Updated Prompt-Driven Documentation**: The `PROMPT_AUDIT.md` and `PROMPT_ENGINEERING.md` files were updated to reflect the new state of the art for prompts in the application.
+
 ## Version 1.3.0 - Advanced Audio & Architectural Polish
 
 ### Major Features

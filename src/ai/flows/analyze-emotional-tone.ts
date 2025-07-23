@@ -23,7 +23,7 @@ const AnalyzeEmotionalToneOutputSchema = z.object({
 export type AnalyzeEmotionalToneOutput = z.infer<typeof AnalyzeEmotionalToneOutputSchema>;
 
 export async function analyzeEmotionalTone(input: AnalyzeEmotionalToneInput): Promise<AnalyzeEmotionalToneOutput> {
-  return analyzeEmotionalToneFlow(input);
+    return analyzeEmotionalToneFlow(input);
 }
 
 const analyzeEmotionalToneFlow = ai.defineFlow(
@@ -46,17 +46,17 @@ const analyzeEmotionalToneFlow = ai.defineFlow(
 
 **High-Quality Example:**
 - **Input Context:**
-  \\\`\\\`\\\`
+  \`\`\`
   Narrator: The detective cornered the suspect, laying out the evidence. The suspect, a man who prided himself on his intelligence, saw his perfect crime unravel.
   Detective: There's no way out. We have you.
-  \\\`\\\`\\\`
+  \`\`\`
 - **Input Dialogue to Analyze:** "You're clever. I'll give you that."
 - **Your Perfect JSON Output:**
-  \\\`\\\`\\\`json
+  \`\`\`json
   {
     "emotion": "Grudging Respect"
   }
-  \\\`\\\`\\\`
+  \`\`\`
 
 Now, perform the same deep analysis on the following.
 

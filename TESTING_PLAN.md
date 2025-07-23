@@ -10,9 +10,11 @@ Our testing strategy is based on a multi-layered approach to provide confidence 
 3.  **Component Tests:** For all major UI components, ensuring they render correctly, manage state, and respond to user interactions. This includes testing all analysis tools in the "Director's Room".
 4.  **End-to-End State Machine Tests:** A dedicated test for the main page (`page.tsx`) that verifies the entire application flow, from story submission to audio generation and playback, simulating a complete user journey.
 
-## Status: Coverage Complete
+## Status: Coverage Complete & Prompts Enhanced
 
 As of the last development push, the full testing plan outlined below has been **implemented**. Test files exist for all major components, actions, and utilities, providing excellent coverage across the application. This test suite is a critical asset for future development, allowing for confident refactoring and feature additions.
+
+**Note:** While the tests themselves remain valid, the underlying AI prompts they call have been significantly "beefed up" with more advanced features and few-shot examples. The existing tests will continue to ensure the actions and components handle success and error states correctly, but they do not validate the new, more nuanced outputs of the prompts.
 
 ---
 
