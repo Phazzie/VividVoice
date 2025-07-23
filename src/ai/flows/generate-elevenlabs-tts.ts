@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { elevenlabs } from 'elevenlabs';
+import { ElevenLabsApi } from '@elevenlabs/elevenlabs-js';
 
 const GenerateElevenLabsTTSInputSchema = z.object({
   text: z.string().describe('The text to be converted to speech.'),
@@ -28,9 +28,9 @@ if (!elevenLabsApiKey) {
   console.warn('ElevenLabs API key not found in environment variables. TTS generation will fail.');
 }
 
-const elevenlabsClient = new elevenlabs({
+const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsApi({
   apiKey: elevenLabsApiKey,
-});
+}) : null;
 
 export async function generateElevenLabsTTS(input: GenerateElevenLabsTTSInput): Promise<GenerateElevenLabsTTSOutput> {
   if (!elevenLabsApiKey) {

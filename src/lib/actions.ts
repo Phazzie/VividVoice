@@ -161,14 +161,14 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       segments: segmentsWithEmotions,
       characters,
       characterPortraits: characterPortraits || [],
-      dialogueDynamics,
-      literaryDevices,
-      pacing,
-      tropes,
-      showDontTellSuggestions,
-      consistencyIssues,
-      subtextAnalyses,
-      soundEffects,
+      dialogueDynamics: dialogueDynamics || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
+      literaryDevices: literaryDevices || { devices: [] },
+      pacing: pacing || { segments: [] },
+      tropes: tropes || { tropes: [] },
+      showDontTellSuggestions: showDontTellSuggestions || { suggestions: [] },
+      consistencyIssues: consistencyIssues || { issues: [] },
+      subtextAnalyses: subtextAnalyses || { analyses: [] },
+      soundEffects: soundEffects || [],
       errors,
     };
   } catch (error) {
@@ -345,7 +345,7 @@ export async function getSoundDesign(storyText: string): Promise<SoundEffectWith
     // In a real application, you would use the `soundQuery` to search a
     // licensed audio library API and get a real URL.
     // For this demo, we will map the query to our small, curated library.
-    return soundEffects.map(effect => {
+    return soundEffects.map((effect: any) => {
       const lowerQuery = effect.soundQuery.toLowerCase();
       // Find the best match in our library
       const matchedKey = Object.keys(soundLibrary).find(key => lowerQuery.includes(key));

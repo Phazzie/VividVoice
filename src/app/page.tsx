@@ -69,44 +69,8 @@ export default function StagingStoriesPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyIdToLoad, user]);
+
 const CHUNK_THRESHOLD = 10000;
-
-export default function StagingStoriesPage() {
-  const { user, loading: authLoading } = useAuth();
-  const searchParams = useSearchParams();
-  const storyIdToLoad = searchParams.get('storyId');
-
-  const [appState, setAppState] = useState<AppState>('initial');
-  const [storyId, setStoryId] = useState<string | null>(storyIdToLoad);
-  const [storyText, setStoryText] = useState<string>('');
-  const [fullAnalysis, setFullAnalysis] = useState<FullAnalysis | null>(null);
-  const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
-  const [sceneAudioUri, setSceneAudioUri] = useState<string>('');
-  const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-    useEffect(() => {
-    if (storyIdToLoad && user) {
-      const loadStory = async () => {
-        setAppState('loadingStory');
-        try {
-          const story = await getStoryById(storyIdToLoad);
-          if (story && story.userId === user.uid) {
-            await handleFullAnalysis(story.storyText, story.id);
-          } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story or you do not have permission to view it.'});
-            setAppState('initial');
-          }
-        } catch (e: any) {
-          toast({ variant: 'destructive', title: 'Error Loading Story', description: e.message });
-          setAppState('initial');
-        }
-      };
-      loadStory();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storyIdToLoad, user]);
   const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
     const isProUser = user?.isPro || false;
     if (isProUser && newStoryText.length > CHUNK_THRESHOLD) {
@@ -226,6 +190,7 @@ export default function StagingStoriesPage() {
     
     try {
       // Pass the rich character objects to the audio generation flow.
+      const characters = fullAnalysis?.characters || [];
       const { audioDataUri, transcript } = await generateMultiVoiceSceneAudio(editedSegments, characters);
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);
