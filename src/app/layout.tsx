@@ -4,7 +4,13 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Header } from '@/components/vivid-voice/Header';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { Belleza, Alegreya } from 'next/font/google';
+// import { Belleza, Alegreya } from 'next/font/google';
+
+// const belleza = Belleza({
+//   subsets: ['latin'],
+//   weight: '400',
+//   variable: '--font-headline',
+// });
 
 export const metadata: Metadata = {
   title: 'Staging Stories with the Skeptical Wombat',
@@ -38,27 +44,14 @@ export const metadata: Metadata = {
   },
 };
 
-const belleza = Belleza({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-headline',
-});
-
-const alegreya = Alegreya({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-body',
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${belleza.variable} ${alegreya.variable} dark`}>
-      <body className="antialiased min-h-screen bg-background text-foreground font-body">
+    <html lang="en" className="dark">
+      <body className="antialiased min-h-screen bg-background text-foreground">
         <ErrorBoundary>
           <AuthProvider>
             <Header />
