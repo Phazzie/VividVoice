@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun, Brush, Briefcase, Smile, Book, Edit, Star, Meh, Terminal } from 'lucide-react';
 
-type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book' | 'skeptical-wombat' | 'hacker';
+import { Theme } from '@/lib/types';
 
 export function ThemeToggle({ onThemeChange }: { onThemeChange: (theme: Theme) => void }) {
   const [theme, setTheme] = useState<Theme>('light');

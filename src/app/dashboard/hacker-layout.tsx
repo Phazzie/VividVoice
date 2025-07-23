@@ -1,8 +1,5 @@
 import React from 'react';
 import { Sidebar } from '@/components/ui/sidebar';
-import { Header } from '@/components/vivid-voice/Header';
-import { StoryForm } from '@/components/vivid-voice/StoryForm';
-import { StoryDisplay } from '@/components/vivid-voice/StoryDisplay';
 import { ActorStudio } from '@/components/vivid-voice/ActorStudio';
 import { PacingAnalysis } from '@/components/vivid-voice/PacingAnalysis';
 import { DialogueDynamicsAnalysis } from '@/components/vivid-voice/DialogueDynamicsAnalysis';

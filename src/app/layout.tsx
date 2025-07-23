@@ -28,7 +28,7 @@ const alegreya = Alegreya({
   variable: '--font-body',
 });
 
-type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book' | 'skeptical-wombat' | 'hacker';
+import { Theme } from '@/lib/types';
 
 
 export default function RootLayout({
@@ -41,7 +41,8 @@ export default function RootLayout({
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
     if (typeof window !== 'undefined') {
-      document.body.className = '';
+      const themes: Theme[] = ['light', 'dark', 'unconventional', 'crt', 'minimalist', 'corporate', 'playful', 'living-manuscript', 'blueprint', 'sticker-book', 'skeptical-wombat', 'hacker'];
+      themes.forEach(t => document.body.classList.remove(t));
       document.body.classList.add(newTheme);
     }
   };
@@ -58,7 +59,7 @@ export default function RootLayout({
 
     if (theme === 'skeptical-wombat') {
       return (
-        <SkepticalWombatLayout>
+        <SkepticalWombatLayout onThemeChange={handleThemeChange}>
           {children}
         </SkepticalWombatLayout>
       );

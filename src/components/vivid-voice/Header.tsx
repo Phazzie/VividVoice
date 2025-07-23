@@ -15,8 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "../ui/ThemeToggle";
 
-type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book' | 'skeptical-wombat' | 'hacker';
-
+import { Theme } from '@/lib/types';
 
 export function Header({ onThemeChange }: { onThemeChange: (theme: Theme) => void }) {
   const { user, loading, logout } = useAuth();
