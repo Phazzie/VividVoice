@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { getFullStoryAnalysis, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment, type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from "@/lib/actions";
+import { getFullStoryAnalysis, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment, type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl, type EmotionalTone } from "@/lib/actions";
 import { getStoryById } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,7 @@ interface FullAnalysis {
   showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
   consistencyIssues: { issues: ConsistencyIssue[] };
   subtextAnalyses: { analyses: SubtextAnalysis[] };
+  emotionalTones: { tones: EmotionalTone[] };
   soundEffects: SoundEffectWithUrl[];
 }
 
@@ -179,6 +180,7 @@ export default function StagingStoriesPage() {
         showDontTellSuggestions: { suggestions: [] },
         consistencyIssues: { issues: [] },
         subtextAnalyses: { analyses: [] },
+        emotionalTones: { tones: [] },
         soundEffects: [],
       };
       let combinedErrors: Record<string, string> = {};
@@ -194,6 +196,7 @@ export default function StagingStoriesPage() {
         combinedAnalysis.showDontTellSuggestions.suggestions.push(...analysisResult.showDontTellSuggestions.suggestions);
         combinedAnalysis.consistencyIssues.issues.push(...analysisResult.consistencyIssues.issues);
         combinedAnalysis.subtextAnalyses.analyses.push(...analysisResult.subtextAnalyses.analyses);
+        combinedAnalysis.emotionalTones.tones.push(...analysisResult.emotionalTones.tones);
         combinedAnalysis.soundEffects.push(...analysisResult.soundEffects);
         Object.assign(combinedErrors, analysisResult.errors);
       }
@@ -313,6 +316,7 @@ export default function StagingStoriesPage() {
              showDontTellSuggestions={fullAnalysis.showDontTellSuggestions?.suggestions || []}
              consistencyIssues={fullAnalysis.consistencyIssues?.issues || []}
              subtextAnalyses={fullAnalysis.subtextAnalyses?.analyses || []}
+             emotionalTones={fullAnalysis.emotionalTones?.tones || []}
              soundEffects={fullAnalysis.soundEffects || []}
              analysisErrors={analysisErrors}
              onGenerateAudio={handleGenerateAudio}
