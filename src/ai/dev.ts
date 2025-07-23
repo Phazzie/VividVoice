@@ -20,4 +20,7 @@ import '@/ai/flows/consistency-guardian.ts';
 import '@/ai/flows/analyze-subtext.ts';
 import '@/ai/flows/shift-perspective.ts';
 import '@/ai/flows/skeptical-wombat.ts';
+import '@/ai/flows/analyze-character-archetypes.ts';
+import '@/ai/flows/analyze-plot-structure.ts';
+import '@/ai/flows/compare-to-classics.ts';
 // Deleting generate-character-brief.ts as it is now redundant.
