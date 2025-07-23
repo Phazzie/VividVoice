@@ -1,0 +1,42 @@
+/* Hacker Theme */
+.hacker {
+  --background: 270 100% 3%;
+  --foreground: 120 100% 50%;
+  --card: 270 100% 5%;
+  --card-foreground: 120 100% 50%;
+  --popover: 270 100% 5%;
+  --popover-foreground: 120 100% 50%;
+  --primary: 120 100% 50%;
+  --primary-foreground: 270 100% 3%;
+  --secondary: 0 100% 50%;
+  --secondary-foreground: 270 100% 3%;
+  --muted: 270 100% 10%;
+  --muted-foreground: 120 100% 70%;
+  --accent: 0 100% 50%;
+  --accent-foreground: 270 100% 3%;
+  --destructive: 0 100% 50%;
+  --destructive-foreground: 270 100% 3%;
+  --border: 120 100% 50%;
+  --input: 270 100% 10%;
+  --ring: 120 100% 50%;
+  --radius: 0rem;
+}
+
+.hacker body {
+  font-family: "Courier New", "Lucida Console", monospace;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.hacker .glow {
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #00ff00, 0 0 20px #00ff00, 0 0 25px #00ff00, 0 0 30px #00ff00, 0 0 35px #00ff00;
+  }
+  to {
+    text-shadow: 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #00ff00, 0 0 25px #00ff00, 0 0 30px #00ff00, 0 0 35px #00ff00, 0 0 40px #00ff00;
+  }
+}

@@ -13,8 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "../ui/ThemeToggle";
 
-export function Header() {
+type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book' | 'skeptical-wombat' | 'hacker';
+
+
+export function Header({ onThemeChange }: { onThemeChange: (theme: Theme) => void }) {
   const { user, loading, logout } = useAuth();
 
   return (
@@ -28,6 +32,7 @@ export function Header() {
           </div>
         </Link>
         <div className="flex items-center gap-4">
+        <ThemeToggle onThemeChange={onThemeChange} />
           {loading ? (
             <div className="h-10 w-24 bg-muted/50 animate-pulse rounded-md"></div>
           ) : user ? (

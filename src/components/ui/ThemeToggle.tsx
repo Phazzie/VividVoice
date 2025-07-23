@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Brush, Briefcase, Smile, Book, Edit, Star, Meh } from 'lucide-react';
+import { Moon, Sun, Brush, Briefcase, Smile, Book, Edit, Star, Meh, Terminal } from 'lucide-react';
 
-type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book' | 'skeptical-wombat';
+type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book' | 'skeptical-wombat' | 'hacker';
 
 export function ThemeToggle({ onThemeChange }: { onThemeChange: (theme: Theme) => void }) {
   const [theme, setTheme] = useState<Theme>('light');
@@ -13,7 +13,7 @@ export function ThemeToggle({ onThemeChange }: { onThemeChange: (theme: Theme) =
   }, [theme, onThemeChange]);
 
   const cycleTheme = () => {
-    const themes: Theme[] = ['light', 'dark', 'unconventional', 'crt', 'minimalist', 'corporate', 'playful', 'living-manuscript', 'blueprint', 'sticker-book', 'skeptical-wombat'];
+    const themes: Theme[] = ['light', 'dark', 'unconventional', 'crt', 'minimalist', 'corporate', 'playful', 'living-manuscript', 'blueprint', 'sticker-book', 'skeptical-wombat', 'hacker'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -32,6 +32,7 @@ export function ThemeToggle({ onThemeChange }: { onThemeChange: (theme: Theme) =
       {theme === 'blueprint' && <Edit className="h-[1.2rem] w-[1.2rem]" />}
       {theme === 'sticker-book' && <Star className="h-[1.2rem] w-[1.2rem]" />}
       {theme === 'skeptical-wombat' && <Meh className="h-[1.2rem] w-[1.2rem]" />}
+      {theme === 'hacker' && <Terminal className="h-[1.2rem] w-[1.2rem]" />}
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
