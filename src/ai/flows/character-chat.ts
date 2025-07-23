@@ -15,7 +15,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { CharacterSchema, ChatMessageSchema } from '@/ai/schemas';
 import { FaissStore } from '@langchain/community/vectorstores/faiss';
-import { GoogleGenerativeAiEmbeddings } from '@langchain/google-genai';
+import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { Document } from 'langchain/document';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 
@@ -95,7 +95,14 @@ const characterChatFlow = ai.defineFlow(
 
     const prompt = ai.definePrompt({
       name: 'characterChatPrompt',
-      input: { schema: z.object({ character, history, userMessage, storyContext }) },
+      input: { 
+        schema: z.object({ 
+          character: CharacterSchema,
+          history: z.array(ChatMessageSchema),
+          userMessage: z.string(),
+          storyContext: z.string()
+        }) 
+      },
       output: { schema: CharacterChatOutputSchema },
       prompt: `You are a world-class method actor preparing for a role. The character you are playing is named {{character.name}}.
 
