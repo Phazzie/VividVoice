@@ -29,6 +29,7 @@ import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-persp
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
+import { analyzeEmotionalStoryTone as analyzeEmotionalStoryToneFlow } from '@/ai/flows/analyze-emotional-story-tone';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -43,10 +44,12 @@ import {
   type Perspective as ImportedPerspective,
   type SoundEffect as ImportedSoundEffect,
   type TranscriptSegment as ImportedTranscriptSegment,
+  type EmotionalTone as ImportedEmotionalTone,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
+export type EmotionalTone = ImportedEmotionalTone;
 export type Character = ImportedCharacter;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
@@ -83,6 +86,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
   showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
   consistencyIssues: { issues: ConsistencyIssue[] };
   subtextAnalyses: { analyses: SubtextAnalysis[] };
+  emotionalTones: { tones: EmotionalTone[] };
   soundEffects: SoundEffectWithUrl[] | null;
   errors: Record<string, string>;
 }> {
@@ -130,6 +134,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       findInconsistenciesFlow({ storyText }),
       analyzeSubtextFlow({ storyText }),
       getSoundDesign(storyText),
+      analyzeEmotionalStoryToneFlow({ storyText }),
     ]);
 
     const [
@@ -142,6 +147,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       consistencyIssues,
       subtextAnalyses,
       soundEffects,
+      emotionalTones,
     ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
     const errors: Record<string, string> = {};
@@ -153,6 +159,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     if (results[6].status === 'rejected') errors.consistency = results[6].reason.message;
     if (results[7].status === 'rejected') errors.subtext = results[7].reason.message;
     if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message;
+    if (results[9].status === 'rejected') errors.emotionalTone = results[9].reason.message;
 
     console.log('Full story analysis successful.');
 
@@ -168,6 +175,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       showDontTellSuggestions,
       consistencyIssues,
       subtextAnalyses,
+      emotionalTones,
       soundEffects,
       errors,
     };
@@ -263,15 +271,20 @@ export async function generateMultiVoiceSceneAudio(
 /**
  * Interaction: Chats with a character from the story using their rich, pre-generated profile.
  */
-export async function getCharacterResponse(character: Character, history: ChatMessage[], userMessage: string): Promise<string> {
-    console.log('Calling getCharacterResponse action...');
-    try {
-      const result = await characterChatFlow({ character, history, userMessage });
-      return result.response;
-    } catch (e: unknown) {
-        console.error('Error in getCharacterResponse action:', { error: e });
-        throw new Error('Failed to get character response.');
-    }
+export async function getCharacterResponse(
+  character: Character,
+  history: ChatMessage[],
+  userMessage: string,
+  storyText: string
+): Promise<string> {
+  console.log('Calling getCharacterResponse action...');
+  try {
+    const result = await characterChatFlow({ character, history, userMessage, storyText });
+    return result.response;
+  } catch (e: unknown) {
+    console.error('Error in getCharacterResponse action:', { error: e });
+    throw new Error('Failed to get character response.');
+  }
 }
 
 /**

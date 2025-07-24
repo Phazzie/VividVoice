@@ -39,11 +39,23 @@ export const DialogueSegmentSchema = z.object({
     .describe('The dialogue spoken by the character, or narrative text.'),
   emotion: z
     .string()
+    .optional()
     .describe(
       'The primary emotion conveyed by the dialogue (e.g., Happy, Sad, Angry, Intrigued, Worried). For the Narrator, this can be "Neutral" or reflect the scene\'s mood.'
     ),
 });
 export type DialogueSegment = z.infer<typeof DialogueSegmentSchema>;
+
+/**
+ * Defines the schema for a single emotional tone analysis, including the
+ * emotion, the quote where it appears, and an explanation.
+ */
+export const EmotionalToneSchema = z.object({
+    emotion: z.string().describe('The name of the emotional tone.'),
+    quote: z.string().describe('The specific quote from the text that has the emotional tone.'),
+    explanation: z.string().describe('A brief explanation of why the quote has the emotional tone.'),
+});
+export type EmotionalTone = z.infer<typeof EmotionalToneSchema>;
 
 /**
  * Defines the schema for a single identified literary device, including the

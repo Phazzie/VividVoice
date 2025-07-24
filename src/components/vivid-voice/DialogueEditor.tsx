@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { type DialogueSegment, type CharacterPortrait, type Character, getShowDontTellSuggestions, findInconsistencies, analyzeSubtext, shiftPerspective } from '@/lib/actions';
 import { saveStory } from '@/lib/data';
-import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
+import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users, Smile } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,8 +40,10 @@ import { SubtextAnalyzer } from './SubtextAnalyzer';
 import { PerspectiveShifter } from './PerspectiveShifter';
 import { PlaceholderTool } from './PlaceholderTool';
 import { AudioPlayer } from './AudioPlayer';
+import { SkepticalWombat } from './SkepticalWombat';
+import { EmotionalToneAnalysis } from './EmotionalToneAnalysis';
 
-import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
+import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl, type EmotionalTone } from '@/lib/actions';
 
 const DEFAULT_ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
 
@@ -58,6 +60,7 @@ type DialogueEditorProps = {
   showDontTellSuggestions: ShowDontTellSuggestion[];
   consistencyIssues: ConsistencyIssue[];
   subtextAnalyses: SubtextAnalysis[];
+  emotionalTones: EmotionalTone[];
   soundEffects: SoundEffectWithUrl[];
   analysisErrors: Record<string, string>;
   onGenerateAudio: (segments: DialogueSegment[]) => void;
@@ -82,18 +85,31 @@ export function DialogueEditor({
   showDontTellSuggestions,
   consistencyIssues,
   subtextAnalyses,
+  emotionalTones,
   soundEffects,
   analysisErrors,
   onGenerateAudio,
   isLoading,
   onStorySave,
 }: DialogueEditorProps) {
-  const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments.map(s => ({ ...s, isGenerating: false })));
+  const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments.map(s => ({ ...s, isGenerating: false, emotion: s.emotion || 'Neutral' })));
   const [storyTitle, setStoryTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [ttsEngine, setTtsEngine] = useState('standard');
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // This is a new function that will be called when the emotional tone analysis is complete.
+  const handleEmotionalToneAnalysis = (analysis: EmotionalTone[]) => {
+    const newSegments = segments.map(segment => {
+      const tone = analysis.find(t => t.quote.includes(segment.dialogue));
+      if (tone) {
+        return { ...segment, emotion: tone.emotion };
+      }
+      return segment;
+    });
+    setSegments(newSegments);
+  };
 
   const handleDialogueChange = (index: number, value: string) => {
     const newSegments = [...segments];
@@ -242,6 +258,7 @@ export function DialogueEditor({
               <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><FlaskConical className="mr-2"/>Literary Devices</TabsTrigger>
               <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BarChart3 className="mr-2"/>Dialogue Dynamics</TabsTrigger>
               <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><AreaChart className="mr-2"/>Pacing</TabsTrigger>
+              <TabsTrigger value="emotionalTone" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Smile className="mr-2"/>Emotional Tone</TabsTrigger>
               <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Wand2 className="mr-2"/>Trope Inverter</TabsTrigger>
               <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Users className="mr-2"/>Actor's Studio</TabsTrigger>
               <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><VenetianMask className="mr-2"/>Unreliable Narrator</TabsTrigger>
@@ -249,6 +266,7 @@ export function DialogueEditor({
               <TabsTrigger value="consistency" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><ShieldCheck className="mr-2"/>Consistency</TabsTrigger>
               <TabsTrigger value="subtext" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><MessageSquareQuote className="mr-2"/>Subtext</TabsTrigger>
               <TabsTrigger value="perspective" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Shuffle className="mr-2"/>Perspective</TabsTrigger>
+              <TabsTrigger value="skepticalWombat" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><img src="https://storage.googleapis.com/static.invertase.io/wombat-2-1.png" alt="Skeptical Wombat" className="w-6 h-6 mr-2" />Skeptical Wombat</TabsTrigger>
           </TabsList>
         </ScrollArea>
         <ScrollArea className="h-[55vh]">
@@ -311,11 +329,14 @@ export function DialogueEditor({
                     <TabsContent value="pacing" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <PacingAnalysis pacing={pacing} error={analysisErrors.pacing} />
                     </TabsContent>
+                    <TabsContent value="emotionalTone" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <EmotionalToneAnalysis analysis={emotionalTones} error={analysisErrors.emotionalTone} onAnalysisComplete={handleEmotionalToneAnalysis} />
+                    </TabsContent>
                     <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <TropeInverter tropes={tropes} error={analysisErrors.tropes} />
                     </TabsContent>
                     <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ActorStudio characters={characters} />
+                <ActorStudio characters={characters} storyText={storyText} />
                     </TabsContent>
                     <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />
@@ -331,6 +352,9 @@ export function DialogueEditor({
                     </TabsContent>
                     <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <PerspectiveShifter characters={interactableCharacters} storyText={storyText} />
+                    </TabsContent>
+                    <TabsContent value="skepticalWombat" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <SkepticalWombat storyText={storyText} />
                     </TabsContent>
                 </>
             )}
