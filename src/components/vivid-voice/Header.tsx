@@ -17,7 +17,11 @@ import { ThemeToggle } from "../ui/ThemeToggle";
 
 import { Theme } from '@/lib/types';
 
-export function Header({ onThemeChange }: { onThemeChange: (theme: Theme) => void }) {
+interface HeaderProps {
+  onThemeChange: (theme: Theme) => void;
+}
+
+export function Header({ onThemeChange }: HeaderProps) {
   const { user, loading, logout } = useAuth();
 
   return (
@@ -31,7 +35,6 @@ export function Header({ onThemeChange }: { onThemeChange: (theme: Theme) => voi
           </div>
         </Link>
         <div className="flex items-center gap-4">
-        <ThemeToggle onThemeChange={onThemeChange} />
           {loading ? (
             <div className="h-10 w-24 bg-muted/50 animate-pulse rounded-md"></div>
           ) : user ? (

@@ -1,1 +1,1 @@
-export type Theme = 'light' | 'dark' | 'unconventional' | 'crt' | 'minimalist' | 'corporate' | 'playful' | 'living-manuscript' | 'blueprint' | 'sticker-book' | 'skeptical-wombat' | 'hacker';
+export type Theme = 'blueprint' | 'corporate' | 'living-manuscript' | 'minimalist' | 'playful' | 'skeptical-wombat' | 'sticker-book' | 'hacker';

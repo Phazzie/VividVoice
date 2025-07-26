@@ -1,39 +1,53 @@
-import { useState, useEffect } from 'react';
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Brush, Briefcase, Smile, Book, Edit, Star, Meh, Terminal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Palette } from 'lucide-react';
+import { type Theme } from '@/lib/types';
 
-import { Theme } from '@/lib/types';
+interface ThemeToggleProps {
+  currentTheme: Theme;
+  onThemeChange: (theme: Theme) => void;
+}
 
-export function ThemeToggle({ onThemeChange }: { onThemeChange: (theme: Theme) => void }) {
-  const [theme, setTheme] = useState<Theme>('light');
+const themes: { value: Theme; label: string }[] = [
+  { value: 'blueprint', label: 'Blueprint' },
+  { value: 'corporate', label: 'Corporate' },
+  { value: 'living-manuscript', label: 'Living Manuscript' },
+  { value: 'minimalist', label: 'Minimalist' },
+  { value: 'playful', label: 'Playful' },
+  { value: 'skeptical-wombat', label: 'Skeptical Wombat' },
+  { value: 'sticker-book', label: 'Sticker Book' },
+  { value: 'hacker', label: 'Hacker' },
+];
 
-  useEffect(() => {
-    document.body.className = theme;
-    onThemeChange(theme);
-  }, [theme, onThemeChange]);
-
-  const cycleTheme = () => {
-    const themes: Theme[] = ['light', 'dark', 'unconventional', 'crt', 'minimalist', 'corporate', 'playful', 'living-manuscript', 'blueprint', 'sticker-book', 'skeptical-wombat', 'hacker'];
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
-  };
-
+export function ThemeToggle({ currentTheme, onThemeChange }: ThemeToggleProps) {
   return (
-    <Button onClick={cycleTheme} variant="outline" size="icon">
-      {theme === 'light' && <Sun className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'dark' && <Moon className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'unconventional' && <Brush className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'crt' && <span className="text-flicker">C</span>}
-      {theme === 'minimalist' && <span className="font-mono text-sm">M</span>}
-      {theme === 'corporate' && <Briefcase className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'playful' && <Smile className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'living-manuscript' && <Book className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'blueprint' && <Edit className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'sticker-book' && <Star className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'skeptical-wombat' && <Meh className="h-[1.2rem] w-[1.2rem]" />}
-      {theme === 'hacker' && <Terminal className="h-[1.2rem] w-[1.2rem]" />}
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+    <div className="fixed bottom-4 right-4 z-50">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" className="bg-background/80 backdrop-blur-sm">
+            <Palette className="h-4 w-4" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-background/90 backdrop-blur-sm">
+          {themes.map((theme) => (
+            <DropdownMenuItem
+              key={theme.value}
+              onClick={() => onThemeChange(theme.value)}
+              className={currentTheme === theme.value ? 'bg-accent' : ''}
+            >
+              {theme.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

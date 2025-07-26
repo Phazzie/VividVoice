@@ -1,84 +1,56 @@
 'use client';
-import type {Metadata} from 'next';
+
+import { Inter } from 'next/font/google';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+import { useState, useEffect } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { Header } from '@/components/vivid-voice/Header';
-import { Belleza, Alegreya } from 'next/font/google';
-import { useState } from 'react';
-import HackerLayout from './dashboard/hacker-layout';
-import SkepticalWombatLayout from './dashboard/skeptical-wombat-layout';
+import { Toaster } from '@/components/ui/toaster';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { Header } from '@/components/vivid-voice/Header';
+import { type Theme } from '@/lib/types';
 
-// export const metadata: Metadata = {
-//   title: 'Staging Stories with the Skeptical Wombat',
-//   description: 'AI-powered narrative story reader with expressive voice acting.',
-// };
-
-const belleza = Belleza({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-headline',
-});
-
-const alegreya = Alegreya({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-body',
-});
-
-import { Theme } from '@/lib/types';
-
+const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  const [theme, setTheme] = useState<Theme>('dark');
+}) {
+  const [currentTheme, setCurrentTheme] = useState<Theme>('skeptical-wombat');
 
-  const handleThemeChange = (newTheme: Theme) => {
-    setTheme(newTheme);
-    if (typeof window !== 'undefined') {
-      const themes: Theme[] = ['light', 'dark', 'unconventional', 'crt', 'minimalist', 'corporate', 'playful', 'living-manuscript', 'blueprint', 'sticker-book', 'skeptical-wombat', 'hacker'];
-      themes.forEach(t => document.body.classList.remove(t));
-      document.body.classList.add(newTheme);
+  useEffect(() => {
+    // Apply theme class to document
+    document.documentElement.className = `theme-${currentTheme}`;
+
+    // Load theme-specific CSS
+    const existingLink = document.querySelector('link[data-theme]');
+    if (existingLink) {
+      existingLink.remove();
     }
+
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `/themes/${currentTheme}.css`;
+    link.setAttribute('data-theme', currentTheme);
+    document.head.appendChild(link);
+  }, [currentTheme]);
+
+  const handleThemeChange = (theme: Theme) => {
+    setCurrentTheme(theme);
   };
 
-  const renderLayout = () => {
-    if (theme === 'hacker') {
-      return (
-        <HackerLayout>
-          <ThemeToggle onThemeChange={handleThemeChange} />
-          {children}
-        </HackerLayout>
-      );
-    }
-
-    if (theme === 'skeptical-wombat') {
-      return (
-        <SkepticalWombatLayout onThemeChange={handleThemeChange}>
-          {children}
-        </SkepticalWombatLayout>
-      );
-    }
-
-    return (
-      <>
-        <Header onThemeChange={handleThemeChange} />
-        <main>{children}</main>
-      </>
-    )
-  }
-
   return (
-    <html lang="en" className={`${belleza.variable} ${alegreya.variable} ${theme}`}>
-      <body className="antialiased min-h-screen bg-background text-foreground font-body">
+    <html lang="en">
+      <body className={inter.className}>
         <AuthProvider>
-          {renderLayout()}
-          <Toaster />
+          <div className="min-h-screen bg-background">
+            <Header onThemeChange={handleThemeChange} />
+            <main className="container mx-auto px-4 py-8">
+              {children}
+            </main>
+            <ThemeToggle currentTheme={currentTheme} onThemeChange={handleThemeChange} />
+            <Toaster />
+          </div>
         </AuthProvider>
       </body>
     </html>
