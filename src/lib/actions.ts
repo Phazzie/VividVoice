@@ -124,19 +124,20 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     );
 
     // 3. Orchestrate all other analyses in parallel
-    const results = await Promise.allSettled([
-      getCharacterPortraits(characters),
-      analyzeDialogueDynamicsFlow({ storyText }),
-      analyzeLiteraryDevicesFlow({ storyText }),
-      analyzeStoryPacingFlow({ storyText }),
-      invertTropesFlow({ storyText }),
-      getShowDontTellSuggestionsFlow({ storyText }),
-      findInconsistenciesFlow({ storyText }),
-      analyzeSubtextFlow({ storyText }),
-      getSoundDesign(storyText),
-      analyzeEmotionalStoryToneFlow({ storyText }),
-    ]);
+    const analysisPromises = {
+      characterPortraits: getCharacterPortraits(characters),
+      dialogueDynamics: analyzeDialogueDynamicsFlow({ storyText }),
+      literaryDevices: analyzeLiteraryDevicesFlow({ storyText }),
+      pacing: analyzeStoryPacingFlow({ storyText }),
+      tropes: invertTropesFlow({ storyText }),
+      showDontTellSuggestions: getShowDontTellSuggestionsFlow({ storyText }),
+      consistencyIssues: findInconsistenciesFlow({ storyText }),
+      subtextAnalyses: analyzeSubtextFlow({ storyText }),
+      soundEffects: getSoundDesign(storyText),
+      emotionalTones: analyzeEmotionalStoryToneFlow({ storyText }),
+    };
 
+    const results = await Promise.allSettled(Object.values(analysisPromises));
     const [
       characterPortraits,
       dialogueDynamics,
@@ -151,15 +152,11 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
     const errors: Record<string, string> = {};
-    if (results[1].status === 'rejected') errors.dialogueDynamics = results[1].reason.message;
-    if (results[2].status === 'rejected') errors.literaryDevices = results[2].reason.message;
-    if (results[3].status === 'rejected') errors.pacing = results[3].reason.message;
-    if (results[4].status === 'rejected') errors.tropes = results[4].reason.message;
-    if (results[5].status === 'rejected') errors.showDontTell = results[5].reason.message;
-    if (results[6].status === 'rejected') errors.consistency = results[6].reason.message;
-    if (results[7].status === 'rejected') errors.subtext = results[7].reason.message;
-    if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message;
-    if (results[9].status === 'rejected') errors.emotionalTone = results[9].reason.message;
+    Object.keys(analysisPromises).forEach((key, index) => {
+      if (results[index].status === 'rejected') {
+        errors[key] = (results[index] as PromiseRejectedResult).reason.message;
+      }
+    });
 
     console.log('Full story analysis successful.');
 

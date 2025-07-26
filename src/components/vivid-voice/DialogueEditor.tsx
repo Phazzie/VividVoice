@@ -92,7 +92,7 @@ export function DialogueEditor({
   isLoading,
   onStorySave,
 }: DialogueEditorProps) {
-  const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments.map(s => ({ ...s, isGenerating: false, emotion: 'Neutral' })));
+  const [segments, setSegments] = useState<DialogueSegment[]>(initialSegments.map(s => ({ ...s, isGenerating: false })));
   const [storyTitle, setStoryTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [ttsEngine, setTtsEngine] = useState('standard');

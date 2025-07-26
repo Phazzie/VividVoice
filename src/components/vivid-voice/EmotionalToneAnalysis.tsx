@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { type EmotionalTone, analyzeEmotionalTone } from '@/lib/actions';
-import { Loader2, Zap, AlertCircle, Smile } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { type EmotionalTone } from '@/lib/actions';
+import { AlertCircle, Smile } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
