@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -54,10 +53,11 @@ For each distinct issue you find, provide:
 3.  A brief 'explanation' of why it's a potential problem and how it impacts the narrative's integrity.
 
 **High-Quality Example:**
-- **Input Story Text Snippet:**
+- **Input Story Text:**
   \`\`\`
-  Narrator: Her blue eyes scanned the horizon. A chapter later...
-  Narrator: He looked into her brown eyes and saw the truth.
+  Narrator: Chapter 1. The young wizard, known for his strict pacifist code, entered the tavern. His striking green eyes scanned the room.
+  ...
+  Narrator: Chapter 5. Cornered, the wizard drew his sword and slew the goblin. He stared at the body, his brown eyes filled with a cold fury.
   \`\`\`
 - **Your Perfect JSON Output:**
   \`\`\`json
@@ -65,8 +65,13 @@ For each distinct issue you find, provide:
     "issues": [
       {
         "issue": "Character's eye color changes",
-        "quote": "Her blue eyes scanned the horizon. ... He looked into her brown eyes...",
-        "explanation": "The character's eye color is described as 'blue' in one part of the story and 'brown' in another. This is a direct contradiction that can break reader immersion."
+        "quote": "His striking green eyes scanned the room. ... He stared at the body, his brown eyes filled with a cold fury.",
+        "explanation": "The character's eye color is described as 'green' in Chapter 1 and 'brown' in Chapter 5. This is a direct contradiction that can break reader immersion."
+      },
+      {
+        "issue": "Character acts against established code",
+        "quote": "...known for his strict pacifist code... the wizard drew his sword and slew the goblin.",
+        "explanation": "The character is defined by a 'strict pacifist code' but then kills a goblin without any indication that he has abandoned this core principle. This is a significant character inconsistency that undermines a key trait."
       }
     ]
   }

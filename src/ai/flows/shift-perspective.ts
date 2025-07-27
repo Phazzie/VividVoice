@@ -16,6 +16,7 @@ const ShiftPerspectiveInputSchema = z.object({
   storyText: z.string().describe('The full text of the original story.'),
   characterName: z.string().describe("The name of the character whose perspective we should adopt."),
   role: z.enum(['Protagonist', 'Antagonist']).describe("The new role to cast this character in for the summary."),
+  format: z.enum(['summary', 'diaryEntry', 'letter', 'policeStatement']).describe("The format of the rewritten text."),
 });
 export type ShiftPerspectiveInput = z.infer<typeof ShiftPerspectiveInputSchema>;
 
@@ -38,14 +39,15 @@ const shiftPerspectiveFlow = ai.defineFlow(
             name: 'shiftPerspectivePrompt',
             input: {schema: ShiftPerspectiveInputSchema},
             output: {schema: PerspectiveSchema},
-            prompt: `You are a master storyteller and literary analyst. Your task is to rewrite a summary of the provided story, but from the unique perspective of a specific character, casting them in a new light.
+prompt: `You are a master storyteller and literary analyst. Your task is to rewrite a section of the provided story, but from the unique perspective of a specific character, casting them in a new light and in a specific format.
 
 **Instructions:**
 1.  Read the entire original story text to fully understand the plot, events, and all characters.
 2.  Adopt the voice, worldview, and knowledge of the specified character: '{{characterName}}'.
-3.  Rewrite a one-paragraph summary of the story's main events as if '{{characterName}}' were the '{{role}}' of the story.
-4.  The summary must reflect their biases, motivations, and interpretation of events. For example, if they are the 'Antagonist', they might see the original hero's actions as villainous or misguided. If they are the 'Protagonist', events will be framed around their struggles and goals.
-5.  The summary should be compelling and written in a narrative style, not a dry list of events.
+3.  Rewrite a one-paragraph section of the story's main events as if '{{characterName}}' were the '{{role}}' of the story.
+4.  The rewritten text must be in the format of a '{{format}}'.
+5.  The rewritten text must reflect their biases, motivations, and interpretation of events. For example, if they are the 'Antagonist', they might see the original hero's actions as villainous or misguided.
+6.  The rewritten text should be compelling and written in a narrative style, not a dry list of events.
 
 **High-Quality Example:**
 - **Input Story Text:**
@@ -54,19 +56,21 @@ const shiftPerspectiveFlow = ai.defineFlow(
   \`\`\`
 - **Input Character to Embody:** The Dragon
 - **Input New Role:** Protagonist
+- **Input Format:** diaryEntry
 - **Your Perfect JSON Output:**
   \`\`\`json
   {
     "character": "The Dragon",
     "role": "Protagonist",
-    "summary": "For centuries, I peacefully guarded the sacred ancestral artifacts of my clan in my mountain sanctuary. Then, one day, a loud, tin-plated thief named Gideon invaded my home, waving a sharp piece of metal and making baseless accusations about 'stolen treasure.' I was forced to defend my home and my heritage from this violent intruder, who clearly had no respect for ancient traditions."
+    "rewrittenText": "Dear Diary, another human interrupted my nap today. This one was particularly noisy, clanking around in a metal suit and yelling about some treasure he thinks I stole. I tried to ignore him, but he just wouldn't leave. I really wish they'd learn to respect a dragon's privacy."
   }
   \`\`\`
 
-Return a single JSON object containing the character's name, their new role, and the rewritten summary.
+Return a single JSON object containing the character's name, their new role, and the rewritten text.
 
 **Character to Embody:** {{characterName}}
 **New Role:** {{role}}
+**Format:** {{format}}
 
 **Original Story Text:**
 \`\`\`

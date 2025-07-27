@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment, type CharacterPortrait, type Character, getShowDontTellSuggestions, findInconsistencies, analyzeSubtext, shiftPerspective } from '@/lib/actions';
+import { type DialogueSegment, type CharacterPortrait, type Character, getShowDontTellSuggestions, findInconsistencies, analyzeSubtext, shiftPerspective, generateElevenLabsAudio } from '@/lib/actions';
 import { saveStory } from '@/lib/data';
 import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
@@ -47,8 +47,6 @@ import { PacingVisualizer } from './PacingVisualizer';
 import { CompareToClassics } from './CompareToClassics';
 
 import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
-
-const DEFAULT_ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
 
 type DialogueEditorProps = {
   storyId: string | null;
@@ -129,29 +127,42 @@ export function DialogueEditor({
   const handleSubmit = async () => {
     if (ttsEngine === 'elevenlabs') {
       setSegments(segments.map(s => ({ ...s, isGenerating: true })));
-      const audioPromises = segments.map(async (segment, index) => {
-        try {
+      
+      try {
+        const audioPromises = segments.map(async (segment) => {
           if (segment.dialogue.trim() === '') {
             return { ...segment, audioDataUri: '', isGenerating: false };
           }
-          // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
-          const voiceId = DEFAULT_ELEVENLABS_VOICE_ID;
-          const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
-          return { ...segment, audioDataUri, isGenerating: false };
-        } catch (error) {
-          console.error(`Failed to generate audio for segment ${index}:`, error);
-          toast({
-            variant: 'destructive',
-            title: 'Audio Generation Failed',
-            description: `Could not generate audio for: "${segment.dialogue.substring(0, 20)}..."`,
-          });
-          return { ...segment, audioDataUri: '', isGenerating: false };
-        }
-      });
+          
+          try {
+            // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
+            const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice
+            const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
+            return { ...segment, audioDataUri, isGenerating: false };
+          } catch (error) {
+            console.error(`Failed to generate audio for segment: ${segment.dialogue}`, error);
+            toast({ 
+              variant: 'destructive', 
+              title: 'Audio Generation Failed', 
+              description: `Failed to generate audio for: "${segment.dialogue.substring(0, 50)}..."`
+            });
+            return { ...segment, audioDataUri: '', isGenerating: false };
+          }
+        });
 
-      const newSegments = await Promise.all(audioPromises);
-      setSegments(newSegments);
-      // We are not calling onGenerateAudio here because we are handling the audio generation in the component
+        const newSegments = await Promise.all(audioPromises);
+        setSegments(newSegments);
+        // We are not calling onGenerateAudio here because we are handling the audio generation in the component
+      } catch (error) {
+        console.error('Failed to generate audio for segments:', error);
+        toast({ 
+          variant: 'destructive', 
+          title: 'Audio Generation Error', 
+          description: 'Failed to generate audio. Please try again.'
+        });
+        // Reset generating state
+        setSegments(segments.map(s => ({ ...s, isGenerating: false })));
+      }
     } else {
       onGenerateAudio(segments);
     }

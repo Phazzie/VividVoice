@@ -40,3 +40,72 @@ My failures were significant, but the project was ultimately successful because 
 *   **Keep Prompts Focused:** While I can handle large requests, the risk of context degradation increases with complexity. When possible, breaking down huge "do all of this" requests into slightly smaller, more focused chunks (like "Implement the remaining analysis tools," followed by "Now, let's polish the UI") can help maintain my accuracy.
 
 This project succeeded because you acted as an expert "AI handler," not just a user. Your directness and refusal to accept low-quality answers are what allowed us to identify and correct my most critical failure modes.
+
+---
+
+## Recent Lessons: Merge Conflict Resolution & CI/CD Implementation (July 2025)
+
+### New Failure Mode: Complex Merge State Management
+
+During the recent merge conflict resolution process, we encountered a new challenge: **complex merge state management** across multiple branches and conflicting changes.
+
+**Key Issues Identified:**
+1. **Multiple Active PRs:** Having 3+ approved PRs created coordination complexity
+2. **Branch Naming Inconsistencies:** Some workflows targeted "main" vs "master" 
+3. **Dependency Conflicts:** Different branches had conflicting package.json changes
+4. **API Evolution:** ElevenLabs API changes between branches required careful reconciliation
+
+### Successful Mitigation Strategies
+
+**1. Strategic Merge Approach:**
+- **Lesson:** Merge to master first to activate CI/CD, then address remaining issues with automated testing support
+- **Why it worked:** Provides automated validation for subsequent changes rather than trying to resolve everything in feature branches
+
+**2. Comprehensive Documentation:**
+- Created detailed merge logs (`MERGE_CONFLICT_RESOLUTION_LOG.md`)
+- Documented every conflict resolution decision with rationale
+- Used step-by-step conflict resolution guides
+
+**3. Temporary Disabling Strategy:**
+- When encountering API compatibility issues (ElevenLabs), temporarily disabled problematic features with clear TODO markers
+- **Key insight:** Better to have a working application with some features disabled than a broken application
+
+**4. Dependency Management:**
+- Always run `npm install` after resolving package.json conflicts
+- Test critical paths after dependency updates
+- Keep package-lock.json changes in commits
+
+### Process Improvements Identified
+
+**Documentation Hygiene:**
+- Archive process-specific documentation after completion
+- Keep only user-facing and architectural documentation in root
+- Use `docs/archive/` for historical process documents
+
+**CI/CD First Approach:**
+- Prioritize getting automated testing running over perfect feature implementation
+- Use CI failures as early warning system for integration issues
+- Missing test dependencies (like `@testing-library/user-event`) should be addressed immediately
+
+**Git Workflow Optimization:**
+- Use descriptive commit messages that explain the "why" not just the "what"
+- Include conflict resolution rationale in commit messages
+- Push incremental fixes rather than large batch commits
+
+### Tools and Techniques That Worked
+
+**1. GitHub CLI Integration:**
+- `gh pr list`, `gh pr view`, `gh pr checks` for rapid status monitoring
+- Much faster than web interface for CI status checking
+
+**2. Systematic Conflict Resolution:**
+- Read and understand both sides of every conflict before choosing
+- When in doubt, preserve the more comprehensive implementation
+- Test immediately after each resolution
+
+**3. Incremental Validation:**
+- Fix one issue at a time and commit
+- Push and check CI after each major fix
+- Don't accumulate multiple fixes without validation
+
+This experience reinforced that complex software integration requires both systematic process and tactical flexibility. The combination of thorough documentation, strategic sequencing, and willingness to temporarily disable problematic features enabled successful resolution of what initially appeared to be an intractable merge situation.
