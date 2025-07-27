@@ -8,31 +8,46 @@ import { useRouter } from 'next/navigation';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isPro: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children, value: providedValue }: { children: ReactNode, value?: AuthContextType }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    if (providedValue) {
+        setUser(providedValue.user);
+        setLoading(providedValue.loading);
+        setIsPro(providedValue.isPro);
+        return;
+    };
     if (!auth) {
       setLoading(false);
       return;
     }
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await user.getIdTokenResult();
+        setIsPro(!!token.claims.stripeRole);
+      } else {
+        setIsPro(false);
+      }
       setUser(user);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [providedValue]);
 
   const signInWithGoogle = async () => {
+    if (providedValue) return;
     if (!auth) {
         console.error("Firebase Auth is not initialized. Cannot sign in.");
         return;
@@ -41,8 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      // The onAuthStateChanged listener will handle the user state update
-      // and redirect will happen in the login page.
     } catch (error) {
       console.error("Error signing in with Google:", error);
       setLoading(false);
@@ -50,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    if (providedValue) return;
     if (!auth) {
         console.error("Firebase Auth is not initialized. Cannot sign out.");
         return;
@@ -60,14 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.push('/');
     } catch (error) {
       console.error("Error signing out:", error);
-    } finally {
-        // onAuthStateChanged will set loading to false after user state is cleared.
     }
   };
 
-  const value = {
+  const value = providedValue || {
     user,
     loading,
+    isPro,
     signInWithGoogle,
     logout,
   };

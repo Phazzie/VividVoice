@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { userEvent } from '@testing-library/user-event';
 import { ActorStudio } from './ActorStudio';
 import * as actions from '@/lib/actions';
+import { MockAuthProvider } from '@/contexts/AuthContext.mock';
 
 // Mock the actions module
 vi.mock('@/lib/actions');

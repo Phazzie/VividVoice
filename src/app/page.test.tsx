@@ -1,10 +1,10 @@
-
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import VividVoicePage from './page';
 import { userEvent } from '@testing-library/user-event';
 import { useToast } from '@/hooks/use-toast';
 import { Character } from '@/lib/actions';
+import { MockAuthProvider } from '@/contexts/AuthContext.mock';
 
 // Mock the server actions module
 vi.mock('@/lib/actions', async (importOriginal) => {
@@ -69,7 +69,7 @@ describe('VividVoicePage State Machine', () => {
     (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
     (getCharacterPortraits as vi.Mock).mockResolvedValue(mockPortraitResponse);
 
-    render(<VividVoicePage />);
+    render(<MockAuthProvider><VividVoicePage /></MockAuthProvider>);
     
     // Initial state
     expect(screen.getByText('Your Story Awaits')).toBeInTheDocument();
@@ -107,7 +107,11 @@ describe('VividVoicePage State Machine', () => {
     (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
     (getCharacterPortraits as vi.Mock).mockResolvedValue(mockPortraitResponse);
     
-    render(<VividVoicePage />);
+    render(
+      <MockAuthProvider>
+        <VividVoicePage />
+      </MockAuthProvider>
+    );
     
     // Get to editing state
     await user.click(screen.getByRole('button', { name: /Start Generation/i }));
@@ -137,7 +141,11 @@ describe('VividVoicePage State Machine', () => {
         (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
         (getCharacterPortraits as vi.Mock).mockResolvedValue([]);
 
-        render(<VividVoicePage />);
+        render(
+          <MockAuthProvider>
+            <VividVoicePage />
+          </MockAuthProvider>
+        );
 
         // Go through the whole flow to get to 'displaying'
         await user.click(screen.getByRole('button', { name: /Start Generation/i }));
@@ -161,7 +169,11 @@ describe('VividVoicePage State Machine', () => {
         const errorMessage = 'Parsing failed!';
         (getParsedStory as vi.Mock).mockRejectedValue(new Error(errorMessage));
 
-        render(<VividVoicePage />);
+        render(
+          <MockAuthProvider>
+            <VividVoicePage />
+          </MockAuthProvider>
+        );
         
         await user.click(screen.getByRole('button', { name: /Start Generation/i }));
 
@@ -188,7 +200,11 @@ describe('VividVoicePage State Machine', () => {
       // Simulate portrait generation returning only one portrait for two characters
       (getCharacterPortraits as vi.Mock).mockResolvedValue([{ name: 'Alice', portraitDataUri: 'url' }]);
 
-      render(<VividVoicePage />);
+      render(
+        <MockAuthProvider>
+          <VividVoicePage />
+        </MockAuthProvider>
+      );
 
       await user.click(screen.getByRole('button', { name: /Start Generation/i }));
 
