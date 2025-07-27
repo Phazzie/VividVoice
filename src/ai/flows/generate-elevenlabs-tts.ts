@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { elevenlabs } from 'elevenlabs';
+import { ElevenLabsApi } from '@elevenlabs/elevenlabs-js';
 
 const GenerateElevenLabsTTSInputSchema = z.object({
   text: z.string().describe('The text to be converted to speech.'),
@@ -22,6 +22,15 @@ const GenerateElevenLabsTTSOutputSchema = z.object({
   audioDataUri: z.string().describe('The data URI of the generated audio.'),
 });
 export type GenerateElevenLabsTTSOutput = z.infer<typeof GenerateElevenLabsTTSOutputSchema>;
+
+const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
+if (!elevenLabsApiKey) {
+  console.warn('ElevenLabs API key not found in environment variables. TTS generation will fail.');
+}
+
+const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsApi({
+  apiKey: elevenLabsApiKey,
+}) : null;
 
 export async function generateElevenLabsTTS(input: GenerateElevenLabsTTSInput): Promise<GenerateElevenLabsTTSOutput> {
     return generateElevenLabsTTSFlow(input);
@@ -36,16 +45,11 @@ const generateElevenLabsTTSFlow = ai.defineFlow(
   async (input) => {
     const { text, voiceId } = input;
 
-    const apiKey = process.env.ELEVENLABS_API_KEY;
-    if (!apiKey) {
+    if (!elevenlabsClient) {
       throw new Error('ElevenLabs API key not found in environment variables.');
     }
 
-    const client = new elevenlabs({
-        apiKey: apiKey,
-    });
-
-    const audio = await client.generate({
+    const audio = await elevenlabsClient.generate({
       voice: voiceId,
       text,
       model_id: "eleven_multilingual_v2"

@@ -1,8 +1,5 @@
 import type {Config} from 'tailwindcss';
-const { fontFamily } = require("tailwindcss/defaultTheme")
-
-import type {Config} from 'tailwindcss';
-const { fontFamily } = require("tailwindcss/defaultTheme")
+const { fontFamily } = require("tailwindcss/defaultTheme");
 
 const config: Config = {
   darkMode: ['class'],
@@ -85,8 +82,8 @@ const config: Config = {
           '50%': { 'text-shadow': '0 0 10px #fff, 0 0 15px #fff, 0 0 20px #0077ff, 0 0 25px #0077ff, 0 0 30px #0077ff, 0 0 35px #0077ff, 0 0 40px #0077ff' },
         },
         'flicker': {
-          '0%, 100%': { opacity: 1 },
-          '50%': { opacity: 0.5 },
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
         },
       },
       animation: {
