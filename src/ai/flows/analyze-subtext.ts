@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -52,14 +51,27 @@ For each instance of subtext you find, provide:
 5.  A brief but insightful 'explanation' of the contextual clues (previous events, character relationships, tone, what is NOT being said) that point to this subtext.
 
 **High-Quality Example:**
-- **Context:** A character, Jane, has just lost a competition she desperately wanted to win. Her friend asks if she's okay.
-- **Dialogue Line:** "Jane: I'm fine."
-- **Your Analysis:**
-  - **character:** "Jane"
-  - **dialogue:** "I'm fine."
-  - **literalMeaning:** "I am okay / not hurt."
-  - **subtext:** "I am deeply disappointed and hurt, but I don't want to talk about it."
-  - **explanation:** "The word 'fine' is often used to deflect conversation about true feelings, especially after a significant negative event. The context of her recent loss makes it highly probable that she is masking her true emotional state."
+- **Input Story Text:**
+  \`\`\`
+  Narrator: The rain hammered against the window. Inside, Mark stared at the last photograph of him and Sarah together.
+  Sarah: I'm leaving, Mark. I've packed my bags.
+  Mark: I see you've watered the plants.
+  Sarah: Don't do this.
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "analyses": [
+        {
+            "character": "Mark",
+            "dialogue": "I see you've watered the plants.",
+            "literalMeaning": "I am observing that the plants have been watered.",
+            "subtext": "You are abandoning me and our shared life, yet you're still performing these small acts of domestic normalcy. Are you pretending this isn't happening? Or are you trying to show me you still care, which makes this even more painful?",
+            "explanation": "Mark is avoiding the emotional bombshell of Sarah leaving by focusing on a mundane, irrelevant detail. This deflection is a classic sign of someone struggling to process a traumatic event. His comment is a desperate attempt to ignore the reality of the situation and cling to a semblance of the life that is about to disappear."
+        }
+    ]
+  }
+  \`\`\`
 
 Your analysis should be this deep and nuanced. Return your findings as a JSON object with an 'analyses' array. If no significant subtext is found, return an empty array.
 
@@ -74,5 +86,3 @@ Your analysis should be this deep and nuanced. Return your findings as a JSON ob
         return output!;
     }
 );
-
-

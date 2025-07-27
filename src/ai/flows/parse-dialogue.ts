@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -71,6 +70,65 @@ For each segment, provide:
 
 **Available Voices for Casting:**
 ${availableVoices.join(', ')}
+
+**High-Quality Example:**
+- **Input Story Text:**
+  \`\`\`
+  Narrator: The office was cold. Detective Miles, a man whose patience had worn thin years ago, stared at the suspect.
+  Miles: Let's try this again. Where were you on the night of the 15th?
+  Jenna: I already told you. I was at the cinema.
+  Narrator: Jenna, a young woman with a nervous energy, fiddled with a loose thread on her cuff.
+  Miles: The cinema. Right. And I suppose you don't have a ticket stub.
+  \`\`\`
+- **Your Perfect JSON Output:**
+  \`\`\`json
+  {
+    "characters": [
+      {
+        "name": "Narrator",
+        "description": "The narrator provides objective, atmospheric context for the story. The tone is somber and slightly gritty, in keeping with a classic detective noir setting. The narrator focuses on external details and character actions that reveal underlying tension.",
+        "voiceId": "en-US-Standard-A"
+      },
+      {
+        "name": "Miles",
+        "description": "A veteran detective in his late 50s. He is cynical, impatient, and direct, having seen too much to be easily fooled. His speaking style is clipped and sarcastic, using questions as weapons. He is likely world-weary in appearance, with tired eyes and a rumpled suit.",
+        "voiceId": "en-US-Standard-D"
+      },
+      {
+        "name": "Jenna",
+        "description": "A young woman in her early 20s, currently a suspect in a serious crime. She displays nervous energy and fidgets when under pressure, suggesting she is either hiding something or genuinely intimidated. Her speech is defensive and simple. She appears anxious and perhaps a bit disheveled from the stress of the interrogation.",
+        "voiceId": "en-US-Standard-H"
+      }
+    ],
+    "segments": [
+      {
+        "character": "Narrator",
+        "dialogue": "The office was cold. Detective Miles, a man whose patience had worn thin years ago, stared at the suspect.",
+        "emotion": "Tense"
+      },
+      {
+        "character": "Miles",
+        "dialogue": "Let's try this again. Where were you on the night of the 15th?",
+        "emotion": "Impatient"
+      },
+      {
+        "character": "Jenna",
+        "dialogue": "I already told you. I was at the cinema.",
+        "emotion": "Defensive"
+      },
+      {
+        "character": "Narrator",
+        "dialogue": "Jenna, a young woman with a nervous energy, fiddled with a loose thread on her cuff.",
+        "emotion": "Observant"
+      },
+      {
+        "character": "Miles",
+        "dialogue": "The cinema. Right. And I suppose you don't have a ticket stub.",
+        "emotion": "Sarcastic"
+      }
+    ]
+  }
+  \`\`\`
 
 Now, process the following story script using the same method.
 

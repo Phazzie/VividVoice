@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -48,8 +47,9 @@ For each trope you identify, you must provide:
 3.  A creative and insightful 'inversionSuggestion' that subverts, deconstructs, or cleverly twists the trope to make the story more original and unpredictable. The suggestion should be actionable for the writer, offering a concrete alternative direction.
 
 **High-Quality Example:**
-- **Input Story Text Snippet:**
+- **Input Story Text:**
   \`\`\`
+  The wise old mage, Elara, looked at the young farm boy. "The prophecy speaks of you, Thomas. You are the Chosen One, destined to defeat the Dark Lord."
   "Help me!" Princess Aurelia cried from the dragon's tower. "A brave knight must save me!"
   \`\`\`
 - **Your Perfect JSON Output:**
@@ -57,8 +57,13 @@ For each trope you identify, you must provide:
   {
     "tropes": [
       {
+        "trope": "The Chosen One",
+        "quote": "You are the Chosen One, destined to defeat the Dark Lord.",
+        "inversionSuggestion": "Reveal that the 'prophecy' was a fabrication created by Elara. She isn't a benevolent mentor; she's a manipulative politician who needs a disposable hero to stir up a rebellion against a 'Dark Lord' who is actually a legitimate and popular ruler. Thomas is just a pawn."
+      },
+      {
         "trope": "Damsel in Distress",
-        "quote": "\"Help me!\" Princess Aurelia cried from the dragon's tower. \"A brave knight must save me!\"",
+        "quote": "\\"Help me!\\" Princess Aurelia cried from the dragon's tower. \\"A brave knight must save me!\\"",
         "inversionSuggestion": "Instead of the princess being a passive victim, reveal she orchestrated her own kidnapping. The 'dragon' is an illusion or a hired beast, and her calls for a 'brave knight' are a ploy to lure the kingdom's richest hero to her so she can rob him and finance her escape from royal life."
       }
     ]

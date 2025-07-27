@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { type DialogueDynamics, analyzeDialogueDynamics } from '@/lib/actions';
+import { type DialogueDynamics } from '@/lib/actions';
 import { Loader2, Zap, BarChart3, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

@@ -69,6 +69,10 @@ export const DialogueDynamicsSchema = z.object({
       questionsAsked: z.number().describe('Number of questions the character asked.'),
       assertionsMade: z.number().describe('Number of assertive or declarative statements made.'),
     }),
+    powerPlays: z.array(z.object({
+        tactic: z.string().describe("The name of the conversational tactic used (e.g., 'Dismissive Echo', 'Leading Question')."),
+        quote: z.string().describe("The quote where the tactic is used."),
+    })).describe("Specific conversational tactics or 'power plays' used by the character."),
   })).describe('An analysis of the power balance between characters.'),
   pacing: z.object({
     overallWordsPerTurn: z.number().describe('The average number of words per turn for the entire dialogue.'),
@@ -105,15 +109,24 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 /**
  * Defines the schema for narrator bias modes.
  */
-export const NarratorBiasSchema = z.enum([
-    "Neutral",
-    "Jealous of Main Character",
-    "Secretly the Villain",
-    "Admires Main Character",
-    "Completely Unreliable",
-    "Hides a Key Fact"
-]);
-export type NarratorBias = z.infer<typeof NarratorBiasSchema>;
+const NARRATOR_BIAS_OPTIONS = [
+  "Neutral",
+  "Jealous of Main Character",
+  "Secretly the Villain",
+  "Admires Main Character",
+  "Completely Unreliable",
+  "Hides a Key Fact",
+] as const;
+
+export const NarratorBiasEnum = z.enum(NARRATOR_BIAS_OPTIONS);
+
+export const NarratorBiasSchema = z.object({
+  startBias: NarratorBiasEnum.describe("The narrator's bias at the beginning of the story."),
+  endBias:   NarratorBiasEnum.describe("The narrator's bias at the end of the story."),
+});
+
+export type NarratorBias = z.infer<typeof NarratorBiasEnum>;
+export type NarratorBiasRange = z.infer<typeof NarratorBiasSchema>;
 
 /**
  * Defines the schema for a single segment used in pacing analysis.
@@ -121,6 +134,7 @@ export type NarratorBias = z.infer<typeof NarratorBiasSchema>;
 export const PacingSegmentSchema = z.object({
   type: z.enum(['Dialogue', 'Narration']).describe('The type of the segment.'),
   wordCount: z.number().describe('The number of words in this segment.'),
+  pacingFeel: z.enum(['Action', 'Reflection', 'Exposition', 'Tension']).optional().describe('The narrative feel of the segment.'),
 });
 export type PacingSegment = z.infer<typeof PacingSegmentSchema>;
 
@@ -163,7 +177,7 @@ export type SubtextAnalysis = z.infer<typeof SubtextAnalysisSchema>;
 export const PerspectiveSchema = z.object({
   character: z.string().describe("The character whose perspective was adopted."),
   role: z.enum(['Protagonist', 'Antagonist']).describe("The role this character was cast in for the summary."),
-  summary: z.string().describe("The summary of the story, rewritten from the character's new perspective."),
+  rewrittenText: z.string().describe("The rewritten text, from the character's new perspective."),
 });
 export type Perspective = z.infer<typeof PerspectiveSchema>;
 

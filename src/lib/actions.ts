@@ -9,9 +9,11 @@
 
 import {
   parseDialogue as parseDialogueFlow,
+} from '@/ai/flows/parse-dialogue';
+import {
   type DialogueSegment as ImportedDialogueSegment,
   type Character as ImportedCharacter,
-} from '@/ai/flows/parse-dialogue';
+} from '@/ai/schemas';
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
 } from '@/ai/flows/generate-character-portraits';
@@ -26,7 +28,7 @@ import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/
 import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
-import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
+// import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
 
@@ -35,7 +37,7 @@ import {
   type DialogueDynamics as ImportedDialogueDynamics,
   type Trope as ImportedTrope,
   type ChatMessage,
-  type NarratorBias,
+  type NarratorBiasRange,
   type PacingSegment as ImportedPacingSegment,
   type ShowDontTellSuggestion as ImportedShowDontTellSuggestion,
   type ConsistencyIssue as ImportedConsistencyIssue,
@@ -59,7 +61,7 @@ export type SubtextAnalysis = ImportedSubtextAnalysis;
 export type Perspective = ImportedPerspective;
 export type SoundEffect = ImportedSoundEffect;
 export type TranscriptSegment = ImportedTranscriptSegment;
-export type { ChatMessage, NarratorBias };
+export type { ChatMessage, NarratorBiasRange };
 
 /**
  * Defines the shape of a sound effect after a URL has been found for it.
@@ -105,15 +107,12 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     const { segments, characters } = parsedStory;
 
     // 2. Analyze emotional tone for each segment
-    const CONTEXT_WINDOW_BEFORE = 2;
-    const CONTEXT_WINDOW_AFTER = 3;
-
     const segmentsWithEmotions = await Promise.all(
       segments.map(async (segment, index) => {
         if (segment.character === 'Narrator') {
           return segment;
         }
-        const context = segments.slice(Math.max(0, index - CONTEXT_WINDOW_BEFORE), Math.min(segments.length, index + CONTEXT_WINDOW_AFTER)).map(s => `${s.character}: ${s.dialogue}`).join('\n');
+        const context = segments.slice(Math.max(0, index - 2), Math.min(segments.length, index + 3)).map(s => `${s.character}: ${s.dialogue}`).join('\n');
         const { emotion } = await analyzeEmotionalToneFlow({ dialogue: segment.dialogue, context });
         return { ...segment, emotion };
       })
@@ -129,22 +128,32 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       getShowDontTellSuggestionsFlow({ storyText }),
       findInconsistenciesFlow({ storyText }),
       analyzeSubtextFlow({ storyText }),
-      getSoundDesign(storyText),
+      // getSoundDesign(storyText), // Temporarily disabled - missing flow
     ]);
 
     const [
-      characterPortraits,
-      dialogueDynamics,
-      literaryDevices,
-      pacing,
-      tropes,
-      showDontTellSuggestions,
-      consistencyIssues,
-      subtextAnalyses,
-      soundEffects,
+      characterPortraitsResult,
+      dialogueDynamicsResult,
+      literaryDevicesResult,
+      pacingResult,
+      tropesResult,
+      showDontTellSuggestionsResult,
+      consistencyIssuesResult,
+      subtextAnalysesResult,
+      // soundEffects, // Temporarily disabled
     ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
+    const characterPortraits = characterPortraitsResult;
+    const dialogueDynamics = dialogueDynamicsResult;
+    const literaryDevices = literaryDevicesResult;
+    const pacing = pacingResult;
+    const tropes = tropesResult;
+    const showDontTellSuggestions = showDontTellSuggestionsResult;
+    const consistencyIssues = consistencyIssuesResult;
+    const subtextAnalyses = subtextAnalysesResult;
+
     const errors: Record<string, string> = {};
+    if (results[0].status === 'rejected') errors.characterPortraits = results[0].reason.message;
     if (results[1].status === 'rejected') errors.dialogueDynamics = results[1].reason.message;
     if (results[2].status === 'rejected') errors.literaryDevices = results[2].reason.message;
     if (results[3].status === 'rejected') errors.pacing = results[3].reason.message;
@@ -152,7 +161,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     if (results[5].status === 'rejected') errors.showDontTell = results[5].reason.message;
     if (results[6].status === 'rejected') errors.consistency = results[6].reason.message;
     if (results[7].status === 'rejected') errors.subtext = results[7].reason.message;
-    if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message;
+    // if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message; // Temporarily disabled
 
     console.log('Full story analysis successful.');
 
@@ -160,15 +169,15 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     return {
       segments: segmentsWithEmotions,
       characters,
-      characterPortraits: characterPortraits || [],
-      dialogueDynamics,
-      literaryDevices,
-      pacing,
-      tropes,
-      showDontTellSuggestions,
-      consistencyIssues,
-      subtextAnalyses,
-      soundEffects,
+      characterPortraits: (characterPortraits as CharacterPortrait[]) || [],
+      dialogueDynamics: (dialogueDynamics as any) || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
+      literaryDevices: (literaryDevices as any) || { devices: [] },
+      pacing: (pacing as any) || { segments: [] },
+      tropes: (tropes as any) || { tropes: [] },
+      showDontTellSuggestions: (showDontTellSuggestions as any) || { suggestions: [] },
+      consistencyIssues: (consistencyIssues as any) || { issues: [] },
+      subtextAnalyses: (subtextAnalyses as any) || { analyses: [] },
+      soundEffects: null, // Temporarily disabled
       errors,
     };
   } catch (error) {
@@ -282,12 +291,12 @@ export async function getCharacterResponse(
 /**
  * Generation: Rewrites the story with a biased narrator.
  */
-export async function getBiasedStory(storyText: string, bias: NarratorBias): Promise<string> {
+export async function getBiasedStory(storyText: string, bias: { startBias: string; endBias: string }): Promise<string> {
     console.log('Calling getBiasedStory action...');
     try {
-      const result = await applyNarratorBiasFlow({ storyText, bias });
+      const result = await applyNarratorBiasFlow({ storyText, bias: bias as any });
       return result.biasedStoryText;
-    } catch (e: unknown) {
+    } catch (e: any) {
         console.error('Error in getBiasedStory action:', { error: e });
         throw new Error('Failed to apply narrator bias.');
     }
@@ -300,13 +309,14 @@ export async function getBiasedStory(storyText: string, bias: NarratorBias): Pro
  * @param storyText The full text of the story.
  * @param characterName The name of the character whose perspective to adopt.
  * @param role The role to cast them in ('Protagonist' or 'Antagonist').
+ * @param format The format of the rewritten text.
  * @returns A promise resolving to the rewritten story summary.
  */
-export async function shiftPerspective(storyText: string, characterName: string, role: 'Protagonist' | 'Antagonist'): Promise<Perspective> {
+export async function shiftPerspective(storyText: string, characterName: string, role: 'Protagonist' | 'Antagonist', format: 'summary' | 'diaryEntry' | 'letter' | 'policeStatement' = 'summary'): Promise<Perspective> {
   console.log('Calling shiftPerspective action...');
   try {
-    return await shiftPerspectiveFlow({ storyText, characterName, role });
-  } catch(e: unknown) {
+    return await shiftPerspectiveFlow({ storyText, characterName, role, format });
+  } catch(e: any) {
     console.error('Error in shiftPerspective action:', { error: e });
     throw new Error('Failed to shift perspective.');
   }
@@ -335,7 +345,11 @@ const defaultSound = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.og
  */
 export async function getSoundDesign(storyText: string): Promise<SoundEffectWithUrl[]> {
   console.log('Calling getSoundDesign action...');
-  try {
+  // Temporarily disabled - missing flow implementation
+  console.warn('Sound design flow temporarily disabled during merge resolution');
+  return [];
+  
+  /* try {
     const { soundEffects } = await generateSoundDesignFlow({ storyText });
 
     if (soundEffects.length === 0) {
@@ -345,7 +359,7 @@ export async function getSoundDesign(storyText: string): Promise<SoundEffectWith
     // In a real application, you would use the `soundQuery` to search a
     // licensed audio library API and get a real URL.
     // For this demo, we will map the query to our small, curated library.
-    return soundEffects.map(effect => {
+    return soundEffects.map((effect: any) => {
       const lowerQuery = effect.soundQuery.toLowerCase();
       // Find the best match in our library
       const matchedKey = Object.keys(soundLibrary).find(key => lowerQuery.includes(key));
@@ -354,11 +368,11 @@ export async function getSoundDesign(storyText: string): Promise<SoundEffectWith
         soundUrl: matchedKey ? soundLibrary[matchedKey] : defaultSound,
       }
     });
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error('Error in getSoundDesign action:', { error: e });
     // Return empty array on failure as this is a non-critical enhancement.
     return [];
-  }
+  } */
 }
 
 /**
@@ -372,7 +386,7 @@ export async function generateElevenLabsAudio(text: string, voiceId: string): Pr
   try {
     const result = await generateElevenLabsTTSFlow({ text, voiceId });
     return result.audioDataUri;
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.error('Error in generateElevenLabsAudio action:', { error: e });
     throw new Error('Failed to generate audio with ElevenLabs.');
   }

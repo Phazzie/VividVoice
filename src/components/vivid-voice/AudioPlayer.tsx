@@ -13,24 +13,9 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    const audioElement = audioRef.current;
-    if (audioElement) {
-      // Reset state when src changes
-      setIsPlaying(false);
-      setIsLoading(true);
-      audioElement.pause();
-      audioElement.currentTime = 0;
-
-      const handleCanPlayThrough = () => setIsLoading(false);
-      const handleEnded = () => setIsPlaying(false);
-
-      audioElement.addEventListener('canplaythrough', handleCanPlayThrough);
-      audioElement.addEventListener('ended', handleEnded);
-
-      return () => {
-        audioElement.removeEventListener('canplaythrough', handleCanPlayThrough);
-        audioElement.removeEventListener('ended', handleEnded);
-      };
+    if (audioRef.current) {
+      audioRef.current.oncanplaythrough = () => setIsLoading(false);
+      audioRef.current.onended = () => setIsPlaying(false);
     }
   }, [src]);
 
