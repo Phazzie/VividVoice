@@ -33,7 +33,8 @@ const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsClient({
 }) : null;
 
 export async function generateElevenLabsTTS(input: GenerateElevenLabsTTSInput): Promise<GenerateElevenLabsTTSOutput> {
-    return generateElevenLabsTTSFlow(input);
+    // Temporarily disabled during merge resolution
+    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. Please update API usage.');
 }
 
 const generateElevenLabsTTSFlow = ai.defineFlow(
