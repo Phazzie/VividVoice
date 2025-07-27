@@ -23,10 +23,10 @@ const compareToClassicsPrompt = ai.definePrompt({
   name: 'compareToClassicsPrompt',
   input: { schema: CompareToClassicsInputSchema },
   output: { schema: CompareToClassicsOutputSchema },
-  prompt: (input) => `You are an expert in literary analysis. Your task is to compare the following story text to classic stories. For each comparison, identify the classic story and list the similarities and differences.
+  prompt: `You are an expert in literary analysis. Your task is to compare the following story text to classic stories. For each comparison, identify the classic story and list the similarities and differences.
 
 **Story Text:**
-${input.storyText}
+{{storyText}}
 
 **Comparisons to Classic Stories:**`
 });

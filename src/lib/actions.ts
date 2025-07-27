@@ -9,9 +9,11 @@
 
 import {
   parseDialogue as parseDialogueFlow,
+} from '@/ai/flows/parse-dialogue';
+import {
   type DialogueSegment as ImportedDialogueSegment,
   type Character as ImportedCharacter,
-} from '@/ai/flows/parse-dialogue';
+} from '@/ai/schemas';
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
 } from '@/ai/flows/generate-character-portraits';
@@ -130,18 +132,28 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     ]);
 
     const [
-      characterPortraits,
-      dialogueDynamics,
-      literaryDevices,
-      pacing,
-      tropes,
-      showDontTellSuggestions,
-      consistencyIssues,
-      subtextAnalyses,
+      characterPortraitsResult,
+      dialogueDynamicsResult,
+      literaryDevicesResult,
+      pacingResult,
+      tropesResult,
+      showDontTellSuggestionsResult,
+      consistencyIssuesResult,
+      subtextAnalysesResult,
       // soundEffects, // Temporarily disabled
     ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
+    const characterPortraits = characterPortraitsResult;
+    const dialogueDynamics = dialogueDynamicsResult;
+    const literaryDevices = literaryDevicesResult;
+    const pacing = pacingResult;
+    const tropes = tropesResult;
+    const showDontTellSuggestions = showDontTellSuggestionsResult;
+    const consistencyIssues = consistencyIssuesResult;
+    const subtextAnalyses = subtextAnalysesResult;
+
     const errors: Record<string, string> = {};
+    if (results[0].status === 'rejected') errors.characterPortraits = results[0].reason.message;
     if (results[1].status === 'rejected') errors.dialogueDynamics = results[1].reason.message;
     if (results[2].status === 'rejected') errors.literaryDevices = results[2].reason.message;
     if (results[3].status === 'rejected') errors.pacing = results[3].reason.message;
@@ -157,14 +169,14 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     return {
       segments: segmentsWithEmotions,
       characters,
-      characterPortraits: characterPortraits || [],
-      dialogueDynamics: dialogueDynamics || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
-      literaryDevices: literaryDevices || { devices: [] },
-      pacing: pacing || { segments: [] },
-      tropes: tropes || { tropes: [] },
-      showDontTellSuggestions: showDontTellSuggestions || { suggestions: [] },
-      consistencyIssues: consistencyIssues || { issues: [] },
-      subtextAnalyses: subtextAnalyses || { analyses: [] },
+      characterPortraits: (characterPortraits as CharacterPortrait[]) || [],
+      dialogueDynamics: (dialogueDynamics as any) || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
+      literaryDevices: (literaryDevices as any) || { devices: [] },
+      pacing: (pacing as any) || { segments: [] },
+      tropes: (tropes as any) || { tropes: [] },
+      showDontTellSuggestions: (showDontTellSuggestions as any) || { suggestions: [] },
+      consistencyIssues: (consistencyIssues as any) || { issues: [] },
+      subtextAnalyses: (subtextAnalyses as any) || { analyses: [] },
       soundEffects: null, // Temporarily disabled
       errors,
     };
@@ -282,7 +294,7 @@ export async function getCharacterResponse(
 export async function getBiasedStory(storyText: string, bias: { startBias: string; endBias: string }): Promise<string> {
     console.log('Calling getBiasedStory action...');
     try {
-      const result = await applyNarratorBiasFlow({ storyText, bias });
+      const result = await applyNarratorBiasFlow({ storyText, bias: bias as any });
       return result.biasedStoryText;
     } catch (e: any) {
         console.error('Error in getBiasedStory action:', { error: e });

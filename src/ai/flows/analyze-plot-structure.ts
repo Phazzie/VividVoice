@@ -22,10 +22,10 @@ const analyzePlotStructurePrompt = ai.definePrompt({
   name: 'analyzePlotStructurePrompt',
   input: { schema: AnalyzePlotStructureInputSchema },
   output: { schema: AnalyzePlotStructureOutputSchema },
-  prompt: (input) => `You are an expert in literary analysis. Your task is to analyze the plot structure of the following story text. Identify the plot structure (e.g., Freytag's Pyramid, Three-Act Structure) and provide a brief analysis.
+  prompt: `You are an expert in literary analysis. Your task is to analyze the plot structure of the following story text. Identify the plot structure (e.g., Freytag's Pyramid, Three-Act Structure) and provide a brief analysis.
 
 **Story Text:**
-${input.storyText}
+{{storyText}}
 
 **Plot Structure Analysis:**`
 });

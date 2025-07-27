@@ -85,7 +85,7 @@ const generateMultiVoiceTTSFlow = ai.defineFlow(
 
     const ssmlString = ssml.toString();
     
-    const {media, transcript: ttsTranscript} = await ai.generate({
+    const response = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',
       config: { 
         // Request both AUDIO and a TRANSCRIPT with timing information
@@ -93,6 +93,9 @@ const generateMultiVoiceTTSFlow = ai.defineFlow(
       },
       prompt: ssmlString,
     });
+    
+    const media = response.media;
+    const ttsTranscript = (response as any).transcript;
 
     if (!media || !ttsTranscript) {
       throw new Error('No media or transcript returned from TTS generation.');

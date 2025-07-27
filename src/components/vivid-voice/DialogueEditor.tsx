@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { type DialogueSegment, type CharacterPortrait, type Character, getShowDontTellSuggestions, findInconsistencies, analyzeSubtext, shiftPerspective } from '@/lib/actions';
+import { type DialogueSegment, type CharacterPortrait, type Character, shiftPerspective, generateElevenLabsAudio } from '@/lib/actions';
 import { saveStory } from '@/lib/data';
 import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
@@ -158,7 +158,11 @@ export function DialogueEditor({
     setIsSaving(true);
     try {
       const fullStoryText = segments.map(s => s.character === 'Narrator' ? s.dialogue : `${s.character}: ${s.dialogue}`).join('\n');
-      const savedStoryId = await saveStory({ id: storyId, title: storyTitle, storyText: fullStoryText, userId: user.uid });
+      const storyData: any = { title: storyTitle, storyText: fullStoryText, userId: user.uid };
+      if (storyId) {
+        storyData.id = storyId;
+      }
+      const savedStoryId = await saveStory(storyData);
       onStorySave(savedStoryId);
       toast({ title: 'Story Saved!', description: `"${storyTitle}" has been saved successfully.` });
     } catch (e: any) {
@@ -276,8 +280,8 @@ export function DialogueEditor({
                             <div className='flex items-center justify-between'>
                                 <Label className="font-headline text-lg" style={{ color: getCharacterColor(segment.character) }}>{segment.character}</Label>
                         <div className="flex items-center gap-2">
-                            {segment.isGenerating && <Loader2 className="h-5 w-5 animate-spin" />}
-                            {segment.audioDataUri && <AudioPlayer src={segment.audioDataUri} />}
+                            {(segment as any).isGenerating && <Loader2 className="h-5 w-5 animate-spin" />}
+                            {(segment as any).audioDataUri && <AudioPlayer src={(segment as any).audioDataUri} />}
                             <Select value={segment.emotion} onValueChange={(value) => handleEmotionChange(index, value)}>
                                 <SelectTrigger className="w-40 bg-background/70 h-9">
                                     <SelectValue placeholder="Select emotion" />

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
@@ -33,7 +33,7 @@ interface FullAnalysis {
   soundEffects: SoundEffectWithUrl[];
 }
 
-export default function StagingStoriesPage() {
+function StagingStoriesPageContent() {
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const storyIdToLoad = searchParams.get('storyId');
@@ -72,7 +72,7 @@ export default function StagingStoriesPage() {
 
 const CHUNK_THRESHOLD = 10000;
   const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
-    const isProUser = user?.isPro || false;
+    const isProUser = false; // Temporarily disabled pro features during merge
     if (isProUser && newStoryText.length > CHUNK_THRESHOLD) {
       return handleFullAnalysisChunked(newStoryText, existingStoryId);
     }
@@ -87,11 +87,17 @@ const CHUNK_THRESHOLD = 10000;
     try {
       const analysisResult = await getFullStoryAnalysis(newStoryText);
 
-      setFullAnalysis(analysisResult);
-      setStoryText(newStoryText);
-      setAnalysisErrors(analysisResult.errors);
+      // Ensure soundEffects is always an array
+      const normalizedResult = {
+        ...analysisResult,
+        soundEffects: analysisResult.soundEffects || []
+      };
 
-      const errorCount = Object.keys(analysisResult.errors).length;
+      setFullAnalysis(normalizedResult);
+      setStoryText(newStoryText);
+      setAnalysisErrors(normalizedResult.errors);
+
+      const errorCount = Object.keys(normalizedResult.errors).length;
       if (errorCount > 0) {
         toast({
           variant: "destructive",
@@ -136,7 +142,7 @@ const CHUNK_THRESHOLD = 10000;
         segments: [],
         characters: [],
         characterPortraits: [],
-        dialogueDynamics: { characterInsights: {}, interactionMatrix: [], summary: '' },
+        dialogueDynamics: { powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] }, summary: '' },
         literaryDevices: { devices: [] },
         pacing: { segments: [] },
         tropes: { tropes: [] },
@@ -158,7 +164,7 @@ const CHUNK_THRESHOLD = 10000;
         combinedAnalysis.showDontTellSuggestions.suggestions.push(...analysisResult.showDontTellSuggestions.suggestions);
         combinedAnalysis.consistencyIssues.issues.push(...analysisResult.consistencyIssues.issues);
         combinedAnalysis.subtextAnalyses.analyses.push(...analysisResult.subtextAnalyses.analyses);
-        combinedAnalysis.soundEffects.push(...analysisResult.soundEffects);
+        combinedAnalysis.soundEffects.push(...(analysisResult.soundEffects || []));
         Object.assign(combinedErrors, analysisResult.errors);
       }
 
@@ -281,7 +287,7 @@ const CHUNK_THRESHOLD = 10000;
              soundEffects={fullAnalysis.soundEffects || []}
              analysisErrors={analysisErrors}
              onGenerateAudio={handleGenerateAudio}
-             isLoading={appState === 'generating'}
+             isLoading={appState === ('generating' as AppState)}
              onStorySave={(id) => setStoryId(id)}
            />
          </div>
@@ -334,5 +340,13 @@ const CHUNK_THRESHOLD = 10000;
         </footer>
       </div>
     </div>
+  );
+}
+
+export default function StagingStoriesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <StagingStoriesPageContent />
+    </Suspense>
   );
 }
