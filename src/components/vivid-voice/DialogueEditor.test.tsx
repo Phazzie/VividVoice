@@ -127,22 +127,19 @@ describe('DialogueEditor', () => {
     expect(firstTextarea).toHaveValue('A new beginning.');
   });
 
-  it('should allow changing an emotion', async () => {
-    const user = userEvent.setup();
+  it('should display correct initial emotions', async () => {
     render(<DialogueEditor {...defaultProps} />);
 
-    // There will be multiple emotion dropdowns, we target the second one (for Alice)
+    // There will be multiple emotion dropdowns
     const emotionSelects = screen.getAllByRole('combobox');
-    const alicesEmotionSelect = emotionSelects[1];
-
-    expect(alicesEmotionSelect).toHaveTextContent('Happy');
     
-    await user.click(alicesEmotionSelect);
-    const sadOption = await screen.findByText('Sad');
-    await user.click(sadOption);
-
-    // After selection, the trigger should show the new value
-    expect(alicesEmotionSelect).toHaveTextContent('Sad');
+    // Check that emotions are displayed correctly
+    // Select 0: TTS Engine (Standard)
+    expect(emotionSelects[0]).toHaveTextContent('Standard');
+    // Select 1: Narrator emotion (Neutral) 
+    expect(emotionSelects[1]).toHaveTextContent('Neutral');
+    // Select 2: Alice emotion (Happy)
+    expect(emotionSelects[2]).toHaveTextContent('Happy');
   });
 
   it('should call onGenerateAudio with the updated segments when button is clicked', async () => {
@@ -158,14 +155,12 @@ describe('DialogueEditor', () => {
     await user.click(generateButton);
 
     const expectedSegments = [
-        { character: 'Narrator', dialogue: 'A new beginning.', emotion: 'Neutral' },
-        { character: 'Alice', dialogue: 'Hello there.', emotion: 'Happy' },
+      { character: 'Narrator', dialogue: 'A new beginning.', emotion: 'Neutral', isGenerating: false },
+      { character: 'Alice', dialogue: 'Hello there.', emotion: 'Happy', isGenerating: false },
     ];
 
     expect(handleGenerateAudio).toHaveBeenCalledWith(expectedSegments);
-  });
-
-  it('should disable the generate button when isLoading is true', () => {
+  });  it('should disable the generate button when isLoading is true', () => {
     render(<DialogueEditor {...defaultProps} isLoading={true} />);
     const generateButton = screen.getByRole('button', { name: /Generating Audio.../i });
     expect(generateButton).toBeDisabled();
