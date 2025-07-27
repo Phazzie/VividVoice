@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -52,7 +51,7 @@ Your goal is to be comprehensive and accurate. Search for a wide range of device
 **High-Quality Example:**
 - **Input Story Text:**
   \`\`\`
-  The wind whispered warnings through the weeping willows, a sound like a silk sheet slipping over stone.
+  The wind whispered warnings through the weeping willows, a sound like a silk sheet slipping over stone. He knew this was just the beginning.
   \`\`\`
 - **Your Perfect JSON Output:**
   \`\`\`json
@@ -72,6 +71,11 @@ Your goal is to be comprehensive and accurate. Search for a wide range of device
         "device": "Simile",
         "quote": "a sound like a silk sheet slipping over stone",
         "explanation": "The sound of the wind is compared to a 'silk sheet slipping over stone' using the word 'like'. This creates a specific, eerie auditory image that is both smooth and hard, contributing to the unsettling atmosphere."
+      },
+      {
+        "device": "Foreshadowing",
+        "quote": "He knew this was just the beginning.",
+        "explanation": "This sentence hints at future events, suggesting that the current situation is only a precursor to a larger conflict or series of events."
       }
     ]
   }

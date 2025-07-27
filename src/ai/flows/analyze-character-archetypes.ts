@@ -23,10 +23,10 @@ const analyzeCharacterArchetypesPrompt = ai.definePrompt({
   name: 'analyzeCharacterArchetypesPrompt',
   input: { schema: AnalyzeCharacterArchetypesInputSchema },
   output: { schema: AnalyzeCharacterArchetypesOutputSchema },
-  prompt: (input) => `You are an expert in literary analysis. Your task is to identify the character archetypes in the following story text. For each character, identify their archetype (e.g., Hero, Mentor, Trickster) and provide a brief justification for your choice.
+  prompt: `You are an expert in literary analysis. Your task is to identify the character archetypes in the following story text. For each character, identify their archetype (e.g., Hero, Mentor, Trickster) and provide a brief justification for your choice.
 
 **Story Text:**
-${input.storyText}
+{{storyText}}
 
 **Character Archetypes:**`
 });
