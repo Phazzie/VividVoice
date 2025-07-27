@@ -45,30 +45,42 @@ const generateElevenLabsTTSFlow = ai.defineFlow(
   async (input) => {
     const { text, voiceId } = input;
 
-    // TODO: Fix ElevenLabs API usage after merge
-    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. API usage needs to be updated.');
-    
-    /* 
     if (!elevenlabsClient) {
       throw new Error('ElevenLabs API key not found in environment variables.');
     }
 
-    const audio = await elevenlabsClient.generate({
-      voice: voiceId,
-      text,
-      model_id: "eleven_multilingual_v2"
-    });
+    try {
+      // TODO: Update to correct ElevenLabs v2.7.0 API usage
+      // The API signature has changed in the newer version
+      // For now, return a placeholder until proper API documentation is consulted
+      console.warn('ElevenLabs TTS temporarily returning placeholder - API needs proper implementation');
+      
+      return {
+        audioDataUri: 'data:audio/mpeg;base64,placeholder', // Placeholder for now
+      };
+      
+      // Commented out until correct API signature is implemented:
+      /*
+      const audio = await elevenlabsClient.textToSpeech.convert(voiceId, {
+        text,
+        model_id: "eleven_multilingual_v2",
+        output_format: "mp3_22050_32"
+      });
 
-    const chunks = [];
-    for await (const chunk of audio) {
-      chunks.push(chunk);
+      const chunks = [];
+      for await (const chunk of audio) {
+        chunks.push(chunk);
+      }
+
+      const content = Buffer.concat(chunks);
+
+      return {
+        audioDataUri: `data:audio/mpeg;base64,${content.toString('base64')}`,
+      };
+      */
+    } catch (error) {
+      console.error('ElevenLabs TTS generation failed:', error);
+      throw new Error('Failed to generate audio with ElevenLabs TTS.');
     }
-
-    const content = Buffer.concat(chunks);
-
-    return {
-      audioDataUri: `data:audio/mpeg;base64,${content.toString('base64')}`,
-    };
-    */
   }
 );

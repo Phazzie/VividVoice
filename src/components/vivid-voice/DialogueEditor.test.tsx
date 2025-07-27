@@ -2,8 +2,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DialogueEditor, emotionOptions } from './DialogueEditor';
-import { userEvent } from '@testing-library/user-event';
-import { Character } from '@/lib/actions';
+import userEvent from '@testing-library/user-event';
+import { Character, LiteraryDevice, Trope, ShowDontTellSuggestion, ConsistencyIssue, SubtextAnalysis, SoundEffectWithUrl } from '@/lib/actions';
 
 // Mock child components that are complex and not relevant to this test
 vi.mock('@/components/vivid-voice/LiteraryAnalysis', () => ({
@@ -37,6 +37,26 @@ vi.mock('@/components/vivid-voice/PerspectiveShifter', () => ({
     PerspectiveShifter: () => <div>PerspectiveShifter</div>
 }));
 
+// Mock authentication context
+vi.mock('@/contexts/AuthContext', () => ({
+    useAuth: () => ({ user: null })
+}));
+
+// Mock toast hook
+vi.mock('@/hooks/use-toast', () => ({
+    useToast: () => ({ toast: vi.fn() })
+}));
+
+// Mock actions
+vi.mock('@/lib/actions', () => ({
+    generateElevenLabsAudio: vi.fn().mockResolvedValue('mock-audio-data-uri')
+}));
+
+// Mock data
+vi.mock('@/lib/data', () => ({
+    saveStory: vi.fn()
+}));
+
 
 const mockSegments = [
   { character: 'Narrator', dialogue: 'The beginning.', emotion: 'Neutral' },
@@ -57,13 +77,14 @@ const mockDialogueDynamics = {
     pacing: { overallWordsPerTurn: 0, characterPacing: [] },
     summary: 'A summary'
 };
-const mockLiteraryDevices = [];
+const mockLiteraryDevices: LiteraryDevice[] = [];
 const mockPacing = { segments: [] };
-const mockTropes = [];
-const mockShowDontTell = [];
-const mockConsistency = [];
-const mockSubtext = [];
-const mockSoundEffects = [];
+const mockTropes: Trope[] = [];
+const mockShowDontTell: ShowDontTellSuggestion[] = [];
+const mockConsistency: ConsistencyIssue[] = [];
+const mockSubtext: SubtextAnalysis[] = [];
+const mockSoundEffects: SoundEffectWithUrl[] = [];
+const mockAnalysisErrors: Record<string, string> = {};
 
 
 describe('DialogueEditor', () => {
@@ -81,6 +102,7 @@ describe('DialogueEditor', () => {
     consistencyIssues: mockConsistency,
     subtextAnalyses: mockSubtext,
     soundEffects: mockSoundEffects,
+    analysisErrors: mockAnalysisErrors,
     onGenerateAudio: () => {},
     isLoading: false,
     onStorySave: () => {},
