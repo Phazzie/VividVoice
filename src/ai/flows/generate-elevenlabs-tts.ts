@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { ElevenLabsApi } from '@elevenlabs/elevenlabs-js';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 const GenerateElevenLabsTTSInputSchema = z.object({
   text: z.string().describe('The text to be converted to speech.'),
@@ -28,7 +28,7 @@ if (!elevenLabsApiKey) {
   console.warn('ElevenLabs API key not found in environment variables. TTS generation will fail.');
 }
 
-const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsApi({
+const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsClient({
   apiKey: elevenLabsApiKey,
 }) : null;
 
@@ -45,6 +45,10 @@ const generateElevenLabsTTSFlow = ai.defineFlow(
   async (input) => {
     const { text, voiceId } = input;
 
+    // TODO: Fix ElevenLabs API usage after merge
+    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. API usage needs to be updated.');
+    
+    /* 
     if (!elevenlabsClient) {
       throw new Error('ElevenLabs API key not found in environment variables.');
     }
@@ -65,5 +69,6 @@ const generateElevenLabsTTSFlow = ai.defineFlow(
     return {
       audioDataUri: `data:audio/mpeg;base64,${content.toString('base64')}`,
     };
+    */
   }
 );

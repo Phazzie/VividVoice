@@ -71,7 +71,7 @@ const characterChatFlow = ai.defineFlow(
         // If no specific documents for the character, use all documents
         vectorStore = await FaissStore.fromDocuments(
           allDocs,
-          new GoogleGenerativeAiEmbeddings({
+          new GoogleGenerativeAIEmbeddings({
             apiKey: process.env.GOOGLE_GENAI_API_KEY,
             model: 'text-embedding-004',
           })
@@ -79,7 +79,7 @@ const characterChatFlow = ai.defineFlow(
       } else {
         vectorStore = await FaissStore.fromDocuments(
           characterDocs,
-          new GoogleGenerativeAiEmbeddings({
+          new GoogleGenerativeAIEmbeddings({
             apiKey: process.env.GOOGLE_GENAI_API_KEY,
             model: 'text-embedding-004',
           })
