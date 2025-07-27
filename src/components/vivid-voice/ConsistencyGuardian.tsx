@@ -45,7 +45,7 @@ export function ConsistencyGuardian({ issues, error }: { issues: ConsistencyIssu
                         <div key={index} className="p-4 rounded-lg bg-muted/50 border border-border/50">
                             <h3 className="font-headline text-lg text-destructive">{issue.issue}</h3>
                             <blockquote className="border-l-4 border-destructive pl-4 my-2">
-                                <p className="font-body italic">"{issue.quote}"</p>
+                                <p className="font-body italic" data-testid="quote">"{issue.quote}"</p>
                             </blockquote>
                             <p className="text-sm text-muted-foreground">{issue.explanation}</p>
                         </div>

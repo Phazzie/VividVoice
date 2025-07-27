@@ -19,7 +19,7 @@ describe('ShowDontTell', () => {
         render(<ShowDontTell suggestions={mockSuggestions} onApplySuggestion={onApply} />);
 
         expect(screen.getByText('Original "Telling" Sentence:')).toBeInTheDocument();
-        expect(screen.getByText(/"She was angry."/i)).toBeInTheDocument();
+        expect(screen.getByTestId('telling-sentence')).toHaveTextContent("She was angry.");
         expect(screen.getByText('"Showing" Suggestion:')).toBeInTheDocument();
         expect(screen.getByText('Her knuckles turned white.')).toBeInTheDocument();
     });

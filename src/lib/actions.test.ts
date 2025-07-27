@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { 
     getParsedStory,
@@ -15,6 +14,7 @@ import {
     analyzeSubtext,
     shiftPerspective,
     getSoundDesign,
+    generateElevenLabsAudio,
     type DialogueSegment,
     type Character,
 } from './actions';
@@ -28,12 +28,13 @@ vi.mock('@/ai/flows/analyze-dialogue-dynamics', () => ({ analyzeDialogueDynamics
 vi.mock('@/ai/flows/trope-inverter', () => ({ invertTropes: vi.fn() }));
 vi.mock('@/ai/flows/character-chat', () => ({ characterChat: vi.fn() }));
 vi.mock('@/ai/flows/unreliable-narrator', () => ({ applyNarratorBias: vi.fn() }));
-vi.mock('@/ai/flows/analyze-pacing', () => ({ analyzePacing: vi.fn() }));
+vi.mock('@/ai/flows/analyze-pacing', () => ({ analyzeStoryPacing: vi.fn() }));
 vi.mock('@/ai/flows/show-dont-tell', () => ({ getShowDontTellSuggestions: vi.fn() }));
 vi.mock('@/ai/flows/consistency-guardian', () => ({ findInconsistencies: vi.fn() }));
 vi.mock('@/ai/flows/analyze-subtext', () => ({ analyzeSubtext: vi.fn() }));
 vi.mock('@/ai/flows/shift-perspective', () => ({ shiftPerspective: vi.fn() }));
 vi.mock('@/ai/flows/generate-sound-design', () => ({ generateSoundDesign: vi.fn() }));
+vi.mock('@/ai/flows/generate-elevenlabs-tts', () => ({ generateElevenLabsTTS: vi.fn() }));
 
 
 // We need to import the mocked flows *after* the vi.mock call
@@ -45,12 +46,13 @@ import { analyzeDialogueDynamics as analyzeDialogueDynamicsFlow } from '@/ai/flo
 import { invertTropes as invertTropesFlow } from '@/ai/flows/trope-inverter';
 import { characterChat as characterChatFlow } from '@/ai/flows/character-chat';
 import { applyNarratorBias as applyNarratorBiasFlow } from '@/ai/flows/unreliable-narrator';
-import { analyzePacing as analyzePacingFlow } from '@/ai/flows/analyze-pacing';
+import { analyzeStoryPacing as analyzeStoryPacingFlow } from '@/ai/flows/analyze-pacing';
 import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/ai/flows/show-dont-tell';
 import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
+import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 
 
 describe('Server Actions Tests', () => {
@@ -221,11 +223,11 @@ describe('Server Actions Tests', () => {
         it('should call the analyze pacing flow and return its result', async () => {
             const storyText = "Pacing test.";
             const mockResult = { segments: [{ type: 'Narration', wordCount: 10 }] };
-            (analyzePacingFlow as vi.Mock).mockResolvedValue(mockResult);
+            (analyzeStoryPacingFlow as vi.Mock).mockResolvedValue(mockResult);
 
             const result = await analyzeStoryPacing(storyText);
 
-            expect(analyzePacingFlow).toHaveBeenCalledWith({ storyText });
+            expect(analyzeStoryPacingFlow).toHaveBeenCalledWith({ storyText });
             expect(result).toEqual(mockResult);
         });
     });
@@ -300,6 +302,37 @@ describe('Server Actions Tests', () => {
 
             expect(generateSoundDesignFlow).toHaveBeenCalledWith({ storyText });
             expect(result).toEqual([{ ...mockResult.soundEffects[0], soundUrl: placeholderSoundUrl }]);
+        });
+    });
+
+    // Test for: `generateElevenLabsAudio` action
+    describe('generateElevenLabsAudio', () => {
+        it('should call the elevenlabs TTS flow and return its result', async () => {
+            const text = "Hello";
+            const voiceId = "v1";
+            const mockResult = { audioUrl: "some-url" };
+            (generateElevenLabsTTSFlow as vi.Mock).mockResolvedValue(mockResult);
+
+            const result = await generateElevenLabsAudio(text, voiceId);
+
+            expect(generateElevenLabsTTSFlow).toHaveBeenCalledWith({ text, voiceId });
+            expect(result).toEqual(mockResult);
+        });
+
+        it('should throw an error if text is empty', async () => {
+            await expect(generateElevenLabsAudio('', 'v1')).rejects.toThrow('Validation Error: Text cannot be empty.');
+        });
+
+        it('should throw an error if voiceId is empty', async () => {
+            await expect(generateElevenLabsAudio('text', '')).rejects.toThrow('Validation Error: Voice ID cannot be empty.');
+        });
+
+        it('should throw a generic error if the TTS flow fails', async () => {
+            const text = "Hello";
+            const voiceId = "v1";
+            (generateElevenLabsTTSFlow as vi.Mock).mockRejectedValue(new Error('AI failed'));
+
+            await expect(generateElevenLabsAudio(text, voiceId)).rejects.toThrow('Failed to generate audio.');
         });
     });
 });

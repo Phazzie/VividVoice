@@ -14,8 +14,17 @@ vi.mock('recharts', async () => {
     return {
         ...OriginalRecharts,
         ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-            <div style={{ width: 800, height: 400 }}>{children}</div>
+            <div className="recharts-responsive-container" style={{ width: '100%', height: '100%' }}>
+                {children}
+            </div>
         ),
+        AreaChart: ({ children }: { children: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
+        Area: ({ children }: { children: React.ReactNode }) => <div data-testid="area">{children}</div>,
+        XAxis: () => <div data-testid="x-axis" />,
+        YAxis: () => <div data-testid="y-axis" />,
+        Tooltip: () => <div data-testid="tooltip" />,
+        Legend: () => <div data-testid="legend" />,
+        CartesianGrid: () => <div data-testid="cartesian-grid" />,
     };
 });
 

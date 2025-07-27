@@ -18,7 +18,7 @@ describe('LiteraryAnalysisTab', () => {
         render(<LiteraryAnalysisTab devices={mockDevices} />);
 
         expect(screen.getByText('Metaphor')).toBeInTheDocument();
-        expect(screen.getByText(/"The sun was a golden eye"/i)).toBeInTheDocument();
+        expect(screen.getByTestId('quote')).toHaveTextContent("The sun was a golden eye");
         expect(screen.getByText('The sun is compared to an eye.')).toBeInTheDocument();
     });
 

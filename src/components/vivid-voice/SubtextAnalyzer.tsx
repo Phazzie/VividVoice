@@ -51,7 +51,7 @@ export function SubtextAnalyzer({ analyses, error }: { analyses: SubtextAnalysis
                                     <div className="w-2 h-8 rounded-full" style={{backgroundColor: getCharacterColor(analysis.character)}}></div>
                                     <h3 className="font-headline text-xl" style={{color: getCharacterColor(analysis.character)}}>{analysis.character} says:</h3>
                                 </div>
-                                <p className="font-body text-lg italic text-foreground/90 pl-5">"{analysis.dialogue}"</p>
+                                <p className="font-body text-lg italic text-foreground/90 pl-5" data-testid="dialogue">"{analysis.dialogue}"</p>
                            </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>

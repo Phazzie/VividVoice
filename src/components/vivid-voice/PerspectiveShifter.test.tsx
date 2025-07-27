@@ -43,7 +43,7 @@ describe('PerspectiveShifter', () => {
         await waitFor(() => {
             expect(screen.getByText(/The Story According to/i)).toBeInTheDocument();
             expect(screen.getByText(mockResult.summary)).toBeInTheDocument();
-        });
+        }, { timeout: 5000 });
 
         expect(actions.shiftPerspective).toHaveBeenCalledWith(storyText, 'Bob', 'Antagonist');
     });

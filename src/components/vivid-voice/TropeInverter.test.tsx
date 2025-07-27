@@ -17,7 +17,7 @@ describe('TropeInverter', () => {
         }];
         render(<TropeInverter tropes={mockTropes} />);
 
-        expect(screen.getByText('The Chosen One')).toBeInTheDocument();
+        expect(screen.getByTestId('trope-title')).toHaveTextContent("The Chosen One");
         expect(screen.getByText('Inversion Suggestion:')).toBeInTheDocument();
         expect(screen.getByText('Turns out, he was chosen by the villains.')).toBeInTheDocument();
     });

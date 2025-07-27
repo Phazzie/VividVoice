@@ -20,7 +20,7 @@ describe('SubtextAnalyzer', () => {
         render(<SubtextAnalyzer analyses={mockAnalyses} />);
 
         expect(screen.getByText('Alice says:')).toBeInTheDocument();
-        expect(screen.getByText(/"Fine."/i)).toBeInTheDocument();
+        expect(screen.getByTestId('dialogue')).toHaveTextContent("Fine.");
         expect(screen.getByText('Everything is not okay.')).toBeInTheDocument();
     });
 

@@ -18,7 +18,7 @@ describe('ConsistencyGuardian', () => {
         render(<ConsistencyGuardian issues={mockIssues} />);
 
         expect(screen.getByText('Character eye color changed')).toBeInTheDocument();
-        expect(screen.getByText(/"Her eyes were blue. ... her eyes were brown."/i)).toBeInTheDocument();
+        expect(screen.getByTestId('quote')).toHaveTextContent("Her eyes were blue. ... her eyes were brown.");
         expect(screen.getByText('The character\'s eye color changes without explanation.')).toBeInTheDocument();
     });
 

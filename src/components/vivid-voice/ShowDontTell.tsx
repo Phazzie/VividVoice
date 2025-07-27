@@ -65,7 +65,7 @@ export function ShowDontTell({ suggestions, onApplySuggestion, error }: { sugges
                         <Card key={index} className="bg-muted/30">
                             <CardHeader>
                                 <CardDescription>Original "Telling" Sentence:</CardDescription>
-                                <CardTitle className="text-accent font-normal text-lg font-body italic">
+                                <CardTitle className="text-accent font-normal text-lg font-body italic" data-testid="telling-sentence">
                                    "{suggestion.tellingSentence}"
                                 </CardTitle>
                             </CardHeader>

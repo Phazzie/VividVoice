@@ -45,7 +45,7 @@ export function TropeInverter({ tropes, error }: { tropes: Trope[], error?: stri
                     {tropes.map((trope, index) => (
                         <Card key={index} className="bg-muted/30">
                             <CardHeader>
-                                <CardTitle className="text-accent">{trope.trope}</CardTitle>
+                                <CardTitle className="text-accent" data-testid="trope-title">{trope.trope}</CardTitle>
                                 <CardDescription className="font-body italic text-base pt-2">
                                    "{trope.quote}"
                                 </CardDescription>
