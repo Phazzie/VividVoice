@@ -8,8 +8,14 @@
  */
 
 import {
-  parseDialogue as parseDialogueFlow,
-} from '@/ai/flows/parse-dialogue';
+  storyParser,
+} from '@/ai/flows/storyParser';
+import {
+  castingDirector,
+} from '@/ai/flows/castingDirector';
+import {
+  emotionTagger,
+} from '@/ai/flows/emotionTagger';
 import {
   type DialogueSegment as ImportedDialogueSegment,
   type Character as ImportedCharacter,
@@ -46,6 +52,7 @@ import {
   type SoundEffect as ImportedSoundEffect,
   type TranscriptSegment as ImportedTranscriptSegment,
 } from '@/ai/schemas';
+import { getStoryFromDB, updateStoryInDB } from '@/lib/data';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
@@ -68,151 +75,28 @@ export type { ChatMessage, NarratorBiasRange };
  */
 export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
 
-/**
- * Parses the dialogue from a story text. This is the first critical step in the story
- * processing pipeline. It now generates rich character profiles upfront.
- * @param storyText The raw story text.
- * @returns A promise resolving to the parsed segments and characters.
- */
-export async function getFullStoryAnalysis(storyText: string): Promise<{
-  segments: DialogueSegment[];
-  characters: Character[];
-  characterPortraits: CharacterPortrait[];
-  dialogueDynamics: DialogueDynamics;
-  literaryDevices: { devices: LiteraryDevice[] };
-  pacing: { segments: PacingSegment[] };
-  tropes: { tropes: Trope[] };
-  showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
-  consistencyIssues: { issues: ConsistencyIssue[] };
-  subtextAnalyses: { analyses: SubtextAnalysis[] };
-  soundEffects: SoundEffectWithUrl[] | null;
-  errors: Record<string, string>;
-}> {
-  console.log('Starting full story analysis...');
-  if (!storyText.trim()) {
-    const errorMsg = 'Validation Error: Story text cannot be empty.';
-    console.error({ action: 'getFullStoryAnalysis', error: errorMsg });
-    throw new Error(errorMsg);
-  }
+export async function processStoryAndGenerateAudio(storyId: string) {
+  // 1. Get the latest story data
+  const story = await getStoryFromDB(storyId);
+  const rawText = story.text;
 
-  try {
-    // 1. Get the foundational parsed story
-    const parsedStory = await getParsedStory(storyText);
-    if (!parsedStory || !parsedStory.segments || parsedStory.segments.length === 0) {
-      const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
-      console.error({ action: 'getFullStoryAnalysis', error: errorMsg });
-      throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
-    }
+  // 2. Run the Story Parser
+  const parsedStory = await storyParser({ storyText: rawText });
 
-    const { segments, characters } = parsedStory;
+  // 3. Run the Casting Director
+  const castedStory = await castingDirector(parsedStory);
 
-    // 2. Analyze emotional tone for each segment
-    const segmentsWithEmotions = await Promise.all(
-      segments.map(async (segment, index) => {
-        if (segment.character === 'Narrator') {
-          return segment;
-        }
-        const context = segments.slice(Math.max(0, index - 2), Math.min(segments.length, index + 3)).map(s => `${s.character}: ${s.dialogue}`).join('\n');
-        const { emotion } = await analyzeEmotionalToneFlow({ dialogue: segment.dialogue, context });
-        return { ...segment, emotion };
-      })
-    );
+  // 4. Run the new Emotion Tagger
+  const finalStoryWithEmotions = await emotionTagger({ ...parsedStory, ...castedStory });
 
-    // 3. Orchestrate all other analyses in parallel
-    const results = await Promise.allSettled([
-      getCharacterPortraits(characters),
-      analyzeDialogueDynamicsFlow({ storyText }),
-      analyzeLiteraryDevicesFlow({ storyText }),
-      analyzeStoryPacingFlow({ storyText }),
-      invertTropesFlow({ storyText }),
-      getShowDontTellSuggestionsFlow({ storyText }),
-      findInconsistenciesFlow({ storyText }),
-      analyzeSubtextFlow({ storyText }),
-      // getSoundDesign(storyText), // Temporarily disabled - missing flow
-    ]);
+  // 5. Update Firestore with the fully processed story
+  await updateStoryInDB(storyId, finalStoryWithEmotions);
 
-    const [
-      characterPortraitsResult,
-      dialogueDynamicsResult,
-      literaryDevicesResult,
-      pacingResult,
-      tropesResult,
-      showDontTellSuggestionsResult,
-      consistencyIssuesResult,
-      subtextAnalysesResult,
-      // soundEffects, // Temporarily disabled
-    ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
+  // 6. Generate the final audio using the now-complete data
+  const { audioDataUri } = await generateMultiVoiceTTS({ ...finalStoryWithEmotions, ...castedStory });
 
-    const characterPortraits = characterPortraitsResult;
-    const dialogueDynamics = dialogueDynamicsResult;
-    const literaryDevices = literaryDevicesResult;
-    const pacing = pacingResult;
-    const tropes = tropesResult;
-    const showDontTellSuggestions = showDontTellSuggestionsResult;
-    const consistencyIssues = consistencyIssuesResult;
-    const subtextAnalyses = subtextAnalysesResult;
-
-    const errors: Record<string, string> = {};
-    if (results[0].status === 'rejected') errors.characterPortraits = results[0].reason.message;
-    if (results[1].status === 'rejected') errors.dialogueDynamics = results[1].reason.message;
-    if (results[2].status === 'rejected') errors.literaryDevices = results[2].reason.message;
-    if (results[3].status === 'rejected') errors.pacing = results[3].reason.message;
-    if (results[4].status === 'rejected') errors.tropes = results[4].reason.message;
-    if (results[5].status === 'rejected') errors.showDontTell = results[5].reason.message;
-    if (results[6].status === 'rejected') errors.consistency = results[6].reason.message;
-    if (results[7].status === 'rejected') errors.subtext = results[7].reason.message;
-    // if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message; // Temporarily disabled
-
-    console.log('Full story analysis successful.');
-
-    // 4. Consolidate and return all results
-    return {
-      segments: segmentsWithEmotions,
-      characters,
-      characterPortraits: (characterPortraits as CharacterPortrait[]) || [],
-      dialogueDynamics: (dialogueDynamics as any) || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
-      literaryDevices: (literaryDevices as any) || { devices: [] },
-      pacing: (pacing as any) || { segments: [] },
-      tropes: (tropes as any) || { tropes: [] },
-      showDontTellSuggestions: (showDontTellSuggestions as any) || { suggestions: [] },
-      consistencyIssues: (consistencyIssues as any) || { issues: [] },
-      subtextAnalyses: (subtextAnalyses as any) || { analyses: [] },
-      soundEffects: null, // Temporarily disabled
-      errors,
-    };
-  } catch (error) {
-    console.error('Fatal Error during getFullStoryAnalysis action:', { error });
-    throw new Error('Failed to process the story.');
-  }
-}
-
-/**
- * Parses the dialogue from a story text. This is the first critical step in the story
- * processing pipeline. It now generates rich character profiles upfront.
- * @param storyText The raw story text.
- * @returns A promise resolving to the parsed segments and characters.
- */
-export async function getParsedStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
-    console.log('Starting story parsing and comprehensive character profile generation...');
-     if (!storyText.trim()) {
-        const errorMsg = 'Validation Error: Story text cannot be empty.';
-        console.error({ action: 'getParsedStory', error: errorMsg });
-        throw new Error(errorMsg);
-    }
-
-    try {
-        const parsedResult = await parseDialogueFlow({ storyText });
-         if (!parsedResult || !parsedResult.segments || parsedResult.segments.length === 0) {
-            const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
-            console.error({ action: 'getParsedStory', error: errorMsg });
-            throw new Error('Could not parse dialogue. Please ensure it has standard dialogue formatting.');
-        }
-        console.log('Story parsing and character profiling successful.');
-        return parsedResult;
-    } catch (error) {
-        console.error('Fatal Error during getParsedStory action:', { error });
-        throw new Error('Failed to process the story.');
-    }
+  // 7. Return the URL for the player
+  return audioDataUri;
 }
 
 /**
