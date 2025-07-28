@@ -1,23 +1,5 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { 
-    getParsedStory,
-    getCharacterPortraits,
-    generateMultiVoiceSceneAudio,
-    analyzeLiteraryDevices,
-    analyzeDialogueDynamics,
-    invertTropes,
-    getCharacterResponse,
-    getBiasedStory,
-    analyzeStoryPacing,
-    getShowDontTellSuggestions,
-    findInconsistencies,
-    analyzeSubtext,
-    shiftPerspective,
-    getSoundDesign,
-    type DialogueSegment,
-    type Character,
-} from './actions';
 
 // Mock the AI flows to isolate the actions
 vi.mock('@/ai/flows/parse-dialogue', () => ({ parseDialogue: vi.fn() }));
@@ -34,6 +16,8 @@ vi.mock('@/ai/flows/consistency-guardian', () => ({ findInconsistencies: vi.fn()
 vi.mock('@/ai/flows/analyze-subtext', () => ({ analyzeSubtext: vi.fn() }));
 vi.mock('@/ai/flows/shift-perspective', () => ({ shiftPerspective: vi.fn() }));
 vi.mock('@/ai/flows/generate-sound-design', () => ({ generateSoundDesign: vi.fn() }));
+vi.mock('@/ai/flows/analyze-emotional-tone', () => ({ analyzeEmotionalTone: vi.fn() }));
+vi.mock('@/ai/flows/generate-elevenlabs-tts', () => ({ generateElevenLabsTTS: vi.fn() }));
 
 
 // We need to import the mocked flows *after* the vi.mock call
@@ -51,6 +35,57 @@ import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consi
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
 import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
+import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
+import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
+
+import {
+    getParsedStory,
+    getFullStoryAnalysis,
+    getCharacterPortraits,
+    generateMultiVoiceSceneAudio,
+    generateElevenLabsAudio,
+    analyzeLiteraryDevices,
+    analyzeDialogueDynamics,
+    invertTropes,
+    getCharacterResponse,
+    getBiasedStory,
+    analyzeStoryPacing,
+    getShowDontTellSuggestions,
+    findInconsistencies,
+    analyzeSubtext,
+    shiftPerspective,
+    getSoundDesign,
+    type DialogueSegment,
+    type Character,
+} from './actions';
+
+// Helper creators for mock data
+function createMockParsedStory() {
+    return {
+        segments: [
+            { character: 'Alice', dialogue: 'Hi', emotion: 'Neutral' },
+            { character: 'Bob', dialogue: 'Hello', emotion: 'Neutral' },
+        ],
+        characters: [
+            { name: 'Alice', description: 'desc', voiceId: 'v1' },
+            { name: 'Bob', description: 'desc', voiceId: 'v2' },
+        ] as Character[],
+    };
+}
+
+function createMockAnalysisResult() {
+    return {
+        characterPortraits: [{ name: 'Alice', portraitDataUri: 'uri' }],
+        dialogueDynamics: { summary: 'sum', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
+        literaryDevices: { devices: [] },
+        pacing: { segments: [] },
+        tropes: { tropes: [] },
+        showDontTellSuggestions: { suggestions: [] },
+        consistencyIssues: { issues: [] },
+        subtextAnalyses: { analyses: [] },
+        soundEffects: [] as any[],
+    };
+}
 
 
 describe('Server Actions Tests', () => {
@@ -300,6 +335,91 @@ describe('Server Actions Tests', () => {
 
             expect(generateSoundDesignFlow).toHaveBeenCalledWith({ storyText });
             expect(result).toEqual([{ ...mockResult.soundEffects[0], soundUrl: placeholderSoundUrl }]);
+        });
+    });
+
+    // Test for: `getFullStoryAnalysis` action
+    describe('getFullStoryAnalysis', () => {
+        it('should orchestrate all analysis flows and return combined results', async () => {
+            const storyText = 'story';
+            const parsed = createMockParsedStory();
+            (parseDialogueFlow as vi.Mock).mockResolvedValue(parsed);
+            (analyzeEmotionalToneFlow as vi.Mock).mockResolvedValue({ emotion: 'Joy' });
+            const analysis = createMockAnalysisResult();
+            (generateCharacterPortraitsFlow as vi.Mock).mockResolvedValue(analysis.characterPortraits);
+            (analyzeDialogueDynamicsFlow as vi.Mock).mockResolvedValue(analysis.dialogueDynamics);
+            (analyzeLiteraryDevicesFlow as vi.Mock).mockResolvedValue(analysis.literaryDevices);
+            (analyzePacingFlow as vi.Mock).mockResolvedValue(analysis.pacing);
+            (invertTropesFlow as vi.Mock).mockResolvedValue(analysis.tropes);
+            (getShowDontTellSuggestionsFlow as vi.Mock).mockResolvedValue(analysis.showDontTellSuggestions);
+            (findInconsistenciesFlow as vi.Mock).mockResolvedValue(analysis.consistencyIssues);
+            (analyzeSubtextFlow as vi.Mock).mockResolvedValue(analysis.subtextAnalyses);
+            (generateSoundDesignFlow as vi.Mock).mockResolvedValue({ soundEffects: analysis.soundEffects });
+
+            const result = await getFullStoryAnalysis(storyText);
+
+            expect(parseDialogueFlow).toHaveBeenCalledWith({ storyText });
+            expect(analyzeEmotionalToneFlow).toHaveBeenCalledTimes(parsed.segments.length);
+            expect(generateCharacterPortraitsFlow).toHaveBeenCalledWith({ characters: parsed.characters });
+            expect(analyzeDialogueDynamicsFlow).toHaveBeenCalledWith({ storyText });
+            expect(analyzeLiteraryDevicesFlow).toHaveBeenCalledWith({ storyText });
+            expect(analyzePacingFlow).toHaveBeenCalledWith({ storyText });
+            expect(invertTropesFlow).toHaveBeenCalledWith({ storyText });
+            expect(getShowDontTellSuggestionsFlow).toHaveBeenCalledWith({ storyText });
+            expect(findInconsistenciesFlow).toHaveBeenCalledWith({ storyText });
+            expect(analyzeSubtextFlow).toHaveBeenCalledWith({ storyText });
+            expect(generateSoundDesignFlow).toHaveBeenCalledWith({ storyText });
+
+            const expectedSegments = parsed.segments.map(s => ({ ...s, emotion: 'Joy' }));
+            expect(result).toEqual({
+                segments: expectedSegments,
+                characters: parsed.characters,
+                ...analysis,
+                errors: {},
+            });
+        });
+
+        it('should capture errors from failed analysis flows', async () => {
+            const storyText = 'story';
+            const parsed = createMockParsedStory();
+            (parseDialogueFlow as vi.Mock).mockResolvedValue(parsed);
+            (analyzeEmotionalToneFlow as vi.Mock).mockResolvedValue({ emotion: 'Joy' });
+            const analysis = createMockAnalysisResult();
+            (generateCharacterPortraitsFlow as vi.Mock).mockResolvedValue(analysis.characterPortraits);
+            (analyzeDialogueDynamicsFlow as vi.Mock).mockRejectedValue(new Error('dyn fail'));
+            (analyzeLiteraryDevicesFlow as vi.Mock).mockResolvedValue(analysis.literaryDevices);
+            (analyzePacingFlow as vi.Mock).mockResolvedValue(analysis.pacing);
+            (invertTropesFlow as vi.Mock).mockResolvedValue(analysis.tropes);
+            (getShowDontTellSuggestionsFlow as vi.Mock).mockResolvedValue(analysis.showDontTellSuggestions);
+            (findInconsistenciesFlow as vi.Mock).mockResolvedValue(analysis.consistencyIssues);
+            (analyzeSubtextFlow as vi.Mock).mockResolvedValue(analysis.subtextAnalyses);
+            (generateSoundDesignFlow as vi.Mock).mockResolvedValue({ soundEffects: analysis.soundEffects });
+
+            const result = await getFullStoryAnalysis(storyText);
+
+            expect(result.errors).toEqual({ dialogueDynamics: 'dyn fail' });
+        });
+    });
+
+    // Test for: `generateElevenLabsAudio` action
+    describe('generateElevenLabsAudio', () => {
+        it('should call the ElevenLabs flow and return audio', async () => {
+            const text = 'hello';
+            const voiceId = '123';
+            (generateElevenLabsTTSFlow as vi.Mock).mockResolvedValue({ audioDataUri: 'audio' });
+
+            const result = await generateElevenLabsAudio(text, voiceId);
+
+            expect(generateElevenLabsTTSFlow).toHaveBeenCalledWith({ text, voiceId });
+            expect(result).toBe('audio');
+        });
+
+        it('should throw an error if the ElevenLabs flow fails', async () => {
+            const text = 'hello';
+            const voiceId = '123';
+            (generateElevenLabsTTSFlow as vi.Mock).mockRejectedValue(new Error('fail'));
+
+            await expect(generateElevenLabsAudio(text, voiceId)).rejects.toThrow('Failed to generate audio with ElevenLabs.');
         });
     });
 });
