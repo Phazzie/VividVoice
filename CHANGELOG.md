@@ -2,6 +2,29 @@
 
 This document tracks the major features and enhancements implemented in the Staging Stories application.
 
+## Version 1.5.0 - Merge Conflict Resolution & Enhanced AI Features
+
+### Major Features
+
+*   **Skeptical Wombat Theme Integration**: Successfully merged advanced AI analysis features including character archetypes, plot structure analysis, and comparison to literary classics.
+*   **Enhanced Character Chat System**: Upgraded character chat flow with improved story context integration, sophisticated vector-based retrieval, and enhanced prompt engineering for more authentic character interactions.
+*   **Advanced Prompt Engineering Updates**: All AI flows updated with latest prompt engineering techniques, including few-shot examples and more nuanced output controls.
+*   **Comprehensive Merge Conflict Resolution**: Successfully resolved complex multi-branch merge conflicts with detailed documentation and validation strategies.
+
+### Technical Improvements
+
+*   **Dependency Management**: Updated all dependencies including ElevenLabs TTS, LangChain community packages, and Google Genkit to latest versions.
+*   **Documentation Suite**: Added comprehensive conflict resolution documentation, CLI handoff guides, and detailed merge strategies for future reference.
+*   **Error Handling**: Improved error handling across all AI flows with better logging and user feedback.
+*   **Architecture Stability**: Maintained seam-driven architecture while integrating new features seamlessly.
+
+### New AI Analysis Features
+
+*   **Character Archetypes Analyzer**: New flow to identify and analyze character archetypes within stories.
+*   **Plot Structure Analysis**: Advanced analysis of story structure, pacing, and narrative elements.
+*   **Compare to Classics**: AI-powered comparison of user stories to classic literature for educational insights.
+*   **Enhanced Emotional Tone Analysis**: Updated with modern template syntax and improved accuracy.
+
 ## Version 1.4.0 - Advanced Prompt Engineering
 
 ### Major Features

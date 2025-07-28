@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { type LiteraryDevice, analyzeLiteraryDevices } from '@/lib/actions';
+import { type LiteraryDevice } from '@/lib/actions';
 import { Loader2, FlaskConical, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';

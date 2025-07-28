@@ -12,7 +12,50 @@ He's a curmudgeon. He's particular. He's seen it all, and he's not easily impres
 
 This isn't just text-to-speech. It's a full production studio.
 
-### Core Experience: The Director's Toolkit
+## Setup & Installation
+
+### Prerequisites
+- Node.js 18+ and npm
+- Firebase account
+- Google AI API key
+
+### Quick Start
+1. Clone the repository
+```bash
+git clone https://github.com/Phazzie/VividVoice.git
+cd VividVoice
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Environment Configuration
+Copy `.env.example` to `.env.local` and fill in your credentials:
+```bash
+cp .env.example .env.local
+```
+
+Required environment variables:
+- `NEXT_PUBLIC_FIREBASE_*` - Firebase configuration from your Firebase console
+- `GOOGLE_GENAI_API_KEY` - Google AI API key for Genkit
+- `ELEVENLABS_API_KEY` (optional) - For advanced TTS features
+
+### Development
+```bash
+npm run dev
+```
+
+The application will start at `http://localhost:3000`
+
+### Building
+```bash
+npm run build
+npm start
+```
+
+## Core Experience: The Director's Toolkit
 
 Bring your script from page to performance with our foundational features.
 

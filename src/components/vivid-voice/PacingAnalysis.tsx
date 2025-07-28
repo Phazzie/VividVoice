@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { type PacingSegment, analyzeStoryPacing } from '@/lib/actions';
+import { type PacingSegment } from '@/lib/actions';
 import { Loader2, AreaChart as AreaChartIcon, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

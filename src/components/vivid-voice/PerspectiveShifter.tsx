@@ -101,7 +101,7 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
                         The Story According to <span className="text-primary font-bold">{result.character}</span> (as the {result.role})
                     </h3>
                    <div className="p-6 rounded-lg bg-muted/50 border border-border/50">
-                        <p className="font-body text-lg leading-relaxed">{result.summary}</p>
+                        <p className="font-body text-lg leading-relaxed">{result.rewrittenText}</p>
                    </div>
                 </div>
             )}

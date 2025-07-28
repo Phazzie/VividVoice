@@ -140,7 +140,7 @@ export function StoryDisplay({ segments, characterPortraits, characters, storyTe
           {segments.map((segment, index) => (
             <div
               key={index}
-              ref={el => segmentRefs.current[index] = el}
+              ref={el => { segmentRefs.current[index] = el; }}
               id={`segment-${index}`}
               className={cn(
                 "flex gap-4 p-4 rounded-xl border transition-all duration-300 relative group",
