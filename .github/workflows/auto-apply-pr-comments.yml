@@ -1,0 +1,37 @@
+name: Auto-apply PR comments
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  auto-apply:
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/copilot')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issue from comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const comment_body = context.payload.comment.body;
+            const issue_title = `[Auto-generated] Address PR comment`;
+            const issue_body = `${comment_body}\n\nOriginally posted in #${context.payload.issue.number}`;
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issue_title,
+              body: issue_body
+            });
+            await github.rest.issues.add_labels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['copilot']
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: 'Assigned to @github-copilot'
+            });
