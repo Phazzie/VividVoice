@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -15,6 +14,7 @@ import { ShowDontTellSuggestionSchema } from '@/ai/schemas';
 
 const GetShowDontTellSuggestionsInputSchema = z.object({
   storyText: z.string().describe('The full text of the story to analyze.'),
+  style: z.string().optional().describe('An optional authorial style to emulate (e.g., "Ernest Hemingway", "Jane Austen").'),
 });
 export type GetShowDontTellSuggestionsInput = z.infer<typeof GetShowDontTellSuggestionsInputSchema>;
 
@@ -40,17 +40,26 @@ const getShowDontTellSuggestionsFlow = ai.defineFlow(
             name: 'showDontTellPrompt',
             input: {schema: GetShowDontTellSuggestionsInputSchema},
             output: {schema: GetShowDontTellSuggestionsOutputSchema},
-            prompt: `You are a creative writing instructor specializing in the "Show, Don't Tell" principle. Your task is to analyze the provided story text from the narrator.
+            prompt: `You are a creative writing instructor and a master of literary pastiche. Your task is to analyze the provided story text from the narrator.
 
 First, identify any sentences in the **narrator's text** that are "telling" the reader something instead of "showing" it. These are often sentences that state a character's emotion directly or summarize an event without providing sensory detail.
 
 For each "telling" sentence you find, you must provide:
 1.  The original 'tellingSentence'.
 2.  A creative and descriptive 'showingSuggestion' that rewrites the sentence into a full paragraph. The suggestion should convey the same information through actions, dialogue, internal thoughts, or sensory details. Make it vivid and engaging.
+{{#if style}}
+3.  The 'showingSuggestion' MUST be written in the distinct authorial style of **{{style}}**.
+{{/if}}
 
-**High-Quality Example:**
+**High-Quality Example (No Style):**
 - **Input "tellingSentence":** "She was very angry."
 - **Your "showingSuggestion" Output:** "Her knuckles turned white as she gripped the porcelain mug. She stared at the wall, her jaw a tight line of steel. 'Fine,' she clipped, the single word sharp enough to cut glass."
+
+**High-Quality Example (With Style):**
+- **Input "tellingSentence":** "She was very angry."
+- **Input "style":** "Ernest Hemingway"
+- **Your "showingSuggestion" Output:** "The woman held the mug. She held it tight. The knuckles were white. She looked at the wall. The jaw was set. 'Fine,' she said. The word was hard and clean."
+
 
 Return your findings as a JSON object with a 'suggestions' array. Focus only on the most clear-cut cases of "telling." If none are found, return an empty array.
 
