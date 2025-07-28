@@ -301,5 +301,13 @@ describe('Server Actions Tests', () => {
             expect(generateSoundDesignFlow).toHaveBeenCalledWith({ storyText });
             expect(result).toEqual([{ ...mockResult.soundEffects[0], soundUrl: placeholderSoundUrl }]);
         });
+
+        it('should return an empty array if the flow fails', async () => {
+            const storyText = 'A door creaked.';
+            (generateSoundDesignFlow as vi.Mock).mockRejectedValue(new Error('AI failed'));
+
+            const result = await getSoundDesign(storyText);
+            expect(result).toEqual([]);
+        });
     });
 });
