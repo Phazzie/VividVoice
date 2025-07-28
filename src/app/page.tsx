@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
+import { chunkTextByParagraph } from "@/lib/chunking";
 
 type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
@@ -32,7 +33,7 @@ interface FullAnalysis {
   soundEffects: SoundEffectWithUrl[];
 }
 
-export default function StagingStoriesPage() {
+function StagingStoriesPageContent() {
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const storyIdToLoad = searchParams.get('storyId');
@@ -68,7 +69,14 @@ export default function StagingStoriesPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyIdToLoad, user]);
+
+const CHUNK_THRESHOLD = 10000;
   const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
+    const isProUser = false; // Temporarily disabled pro features during merge
+    if (isProUser && newStoryText.length > CHUNK_THRESHOLD) {
+      return handleFullAnalysisChunked(newStoryText, existingStoryId);
+    }
+
     setAppState('analyzing');
     setError(null);
     setStoryId(existingStoryId);
@@ -79,11 +87,17 @@ export default function StagingStoriesPage() {
     try {
       const analysisResult = await getFullStoryAnalysis(newStoryText);
 
-      setFullAnalysis(analysisResult);
-      setStoryText(newStoryText);
-      setAnalysisErrors(analysisResult.errors);
+      // Ensure soundEffects is always an array
+      const normalizedResult = {
+        ...analysisResult,
+        soundEffects: analysisResult.soundEffects || []
+      };
 
-      const errorCount = Object.keys(analysisResult.errors).length;
+      setFullAnalysis(normalizedResult);
+      setStoryText(newStoryText);
+      setAnalysisErrors(normalizedResult.errors);
+
+      const errorCount = Object.keys(normalizedResult.errors).length;
       if (errorCount > 0) {
         toast({
           variant: "destructive",
@@ -114,12 +128,75 @@ export default function StagingStoriesPage() {
     }
   };
 
+  const handleFullAnalysisChunked = async (newStoryText: string, existingStoryId: string | null = null) => {
+    setAppState('analyzing');
+    setError(null);
+    setStoryId(existingStoryId);
+    setFullAnalysis(null);
+    setStoryText('');
+    setTranscript([]);
+
+    try {
+      const chunks = chunkTextByParagraph(newStoryText);
+      let combinedAnalysis: FullAnalysis = {
+        segments: [],
+        characters: [],
+        characterPortraits: [],
+        dialogueDynamics: { powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] }, summary: '' },
+        literaryDevices: { devices: [] },
+        pacing: { segments: [] },
+        tropes: { tropes: [] },
+        showDontTellSuggestions: { suggestions: [] },
+        consistencyIssues: { issues: [] },
+        subtextAnalyses: { analyses: [] },
+        soundEffects: [],
+      };
+      let combinedErrors: Record<string, string> = {};
+
+      for (const chunk of chunks) {
+        const analysisResult = await getFullStoryAnalysis(chunk);
+        combinedAnalysis.segments.push(...analysisResult.segments);
+        combinedAnalysis.characters.push(...analysisResult.characters);
+        combinedAnalysis.characterPortraits.push(...analysisResult.characterPortraits);
+        combinedAnalysis.literaryDevices.devices.push(...analysisResult.literaryDevices.devices);
+        combinedAnalysis.pacing.segments.push(...analysisResult.pacing.segments);
+        combinedAnalysis.tropes.tropes.push(...analysisResult.tropes.tropes);
+        combinedAnalysis.showDontTellSuggestions.suggestions.push(...analysisResult.showDontTellSuggestions.suggestions);
+        combinedAnalysis.consistencyIssues.issues.push(...analysisResult.consistencyIssues.issues);
+        combinedAnalysis.subtextAnalyses.analyses.push(...analysisResult.subtextAnalyses.analyses);
+        combinedAnalysis.soundEffects.push(...(analysisResult.soundEffects || []));
+        Object.assign(combinedErrors, analysisResult.errors);
+      }
+
+      // De-duplicate characters and portraits
+      const uniqueCharacters = Array.from(new Map(combinedAnalysis.characters.map(char => [char.name, char])).values());
+      combinedAnalysis.characters = uniqueCharacters;
+      const uniquePortraits = Array.from(new Map(combinedAnalysis.characterPortraits.map(p => [p.name, p])).values());
+      combinedAnalysis.characterPortraits = uniquePortraits;
+
+      setFullAnalysis(combinedAnalysis);
+      setStoryText(newStoryText);
+      setAnalysisErrors(combinedErrors);
+      setAppState('editing');
+    } catch (e: any) {
+      const errorMessage = e.message || "An unexpected error occurred during chunked analysis.";
+      setError(errorMessage);
+      setAppState('initial');
+      toast({
+        variant: "destructive",
+        title: "Chunked Analysis Error",
+        description: errorMessage,
+      });
+    }
+  };
+
   const handleGenerateAudio = async (editedSegments: DialogueSegment[]) => {
     setAppState('generating');
     setError(null);
     
     try {
       // Pass the rich character objects to the audio generation flow.
+      const characters = fullAnalysis?.characters || [];
       const { audioDataUri, transcript } = await generateMultiVoiceSceneAudio(editedSegments, characters);
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);
@@ -210,7 +287,7 @@ export default function StagingStoriesPage() {
              soundEffects={fullAnalysis.soundEffects || []}
              analysisErrors={analysisErrors}
              onGenerateAudio={handleGenerateAudio}
-             isLoading={appState === 'generating'}
+             isLoading={appState === ('generating' as AppState)}
              onStorySave={(id) => setStoryId(id)}
            />
          </div>
@@ -263,5 +340,13 @@ export default function StagingStoriesPage() {
         </footer>
       </div>
     </div>
+  );
+}
+
+export default function StagingStoriesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <StagingStoriesPageContent />
+    </Suspense>
   );
 }
