@@ -34,14 +34,27 @@ export const castingDirector = ai.defineFlow(
   async ({segments, characters}) => {
     const {output} = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview',
-      prompt: `You are a casting director for a major film studio. Your task is to cast voices for the characters in a story.
-        For each character, you must select a unique voice from the list of available voices.
-        Consider the character's personality, dialogue, and any description provided.
-        Return the list of characters with their assigned voiceId.
-        Available Voices: ${availableVoices.join(', ')}
-        Characters:
+      prompt: `You are a world-renowned casting director, known for your impeccable taste and ability to find the perfect voice for any character. Your task is to cast the voices for the characters in a story.
+
+        **Consider the following:**
+
+        *   **Character Archetype:** Is the character a hero, a villain, a mentor, a jester, etc.?
+        *   **Vocal Qualities:** What kind of voice would this character have? Is it deep, high-pitched, gravelly, smooth, etc.?
+        *   **Speech Patterns:** How does the character speak? Are they fast-paced, slow and deliberate, etc.?
+
+        **Instructions:**
+
+        *   For each character, select a unique voice from the list of available voices that best fits their personality and role in the story.
+        *   Provide a brief justification for your choice, explaining why the voice you selected is a good fit for the character.
+        *   Return the list of characters with their assigned voiceId.
+
+        **Available Voices:**
+        ${availableVoices.join(', ')}
+
+        **Characters:**
         ${JSON.stringify(characters)}
-        Segments:
+
+        **Segments:**
         ${JSON.stringify(segments)}
         `,
       output: {
