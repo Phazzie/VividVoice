@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { type Trope, invertTropes } from '@/lib/actions';
+import { type Trope } from '@/lib/actions';
 import { Loader2, Zap, AlertCircle, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

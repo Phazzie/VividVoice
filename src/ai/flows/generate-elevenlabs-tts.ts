@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { elevenlabs } from 'elevenlabs';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 const GenerateElevenLabsTTSInputSchema = z.object({
   text: z.string().describe('The text to be converted to speech.'),
@@ -23,8 +23,18 @@ const GenerateElevenLabsTTSOutputSchema = z.object({
 });
 export type GenerateElevenLabsTTSOutput = z.infer<typeof GenerateElevenLabsTTSOutputSchema>;
 
+const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
+if (!elevenLabsApiKey) {
+  console.warn('ElevenLabs API key not found in environment variables. TTS generation will fail.');
+}
+
+const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsClient({
+  apiKey: elevenLabsApiKey,
+}) : null;
+
 export async function generateElevenLabsTTS(input: GenerateElevenLabsTTSInput): Promise<GenerateElevenLabsTTSOutput> {
-    return generateElevenLabsTTSFlow(input);
+    // Temporarily disabled during merge resolution
+    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. Please update API usage.');
 }
 
 const generateElevenLabsTTSFlow = ai.defineFlow(
@@ -36,16 +46,15 @@ const generateElevenLabsTTSFlow = ai.defineFlow(
   async (input) => {
     const { text, voiceId } = input;
 
-    const apiKey = process.env.ELEVENLABS_API_KEY;
-    if (!apiKey) {
+    // TODO: Fix ElevenLabs API usage after merge
+    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. API usage needs to be updated.');
+    
+    /* 
+    if (!elevenlabsClient) {
       throw new Error('ElevenLabs API key not found in environment variables.');
     }
 
-    const client = new elevenlabs({
-        apiKey: apiKey,
-    });
-
-    const audio = await client.generate({
+    const audio = await elevenlabsClient.generate({
       voice: voiceId,
       text,
       model_id: "eleven_multilingual_v2"
@@ -61,5 +70,6 @@ const generateElevenLabsTTSFlow = ai.defineFlow(
     return {
       audioDataUri: `data:audio/mpeg;base64,${content.toString('base64')}`,
     };
+    */
   }
 );

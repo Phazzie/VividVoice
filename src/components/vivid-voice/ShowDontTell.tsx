@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { type ShowDontTellSuggestion, getShowDontTellSuggestions } from '@/lib/actions';
+import { type ShowDontTellSuggestion } from '@/lib/actions';
 import { Loader2, Eye, AlertCircle, Zap, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';

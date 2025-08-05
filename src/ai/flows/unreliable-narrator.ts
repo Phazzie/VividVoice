@@ -10,7 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { NarratorBiasSchema } from '@/ai/schemas';
+import { NarratorBiasSchema, NarratorBiasEnum } from '@/ai/schemas';
 
 const ApplyNarratorBiasInputSchema = z.object({
   storyText: z.string().describe('The original, unbiased text of the story.'),

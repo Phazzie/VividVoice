@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { type SubtextAnalysis, analyzeSubtext } from '@/lib/actions';
+import { type SubtextAnalysis } from '@/lib/actions';
 import { Loader2, MessageSquareQuote, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
