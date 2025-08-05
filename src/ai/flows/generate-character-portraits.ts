@@ -22,6 +22,7 @@ const CharacterPortraitSchema = z.object({
   name: z.string(),
   portraitDataUri: z.string().describe('The data URI of the generated portrait image.'),
 });
+export type CharacterPortrait = z.infer<typeof CharacterPortraitSchema>;
 
 const GenerateCharacterPortraitsOutputSchema = z.array(CharacterPortraitSchema);
 export type GenerateCharacterPortraitsOutput = z.infer<typeof GenerateCharacterPortraitsOutputSchema>;

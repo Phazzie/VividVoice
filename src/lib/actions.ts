@@ -15,13 +15,13 @@ import {
   type Character as ImportedCharacter,
 } from '@/ai/schemas';
 import {
-  generateCharacterPortraits as generateCharacterPortraitsFlow
+  generateCharacterPortraits as generateCharacterPortraitsFlow,
+  type CharacterPortrait as ImportedCharacterPortrait,
 } from '@/ai/flows/generate-character-portraits';
 import { generateMultiVoiceTTS } from '@/ai/flows/generate-multi-voice-tts';
 import { applyNarratorBias as applyNarratorBiasFlow } from '@/ai/flows/unreliable-narrator';
 // import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
-import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
 import { emotionTagger } from '@/ai/flows/emotionTagger';
 
 import {
@@ -32,6 +32,7 @@ import {
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
 export type Character = ImportedCharacter;
+export type CharacterPortrait = ImportedCharacterPortrait;
 /**
  * Parses the dialogue from a story text. This is the first critical step in the story
  * processing pipeline. It now generates rich character profiles upfront.
@@ -137,8 +138,7 @@ export async function getBiasedStory(storyText: string, bias: { startBias: strin
         throw new Error('Failed to apply narrator bias.');
     }
 }
-
-
+/**
  * @param text The text to be converted to speech.
  * @param voiceId The ElevenLabs voice ID to use.
  * @returns A promise resolving to the audio data URI.
@@ -162,8 +162,13 @@ export async function processStoryAndGenerateAudio(storyText: string): Promise<s
   if (!storyText.trim()) {
     throw new Error('Story text cannot be empty.');
   }
-  const { segments, characters } = await parseDialogueFlow({ storyText });
-  const { segments: emotionSegments } = await emotionTagger({ segments, characters });
-  const { audioDataUri } = await generateMultiVoiceTTS({ segments: emotionSegments, characters });
-  return audioDataUri;
+  try {
+    const { segments, characters } = await parseDialogueFlow({ storyText });
+    const { segments: emotionSegments } = await emotionTagger({ segments, characters });
+    const { audioDataUri } = await generateMultiVoiceTTS({ segments: emotionSegments, characters });
+    return audioDataUri;
+  } catch (error) {
+    console.error('Error in processStoryAndGenerateAudio action:', { error });
+    throw new Error('Failed to generate audio for the story.');
+  }
 }
