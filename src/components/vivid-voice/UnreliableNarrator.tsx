@@ -4,23 +4,23 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { type NarratorBias, getBiasedStory } from '@/lib/actions';
+import { type NarratorBiasRange, getBiasedStory } from '@/lib/actions';
 import { Loader2, VenetianMask, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const biasOptions: NarratorBias[] = [
+const biasOptions: string[] = [
     "Neutral",
     "Jealous of Main Character",
     "Secretly the Villain",
-    "Admires Main Character",
+    "Admires Main Character", 
     "Completely Unreliable",
     "Hides a Key Fact"
 ];
 
 export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText: string, onApplySuggestion: (originalText: string, newText: string) => void }) {
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedBias, setSelectedBias] = useState<NarratorBias>("Neutral");
+    const [selectedBias, setSelectedBias] = useState<string>("Neutral");
     const [biasedText, setBiasedText] = useState(storyText);
     const { toast } = useToast();
 
@@ -32,7 +32,8 @@ export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText
 
         setIsLoading(true);
         try {
-            const result = await getBiasedStory(storyText, selectedBias);
+            const bias = { startBias: selectedBias, endBias: selectedBias };
+            const result = await getBiasedStory(storyText, bias);
             setBiasedText(result);
         } catch (e: any) {
             toast({
@@ -55,7 +56,7 @@ export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText
                 </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <Select onValueChange={(value) => setSelectedBias(value as NarratorBias)} defaultValue="Neutral">
+                <Select onValueChange={(value) => setSelectedBias(value)} defaultValue="Neutral">
                     <SelectTrigger className="flex-1">
                         <SelectValue placeholder="Select a narrator bias..." />
                     </SelectTrigger>
