@@ -1,7 +1,6 @@
-
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@/tests/test-utils'; // Use custom render
 import { describe, it, expect, vi } from 'vitest';
-import { DialogueEditor, emotionOptions } from './DialogueEditor';
+import { DialogueEditor } from './DialogueEditor';
 import { userEvent } from '@testing-library/user-event';
 import { Character } from '@/lib/actions';
 
@@ -49,7 +48,7 @@ const mockCharacters: Character[] = [
 ]
 
 const mockPortraits = [
-    { name: 'Alice', portraitDataUri: 'data:image/png;base64,alice' }
+    { name: 'Alice', portraitUrl: 'data:image/png;base64,alice' } // Corrected to portraitUrl
 ]
 
 const mockDialogueDynamics = {

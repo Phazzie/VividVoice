@@ -1,21 +1,9 @@
-
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@/tests/test-utils'; // Use custom render
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import VividVoicePage from './page';
 import { userEvent } from '@testing-library/user-event';
-import { useToast } from '@/hooks/use-toast';
-import { Character } from '@/lib/actions';
-
-// Mock the server actions module
-vi.mock('@/lib/actions', async (importOriginal) => {
-    const actual = await importOriginal() as any;
-    return {
-        ...actual,
-        getParsedStory: vi.fn(),
-        getCharacterPortraits: vi.fn(),
-        generateMultiVoiceSceneAudio: vi.fn(),
-    };
-});
+import { toast } from 'sonner';
+import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio, Character } from '@/lib/actions';
 
 // Mock the child components for isolation
 vi.mock('@/components/vivid-voice/StoryForm', () => ({
@@ -44,18 +32,10 @@ vi.mock('@/components/vivid-voice/StoryDisplay', () => ({
   )
 }));
 
-// Mock the useToast hook
-vi.mock('@/hooks/use-toast');
-
-// We need to import the mocked actions *after* the vi.mock call
-import { getParsedStory, getCharacterPortraits, generateMultiVoiceSceneAudio } from '@/lib/actions';
-
 describe('VividVoicePage State Machine', () => {
 
-  const toastMock = vi.fn();
   beforeEach(() => {
     vi.clearAllMocks();
-    (useToast as vi.Mock).mockReturnValue({ toast: toastMock });
   });
 
   // Test the transition from 'initial' to 'parsing' to 'editing'
@@ -65,14 +45,14 @@ describe('VividVoicePage State Machine', () => {
       segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
       characters: [{ name: 'Alice', description: 'A character', voiceId: 'v1' }] as Character[],
     };
-    const mockPortraitResponse = [{ name: 'Alice', portraitDataUri: 'url' }];
+    const mockPortraitResponse = [{ name: 'Alice', portraitUrl: 'url' }]; // Corrected to portraitUrl
     (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
     (getCharacterPortraits as vi.Mock).mockResolvedValue(mockPortraitResponse);
 
     render(<VividVoicePage />);
     
-    // Initial state
-    expect(screen.getByText('Your Story Awaits')).toBeInTheDocument();
+    // Initial state: Find the main heading of the initial page.
+    expect(screen.getByRole('heading', { name: /Bring Your Stories to Life/i })).toBeInTheDocument();
 
     // Click submit button in mock StoryForm
     const submitButton = screen.getByRole('button', { name: /Start Generation/i });
@@ -93,7 +73,7 @@ describe('VividVoicePage State Machine', () => {
   it('should transition from editing -> generating -> displaying on audio generation', async () => {
     const user = userEvent.setup();
      const mockAudioResponse = {
-      audioDataUri: 'test.wav',
+      audioUrl: 'test.wav', // Corrected to audioUrl
       transcript: []
     };
     (generateMultiVoiceSceneAudio as vi.Mock).mockResolvedValue(mockAudioResponse);
@@ -103,7 +83,7 @@ describe('VividVoicePage State Machine', () => {
       segments: [{ character: 'Alice', dialogue: 'Hi', emotion: 'Happy' }],
       characters: [{ name: 'Alice', description: 'A character', voiceId: 'v1' }] as Character[],
     };
-    const mockPortraitResponse = [{ name: 'Alice', portraitDataUri: 'url' }];
+    const mockPortraitResponse = [{ name: 'Alice', portraitUrl: 'url' }]; // Corrected to portraitUrl
     (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
     (getCharacterPortraits as vi.Mock).mockResolvedValue(mockPortraitResponse);
     
@@ -131,7 +111,7 @@ describe('VividVoicePage State Machine', () => {
     // Test the transition from 'displaying' back to 'editing'
     it('should transition from displaying to editing when back button is clicked', async () => {
         const user = userEvent.setup();
-        const mockAudioResponse = { audioDataUri: 'test.wav', transcript: [] };
+        const mockAudioResponse = { audioUrl: 'test.wav', transcript: [] }; // Corrected to audioUrl
         (generateMultiVoiceSceneAudio as vi.Mock).mockResolvedValue(mockAudioResponse);
         const mockParsedResponse = { segments: [], characters: [{name: 'Alice', description: 'desc', voiceId: 'v1'}] as Character[] };
         (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
@@ -167,13 +147,12 @@ describe('VividVoicePage State Machine', () => {
 
         await waitFor(() => {
             // Should go back to the initial screen
-             expect(screen.getByText('Your Story Awaits')).toBeInTheDocument();
+             expect(screen.getByRole('heading', { name: /Bring Your Stories to Life/i })).toBeInTheDocument();
              // Check for toast message
-             expect(toastMock).toHaveBeenCalledWith({
-                variant: "destructive",
-                title: "Parsing Error",
-                description: errorMessage,
-             });
+             expect(toast.error).toHaveBeenCalledWith(
+                "Parsing Error",
+                { description: errorMessage }
+             );
         });
     });
     
@@ -186,7 +165,7 @@ describe('VividVoicePage State Machine', () => {
       };
       (getParsedStory as vi.Mock).mockResolvedValue(mockParsedResponse);
       // Simulate portrait generation returning only one portrait for two characters
-      (getCharacterPortraits as vi.Mock).mockResolvedValue([{ name: 'Alice', portraitDataUri: 'url' }]);
+      (getCharacterPortraits as vi.Mock).mockResolvedValue([{ name: 'Alice', portraitUrl: 'url' }]); // Corrected to portraitUrl
 
       render(<VividVoicePage />);
 
@@ -198,10 +177,9 @@ describe('VividVoicePage State Machine', () => {
       });
 
       // Should show a non-destructive toast
-      expect(toastMock).toHaveBeenCalledWith({
-        variant: "default",
-        title: "Portrait Generation Note",
-        description: "Could not generate all character portraits, but you can continue editing.",
-      });
+      expect(toast.success).toHaveBeenCalledWith( // Changed to toast.success for non-destructive
+        "Portrait Generation Note",
+        { description: "Could not generate all character portraits, but you can continue editing." }
+      );
     });
 });
