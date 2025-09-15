@@ -15,6 +15,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 import { chunkTextByParagraph } from "@/lib/chunking";
+import { type StorySettings } from "@/types/settings";
 
 type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
@@ -41,6 +42,7 @@ function StagingStoriesPageContent() {
   const [appState, setAppState] = useState<AppState>('initial');
   const [storyId, setStoryId] = useState<string | null>(storyIdToLoad);
   const [storyText, setStoryText] = useState<string>('');
+  const [storySettings, setStorySettings] = useState<StorySettings>({ timePeriod: 'modern', magicLevel: 2 });
   const [fullAnalysis, setFullAnalysis] = useState<FullAnalysis | null>(null);
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
   const [sceneAudioUri, setSceneAudioUri] = useState<string>('');
@@ -55,7 +57,7 @@ function StagingStoriesPageContent() {
         try {
           const story = await getStoryById(storyIdToLoad);
           if (story && story.userId === user.uid) {
-            await handleFullAnalysis(story.storyText, story.id);
+            await handleFullAnalysis(story.storyText, { timePeriod: 'modern', magicLevel: 2 }, story.id);
           } else {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story or you do not have permission to view it.'});
             setAppState('initial');
@@ -71,21 +73,22 @@ function StagingStoriesPageContent() {
   }, [storyIdToLoad, user]);
 
 const CHUNK_THRESHOLD = 10000;
-  const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
+  const handleFullAnalysis = async (newStoryText: string, settings: StorySettings, existingStoryId: string | null = null) => {
     const isProUser = false; // Temporarily disabled pro features during merge
     if (isProUser && newStoryText.length > CHUNK_THRESHOLD) {
-      return handleFullAnalysisChunked(newStoryText, existingStoryId);
+      return handleFullAnalysisChunked(newStoryText, settings, existingStoryId);
     }
 
     setAppState('analyzing');
     setError(null);
     setStoryId(existingStoryId);
+    setStorySettings(settings);
     setFullAnalysis(null);
     setStoryText('');
     setTranscript([]);
 
     try {
-      const analysisResult = await getFullStoryAnalysis(newStoryText);
+      const analysisResult = await getFullStoryAnalysis(newStoryText, settings);
 
       // Ensure soundEffects is always an array
       const normalizedResult = {
@@ -128,10 +131,11 @@ const CHUNK_THRESHOLD = 10000;
     }
   };
 
-  const handleFullAnalysisChunked = async (newStoryText: string, existingStoryId: string | null = null) => {
+  const handleFullAnalysisChunked = async (newStoryText: string, settings: StorySettings, existingStoryId: string | null = null) => {
     setAppState('analyzing');
     setError(null);
     setStoryId(existingStoryId);
+    setStorySettings(settings);
     setFullAnalysis(null);
     setStoryText('');
     setTranscript([]);
@@ -154,7 +158,7 @@ const CHUNK_THRESHOLD = 10000;
       let combinedErrors: Record<string, string> = {};
 
       for (const chunk of chunks) {
-        const analysisResult = await getFullStoryAnalysis(chunk);
+        const analysisResult = await getFullStoryAnalysis(chunk, settings);
         combinedAnalysis.segments.push(...analysisResult.segments);
         combinedAnalysis.characters.push(...analysisResult.characters);
         combinedAnalysis.characterPortraits.push(...analysisResult.characterPortraits);
@@ -327,7 +331,7 @@ const CHUNK_THRESHOLD = 10000;
               "lg:col-span-2 lg:sticky lg:top-8 space-y-8 transition-all duration-700 animate-in fade-in slide-in-from-left-8",
               (appState !== 'initial' && !isLoading) && "lg:opacity-50 lg:pointer-events-none"
             )}>
-              <StoryForm onSubmit={(text) => handleFullAnalysis(text)} isLoading={isLoading} />
+              <StoryForm onSubmit={(text, settings) => handleFullAnalysis(text, settings)} isLoading={isLoading} />
             </div>
             
             <div className="lg:col-span-3 min-h-[60vh]">
