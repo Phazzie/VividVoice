@@ -31,6 +31,7 @@ import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-persp
 // import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
+import { type StorySettings } from '@/types/settings';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -72,9 +73,10 @@ export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
  * Parses the dialogue from a story text. This is the first critical step in the story
  * processing pipeline. It now generates rich character profiles upfront.
  * @param storyText The raw story text.
+ * @param settings The story settings including time period and magic level.
  * @returns A promise resolving to the parsed segments and characters.
  */
-export async function getFullStoryAnalysis(storyText: string): Promise<{
+export async function getFullStoryAnalysis(storyText: string, settings?: StorySettings): Promise<{
   segments: DialogueSegment[];
   characters: Character[];
   characterPortraits: CharacterPortrait[];
@@ -97,7 +99,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
 
   try {
     // 1. Get the foundational parsed story
-    const parsedStory = await getParsedStory(storyText);
+    const parsedStory = await getParsedStory(storyText, settings);
     if (!parsedStory || !parsedStory.segments || parsedStory.segments.length === 0) {
       const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
       console.error({ action: 'getFullStoryAnalysis', error: errorMsg });
@@ -190,9 +192,10 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
  * Parses the dialogue from a story text. This is the first critical step in the story
  * processing pipeline. It now generates rich character profiles upfront.
  * @param storyText The raw story text.
+ * @param settings Optional story settings for context.
  * @returns A promise resolving to the parsed segments and characters.
  */
-export async function getParsedStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
+export async function getParsedStory(storyText: string, settings?: StorySettings): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
     console.log('Starting story parsing and comprehensive character profile generation...');
      if (!storyText.trim()) {
         const errorMsg = 'Validation Error: Story text cannot be empty.';
@@ -201,7 +204,12 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
     }
 
     try {
-        const parsedResult = await parseDialogueFlow({ storyText });
+        // Pass settings to the dialogue flow for context-aware parsing
+        const parsedResult = await parseDialogueFlow({ 
+            storyText,
+            timePeriod: settings?.timePeriod || 'modern',
+            magicLevel: settings?.magicLevel || 0
+        });
          if (!parsedResult || !parsedResult.segments || parsedResult.segments.length === 0) {
             const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
             console.error({ action: 'getParsedStory', error: errorMsg });

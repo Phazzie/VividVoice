@@ -47,6 +47,7 @@ import { PacingVisualizer } from './PacingVisualizer';
 import { CompareToClassics } from './CompareToClassics';
 
 import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
+import { CREATIVE_EMOTIONS } from '@/types/settings';
 
 type DialogueEditorProps = {
   storyId: string | null;
@@ -68,9 +69,7 @@ type DialogueEditorProps = {
   onStorySave: (id: string) => void;
 };
 
-export const emotionOptions = [
-  "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
-];
+export const emotionOptions = CREATIVE_EMOTIONS;
 
 export function DialogueEditor({
   storyId,
@@ -235,22 +234,10 @@ export function DialogueEditor({
       <Tabs defaultValue="dialogue" className="w-full">
         <ScrollArea>
          <TabsList className="w-full justify-start rounded-none bg-primary/10 p-0 border-b-2 border-primary/20">
-              <TabsTrigger value="dialogue" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Edit className="mr-2"/>Dialogue Editor</TabsTrigger>
-              <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><FlaskConical className="mr-2"/>Literary Devices</TabsTrigger>
-              <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BarChart3 className="mr-2"/>Dialogue Dynamics</TabsTrigger>
-              <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><AreaChart className="mr-2"/>Pacing</TabsTrigger>
-              <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Wand2 className="mr-2"/>Trope Inverter</TabsTrigger>
-              <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Users className="mr-2"/>Actor's Studio</TabsTrigger>
-              <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><VenetianMask className="mr-2"/>Unreliable Narrator</TabsTrigger>
-              <TabsTrigger value="showDontTell" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Eye className="mr-2"/>Show, Don't Tell</TabsTrigger>
-              <TabsTrigger value="consistency" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><ShieldCheck className="mr-2"/>Consistency</TabsTrigger>
-              <TabsTrigger value="subtext" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><MessageSquareQuote className="mr-2"/>Subtext</TabsTrigger>
-              <TabsTrigger value="perspective" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Shuffle className="mr-2"/>Perspective</TabsTrigger>
-              <TabsTrigger value="skepticalWombat" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><img src="https://storage.googleapis.com/static.invertase.io/wombat-2-1.png" alt="Skeptical Wombat" className="w-6 h-6 mr-2" />Skeptical Wombat</TabsTrigger>
-              <TabsTrigger value="characterArchetypes" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Users className="mr-2"/>Character Archetypes</TabsTrigger>
-              <TabsTrigger value="plotStructure" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BookText className="mr-2"/>Plot Structure</TabsTrigger>
-              <TabsTrigger value="pacingVisualizer" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><AreaChart className="mr-2"/>Pacing Visualizer</TabsTrigger>
-              <TabsTrigger value="compareToClassics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BookText className="mr-2"/>Compare to Classics</TabsTrigger>
+              <TabsTrigger value="dialogue" className="py-2 text-sm rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Edit className="mr-1 w-4 h-4"/>Editor</TabsTrigger>
+              <TabsTrigger value="analysis" className="py-2 text-sm rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><FlaskConical className="mr-1 w-4 h-4"/>Analysis</TabsTrigger>
+              <TabsTrigger value="enhancement" className="py-2 text-sm rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Wand2 className="mr-1 w-4 h-4"/>Enhancement</TabsTrigger>
+              <TabsTrigger value="wombat" className="py-2 text-sm rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><img src="https://storage.googleapis.com/static.invertase.io/wombat-2-1.png" alt="Skeptical Wombat" className="w-4 h-4 mr-1" />Wombat</TabsTrigger>
           </TabsList>
         </ScrollArea>
         <ScrollArea className="h-[55vh]">
@@ -304,50 +291,113 @@ export function DialogueEditor({
                         </div>
                         ))}
                     </TabsContent>
-                    <TabsContent value="literaryAnalysis" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <LiteraryAnalysisTab devices={literaryDevices} error={analysisErrors.literaryDevices} />
+                    
+                    <TabsContent value="analysis" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <FlaskConical className="w-4 h-4" />
+                                        Literary Devices
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <LiteraryAnalysisTab devices={literaryDevices} error={analysisErrors.literaryDevices} />
+                                </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <BarChart3 className="w-4 h-4" />
+                                        Dialogue Dynamics
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <DialogueDynamicsAnalysis analysis={dialogueDynamics} error={analysisErrors.dialogueDynamics} />
+                                </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <AreaChart className="w-4 h-4" />
+                                        Pacing Analysis
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <PacingAnalysis pacing={pacing} error={analysisErrors.pacing} />
+                                </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <ShieldCheck className="w-4 h-4" />
+                                        Consistency Check
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <ConsistencyGuardian issues={consistencyIssues} error={analysisErrors.consistency} />
+                                </CardContent>
+                            </Card>
+                        </div>
                     </TabsContent>
-                     <TabsContent value="dialogueDynamics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <DialogueDynamicsAnalysis analysis={dialogueDynamics} error={analysisErrors.dialogueDynamics} />
+
+                    <TabsContent value="enhancement" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Wand2 className="w-4 h-4" />
+                                        Trope Inverter
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <TropeInverter tropes={tropes} error={analysisErrors.tropes} />
+                                </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Eye className="w-4 h-4" />
+                                        Show, Don't Tell
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <ShowDontTell suggestions={showDontTellSuggestions} onApplySuggestion={handleApplySuggestion} error={analysisErrors.showDontTell} />
+                                </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <MessageSquareQuote className="w-4 h-4" />
+                                        Subtext Analysis
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <SubtextAnalyzer analyses={subtextAnalyses} error={analysisErrors.subtext} />
+                                </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <Shuffle className="w-4 h-4" />
+                                        Perspective Shifter
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <PerspectiveShifter characters={interactableCharacters} storyText={storyText} />
+                                </CardContent>
+                            </Card>
+                        </div>
                     </TabsContent>
-                    <TabsContent value="pacing" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <PacingAnalysis pacing={pacing} error={analysisErrors.pacing} />
-                    </TabsContent>
-                    <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <TropeInverter tropes={tropes} error={analysisErrors.tropes} />
-                    </TabsContent>
-                    <TabsContent value="actorStudio" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                <ActorStudio characters={characters} storyText={storyText} />
-                    </TabsContent>
-                    <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />
-                    </TabsContent>
-                    <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <ShowDontTell suggestions={showDontTellSuggestions} onApplySuggestion={handleApplySuggestion} error={analysisErrors.showDontTell} />
-                    </TabsContent>
-                    <TabsContent value="consistency" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                         <ConsistencyGuardian issues={consistencyIssues} error={analysisErrors.consistency} />
-                    </TabsContent>
-                    <TabsContent value="subtext" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                         <SubtextAnalyzer analyses={subtextAnalyses} error={analysisErrors.subtext} />
-                    </TabsContent>
-                    <TabsContent value="perspective" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <PerspectiveShifter characters={interactableCharacters} storyText={storyText} />
-                    </TabsContent>
-                    <TabsContent value="skepticalWombat" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+
+                    <TabsContent value="wombat" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <SkepticalWombat storyText={storyText} />
-                    </TabsContent>
-                    <TabsContent value="characterArchetypes" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <CharacterArchetypes storyText={storyText} />
-                    </TabsContent>
-                    <TabsContent value="plotStructure" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <PlotStructure storyText={storyText} />
-                    </TabsContent>
-                    <TabsContent value="pacingVisualizer" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <PacingVisualizer pacing={pacing} />
-                    </TabsContent>
-                    <TabsContent value="compareToClassics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <CompareToClassics storyText={storyText} />
                     </TabsContent>
                 </>
             )}
