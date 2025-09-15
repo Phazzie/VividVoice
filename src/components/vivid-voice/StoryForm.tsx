@@ -50,8 +50,8 @@ Narrator: Bob, ever the optimist, was already marching towards the creaking porc
 
   function handleFormSubmit(values: z.infer<typeof formSchema>) {
     const settings: StorySettings = {
-      timePeriod: values.timePeriod as any,
-      magicLevel: values.magicLevel as any,
+      timePeriod: values.timePeriod as StorySettings['timePeriod'],
+      magicLevel: values.magicLevel as StorySettings['magicLevel'],
     };
     onSubmit(values.storyText, settings);
   }
