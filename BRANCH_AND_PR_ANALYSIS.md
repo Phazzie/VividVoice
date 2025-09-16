@@ -285,79 +285,130 @@ VividVoice is a Next.js-based AI-powered story analysis and performance tool fea
 
 ---
 
-## 🎯 Recommended Merge Order
+## 🎯 Strategic Merge Recommendations
 
-Based on the analysis of dependencies, conflicts, and feature importance:
+**Key Insight**: Rather than merging entire PRs, we can **cherry-pick specific valuable features** to minimize conflicts and maximize value delivery.
 
-### Phase 1: Foundation (Critical Infrastructure)
+### Phase 1: Foundation First (Essential Infrastructure) 
+**Merge Strategy**: Full PR merges - these provide essential infrastructure
+
 1. **PR #14** - `conflict-resolution-merge` → `master` ⭐⭐⭐⭐⭐
-   - **Priority**: IMMEDIATE
-   - **Reason**: Establishes CI/CD pipeline and resolves fundamental conflicts
-   - **Risk**: Low - Well-documented resolution
+   - **Action**: Full merge
+   - **Reason**: CI/CD pipeline + resolved conflicts = foundation for everything else
+   - **Dependencies**: None - enables all other work
 
 2. **PR #6** - `feature/prompt-audit-and-improvements` → `master` ⭐⭐⭐⭐⭐
-   - **Priority**: IMMEDIATE (after #14)
-   - **Reason**: Foundation for all AI improvements, standardizes prompts
-   - **Risk**: Low - Comprehensive testing and documentation
+   - **Action**: Full merge  
+   - **Reason**: AI prompt standardization affects all analysis features
+   - **Dependencies**: Best after #14 for CI validation
 
-### Phase 2: Major Features (High Impact)
-3. **PR #23** - UI condensation and creative settings ⭐⭐⭐⭐⭐
-   - **Priority**: HIGH
-   - **Reason**: Major UX improvements with full integration
-   - **Risk**: Medium - Extensive UI changes
+### Phase 2: Selective Feature Integration (Cherry-Pick Strategy)
+**Merge Strategy**: Cherry-pick valuable components, avoid conflicts
 
-4. **PR #10** - Skeptical wombat theme system ⭐⭐⭐⭐
-   - **Priority**: HIGH  
-   - **Reason**: Complete theming infrastructure
-   - **Risk**: Low - Isolated theme changes
+3. **From PR #23** - Creative Settings System ⭐⭐⭐⭐⭐
+   - **Cherry-Pick**: 
+     - Time period selector (8 eras)
+     - Magic system dial (0-5 levels) 
+     - "Spicy Meter" emotion names
+     - `StorySettings` type system
+   - **Skip**: UI condensation (conflicts with theming PRs)
+   - **Reason**: Settings enhance analysis quality without breaking existing UI
 
-5. **PR #11** - Emotion assignment restoration ⭐⭐⭐⭐
-   - **Priority**: HIGH
-   - **Reason**: Important feature enhancement
-   - **Risk**: Medium - Affects core analysis flow
+4. **From PR #10** - Core Theming Infrastructure ⭐⭐⭐⭐
+   - **Cherry-Pick**:
+     - Theme switching mechanism  
+     - CSS variable system
+     - Core theme definitions
+   - **Skip**: Specific layout components (can add incrementally)
+   - **Reason**: Theming foundation without layout conflicts
 
-### Phase 3: Testing and Quality (Medium Priority)
-6. **PR #22** - ElevenLabs TTS tests ⭐⭐⭐
-   - **Priority**: MEDIUM
-   - **Reason**: TTS functionality and test coverage
-   - **Risk**: Low - Testing improvements
+5. **From PR #11** - Emotion System Enhancement ⭐⭐⭐⭐
+   - **Cherry-Pick**:
+     - Dual emotion system (auto + analysis tab)
+     - `analyze-emotional-story-tone.ts` flow
+     - Enhanced emotion schema
+   - **Skip**: Any conflicting UI changes
+   - **Reason**: Emotion analysis improvements without breaking existing flows
 
-7. **PR #19** - Sound design flow ⭐⭐⭐
-   - **Priority**: MEDIUM
-   - **Reason**: New feature with proper testing
-   - **Risk**: Low - Additive feature
+### Phase 3: Testing & Quality (Low Risk Additions)
 
-8. **PR #17** - Full story analysis tests ⭐⭐
-   - **Priority**: MEDIUM
-   - **Reason**: Enhanced test coverage
-   - **Risk**: Low - Testing only
+6. **From PR #22** - TTS Testing & Error Handling ⭐⭐⭐
+   - **Cherry-Pick**: 
+     - TTS test coverage
+     - Error handling improvements
+     - JSDOM polyfills setup
+   - **Skip**: Conflicting dependency changes
+   
+7. **From PR #19** - Sound Design Feature ⭐⭐⭐
+   - **Cherry-Pick**: Core sound design flow only
+   - **Skip**: Integration changes that might conflict
 
-### Phase 4: Maintenance and Cleanup (Low Priority)
-9. **PR #18** - Remove snapshot file ⭐
-   - **Priority**: LOW
-   - **Reason**: Simple cleanup
-   - **Risk**: None
+8. **PR #18** - Simple Cleanup ⭐
+   - **Action**: Full merge (trivial)
+   - **Reason**: No conflicts, just removes empty file
 
-### Phase 5: Evaluate Separately
-10. **PR #21** - MVP simplification ⚠️
-    - **Priority**: EVALUATE
-    - **Reason**: May conflict with other enhancements
-    - **Risk**: High - Removes functionality
+### Phase 4: Advanced Integration (After Core Features Stable)
+
+9. **From PR #23** - UI Condensation (Revisit) ⭐⭐⭐
+   - **Cherry-Pick**: Tab consolidation logic only
+   - **Condition**: After theming is stable
+   - **Reason**: Avoid UI conflicts, but keep organizational improvements
+
+### Phase 5: Evaluate & Defer
+10. **PR #21** - MVP Simplification ⚠️
+    - **Action**: **DO NOT MERGE** - Instead extract useful components if any
+    - **Reason**: Removes functionality that other PRs enhance
+    - **Alternative**: Could inform future "lite mode" feature
+
+## 🛠️ Implementation Strategy
+
+### Cherry-Pick Workflow:
+1. **Create feature branches** from master for each cherry-pick
+2. **Extract specific files/functions** rather than entire PR merges  
+3. **Test incrementally** after each cherry-pick integration
+4. **Resolve mini-conflicts** as they arise instead of mega-conflicts
+
+### Benefits of This Approach:
+- ✅ **Minimizes conflicts** by avoiding overlapping changes
+- ✅ **Maximizes value** by taking best parts of each PR  
+- ✅ **Reduces risk** through incremental integration
+- ✅ **Maintains momentum** - can ship improvements faster
+- ✅ **Preserves options** - can revisit skipped components later
+
+### Risk Mitigation:
+- Test each cherry-pick individually
+- Maintain CI/CD validation throughout  
+- Document what was taken vs. skipped for future reference
+- Keep original PRs open for reference/future integration
 
 ---
 
 ## 🚨 Conflict Analysis and Recommendations
 
-### High-Risk Conflicts
-- **PR #21 vs Others**: MVP simplification may conflict with feature additions
-- **PR #11 vs PR #23**: Both modify emotion handling systems
-- **PR #10 vs PR #23**: Both modify UI components
+### Smart Integration Strategy
+Instead of traditional "merge entire PR" approach, use **selective feature extraction**:
 
-### Resolution Strategy
-1. **Sequential Merging**: Follow recommended order strictly
-2. **Testing Between Phases**: Full test suite after each phase
-3. **Conflict Monitoring**: Watch for integration issues
-4. **Feature Flags**: Consider feature flags for risky changes
+### High-Value, Low-Conflict Features:
+- **Time period & magic settings** (PR #23) - New feature, no conflicts
+- **Emotion system dual approach** (PR #11) - Enhances without breaking  
+- **Core theming infrastructure** (PR #10) - Isolated CSS changes
+- **Testing improvements** (PR #22, #17, #19) - Additive only
+
+### High-Conflict Areas to Approach Carefully:
+- **UI layout changes** - Multiple PRs touch same components
+- **Package dependencies** - Version conflicts between branches
+- **Build configuration** - Different approaches in different PRs
+
+### Conflict-Free Quick Wins:
+1. **Extract creative settings** from PR #23 without UI changes
+2. **Add theming CSS** from PR #10 without layout changes  
+3. **Cherry-pick emotion flows** from PR #11 without schema conflicts
+4. **Pull test improvements** from multiple PRs individually
+
+### Resolution Strategy for Complex Features:
+- **Reimplement rather than merge** conflicting UI improvements
+- **Combine best ideas** from multiple PRs into new implementation
+- **Defer complex integrations** until foundation is solid
 
 ---
 
@@ -377,7 +428,26 @@ Based on the analysis of dependencies, conflicts, and feature importance:
 
 ## 🎉 Conclusion
 
-VividVoice has significant development activity with multiple high-quality enhancements ready for integration. The recommended merge order prioritizes infrastructure stability while maximizing feature delivery. The conflict-resolution-merge and prompt-audit branches should be merged immediately as they provide the foundation for all other improvements.
+VividVoice has exceptional development activity with multiple high-quality enhancements ready for integration. **The key insight is to use selective feature extraction rather than full PR merges** to minimize conflicts while maximizing value delivery.
+
+### Recommended Approach:
+1. **Merge foundation PRs** #14 and #6 completely (essential infrastructure)
+2. **Cherry-pick valuable features** from other PRs to avoid conflicts
+3. **Integrate incrementally** with testing between each addition
+4. **Defer complex UI overhauls** until core features are stable
+
+### Expected Outcomes:
+- **Faster delivery** of valuable features (weeks instead of months)
+- **Reduced integration risk** through smaller, focused changes  
+- **Maintained development velocity** without getting bogged down in mega-merges
+- **Preserved option value** - can revisit skipped components later
+
+### Timeline: 
+- **Week 1**: Foundation merges (PR #14, #6)
+- **Week 2-3**: Cherry-pick high-value features  
+- **Week 4+**: Advanced integrations and UI consolidation
+
+This selective approach transforms a potentially risky 2-3 month integration process into a manageable 1-month incremental delivery cycle.
 
 ---
 
