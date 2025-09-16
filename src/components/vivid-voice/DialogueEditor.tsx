@@ -47,6 +47,7 @@ import { PacingVisualizer } from './PacingVisualizer';
 import { CompareToClassics } from './CompareToClassics';
 
 import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
+import { CREATIVE_EMOTIONS } from '@/types/settings';
 
 type DialogueEditorProps = {
   storyId: string | null;
@@ -68,9 +69,7 @@ type DialogueEditorProps = {
   onStorySave: (id: string) => void;
 };
 
-export const emotionOptions = [
-  "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
-];
+export const emotionOptions = CREATIVE_EMOTIONS;
 
 export function DialogueEditor({
   storyId,
