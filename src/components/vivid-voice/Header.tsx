@@ -13,8 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { type Theme } from "@/lib/types";
 
-export function Header() {
+interface HeaderProps {
+  onThemeChange: (theme: Theme) => void;
+}
+
+export function Header({ onThemeChange }: HeaderProps) {
   const { user, loading, logout } = useAuth();
 
   return (
