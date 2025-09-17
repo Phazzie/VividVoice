@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { getBiasedStory } from '@/lib/actions';
-import { Loader2, VenetianMask } from 'lucide-react';
+import { Loader2, VenetianMask, Zap } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const biasOptions: string[] = [

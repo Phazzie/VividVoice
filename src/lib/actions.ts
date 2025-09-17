@@ -13,13 +13,13 @@ import {
 import {
   type DialogueSegment as ImportedDialogueSegment,
   type Character as ImportedCharacter,
-  type DialogueDynamics,
-  type LiteraryDevices,
-  type Pacing,
-  type Tropes,
-  type ShowDontTellSuggestions,
-  type ConsistencyIssues,
-  type SubtextAnalyses,
+  type DialogueDynamics as ImportedDialogueDynamics,
+  type LiteraryDevice,
+  type PacingAnalysis,
+  type Trope,
+  type ShowDontTellSuggestion,
+  type ConsistencyIssue,
+  type SubtextAnalysis,
   type EmotionalTone as ImportedEmotionalTone,
 } from '@/ai/schemas';
 import {
@@ -61,6 +61,13 @@ import {
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
 export type EmotionalTone = ImportedEmotionalTone;
+export type DialogueDynamics = ImportedDialogueDynamics;
+export type LiteraryDevices = LiteraryDevice[];
+export type Pacing = PacingAnalysis;
+export type Tropes = Trope[];
+export type ShowDontTellSuggestions = ShowDontTellSuggestion[];
+export type ConsistencyIssues = ConsistencyIssue[];
+export type SubtextAnalyses = SubtextAnalysis[];
 export type DialogueDynamics = ImportedDialogueDynamics;
 export type Character = ImportedCharacter;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
