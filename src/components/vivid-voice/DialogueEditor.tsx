@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { type DialogueSegment, type CharacterPortrait, type Character, shiftPerspective, generateElevenLabsAudio } from '@/lib/actions';
 import { saveStory } from '@/lib/data';
-import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
+import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users, Smile } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,8 +45,9 @@ import { CharacterArchetypes } from './CharacterArchetypes';
 import { PlotStructure } from './PlotStructure';
 import { PacingVisualizer } from './PacingVisualizer';
 import { CompareToClassics } from './CompareToClassics';
+import { EmotionalToneAnalysis } from './EmotionalToneAnalysis';
 
-import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
+import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl, type EmotionalTone } from '@/lib/actions';
 import { CREATIVE_EMOTIONS } from '@/types/settings';
 
 type DialogueEditorProps = {
@@ -62,6 +63,7 @@ type DialogueEditorProps = {
   showDontTellSuggestions: ShowDontTellSuggestion[];
   consistencyIssues: ConsistencyIssue[];
   subtextAnalyses: SubtextAnalysis[];
+  emotionalTones: EmotionalTone[];
   soundEffects: SoundEffectWithUrl[];
   analysisErrors: Record<string, string>;
   onGenerateAudio: (segments: DialogueSegment[]) => void;
@@ -84,6 +86,7 @@ export function DialogueEditor({
   showDontTellSuggestions,
   consistencyIssues,
   subtextAnalyses,
+  emotionalTones,
   soundEffects,
   analysisErrors,
   onGenerateAudio,
@@ -238,6 +241,7 @@ export function DialogueEditor({
               <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><FlaskConical className="mr-2"/>Literary Devices</TabsTrigger>
               <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BarChart3 className="mr-2"/>Dialogue Dynamics</TabsTrigger>
               <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><AreaChart className="mr-2"/>Pacing</TabsTrigger>
+              <TabsTrigger value="emotionalTone" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Smile className="mr-2"/>Emotional Tone</TabsTrigger>
               <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Wand2 className="mr-2"/>Trope Inverter</TabsTrigger>
               <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Users className="mr-2"/>Actor's Studio</TabsTrigger>
               <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><VenetianMask className="mr-2"/>Unreliable Narrator</TabsTrigger>
@@ -311,6 +315,9 @@ export function DialogueEditor({
                     </TabsContent>
                     <TabsContent value="pacing" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <PacingAnalysis pacing={pacing} error={analysisErrors.pacing} />
+                    </TabsContent>
+                    <TabsContent value="emotionalTone" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <EmotionalToneAnalysis analysis={emotionalTones} error={analysisErrors.emotionalTone} />
                     </TabsContent>
                     <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <TropeInverter tropes={tropes} error={analysisErrors.tropes} />

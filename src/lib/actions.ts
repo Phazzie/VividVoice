@@ -31,6 +31,7 @@ import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-persp
 // import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
+import { analyzeEmotionalStoryTone as analyzeEmotionalStoryToneFlow } from '@/ai/flows/analyze-emotional-story-tone';
 import { type StorySettings } from '@/types/settings';
 
 import {
@@ -46,10 +47,12 @@ import {
   type Perspective as ImportedPerspective,
   type SoundEffect as ImportedSoundEffect,
   type TranscriptSegment as ImportedTranscriptSegment,
+  type EmotionalTone as ImportedEmotionalTone,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
+export type EmotionalTone = ImportedEmotionalTone;
 export type Character = ImportedCharacter;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
@@ -87,6 +90,7 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
   showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
   consistencyIssues: { issues: ConsistencyIssue[] };
   subtextAnalyses: { analyses: SubtextAnalysis[] };
+  emotionalTones: { tones: EmotionalTone[] };
   soundEffects: SoundEffectWithUrl[] | null;
   errors: Record<string, string>;
 }> {
@@ -130,6 +134,7 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
       getShowDontTellSuggestionsFlow({ storyText }),
       findInconsistenciesFlow({ storyText }),
       analyzeSubtextFlow({ storyText }),
+      analyzeEmotionalStoryToneFlow({ storyText }),
       // getSoundDesign(storyText), // Temporarily disabled - missing flow
     ]);
 
@@ -142,6 +147,7 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
       showDontTellSuggestionsResult,
       consistencyIssuesResult,
       subtextAnalysesResult,
+      emotionalTonesResult,
       // soundEffects, // Temporarily disabled
     ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
@@ -153,6 +159,7 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
     const showDontTellSuggestions = showDontTellSuggestionsResult;
     const consistencyIssues = consistencyIssuesResult;
     const subtextAnalyses = subtextAnalysesResult;
+    const emotionalTones = emotionalTonesResult;
 
     const errors: Record<string, string> = {};
     if (results[0].status === 'rejected') errors.characterPortraits = results[0].reason.message;
@@ -163,7 +170,8 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
     if (results[5].status === 'rejected') errors.showDontTell = results[5].reason.message;
     if (results[6].status === 'rejected') errors.consistency = results[6].reason.message;
     if (results[7].status === 'rejected') errors.subtext = results[7].reason.message;
-    // if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message; // Temporarily disabled
+    if (results[8].status === 'rejected') errors.emotionalTone = results[8].reason.message;
+    // if (results[9].status === 'rejected') errors.soundEffects = results[9].reason.message; // Temporarily disabled
 
     console.log('Full story analysis successful.');
 
@@ -179,6 +187,7 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
       showDontTellSuggestions: (showDontTellSuggestions as any) || { suggestions: [] },
       consistencyIssues: (consistencyIssues as any) || { issues: [] },
       subtextAnalyses: (subtextAnalyses as any) || { analyses: [] },
+      emotionalTones: (emotionalTones as any) || { tones: [] },
       soundEffects: null, // Temporarily disabled
       errors,
     };
