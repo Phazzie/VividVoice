@@ -129,19 +129,42 @@ export function DialogueEditor({
   const handleSubmit = async () => {
     if (ttsEngine === 'elevenlabs') {
       setSegments(segments.map(s => ({ ...s, isGenerating: true })));
-      const audioPromises = segments.map(async (segment) => {
-        if (segment.dialogue.trim() === '') {
-          return { ...segment, audioDataUri: '', isGenerating: false };
-        }
-        // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
-        const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice
-        const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
-        return { ...segment, audioDataUri, isGenerating: false };
-      });
+      
+      try {
+        const audioPromises = segments.map(async (segment) => {
+          if (segment.dialogue.trim() === '') {
+            return { ...segment, audioDataUri: '', isGenerating: false };
+          }
+          
+          try {
+            // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
+            const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice
+            const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
+            return { ...segment, audioDataUri, isGenerating: false };
+          } catch (error) {
+            console.error(`Failed to generate audio for segment: ${segment.dialogue}`, error);
+            toast({ 
+              variant: 'destructive', 
+              title: 'Audio Generation Failed', 
+              description: `Failed to generate audio for: "${segment.dialogue.substring(0, 50)}..."`
+            });
+            return { ...segment, audioDataUri: '', isGenerating: false };
+          }
+        });
 
-      const newSegments = await Promise.all(audioPromises);
-      setSegments(newSegments);
-      // We are not calling onGenerateAudio here because we are handling the audio generation in the component
+        const newSegments = await Promise.all(audioPromises);
+        setSegments(newSegments);
+        // We are not calling onGenerateAudio here because we are handling the audio generation in the component
+      } catch (error) {
+        console.error('Failed to generate audio for segments:', error);
+        toast({ 
+          variant: 'destructive', 
+          title: 'Audio Generation Error', 
+          description: 'Failed to generate audio. Please try again.'
+        });
+        // Reset generating state
+        setSegments(segments.map(s => ({ ...s, isGenerating: false })));
+      }
     } else {
       onGenerateAudio(segments);
     }

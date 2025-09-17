@@ -26,10 +26,10 @@ const emotionalStoryTonePrompt = ai.definePrompt({
   name: 'emotionalStoryTonePrompt',
   input: { schema: AnalyzeEmotionalStoryToneInputSchema },
   output: { schema: AnalyzeEmotionalStoryToneOutputSchema },
-  prompt: (input) => `You are an expert script analyst. Your task is to identify the key emotional tones in the provided story text. For each emotional tone you identify, provide the quote from the text that best exemplifies it, and a brief explanation of why it has that emotional tone.
+  prompt: `You are an expert script analyst. Your task is to identify the key emotional tones in the provided story text. For each emotional tone you identify, provide the quote from the text that best exemplifies it, and a brief explanation of why it has that emotional tone.
 
 **Story Text:**
-${input.storyText}
+{{storyText}}
 
 **Emotional Tones:`
 });
