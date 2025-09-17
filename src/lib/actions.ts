@@ -61,6 +61,7 @@ import {
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
 export type EmotionalTone = ImportedEmotionalTone;
+export type DialogueDynamics = ImportedDialogueDynamics;
 export type Character = ImportedCharacter;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
@@ -195,7 +196,7 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
       showDontTellSuggestions: (showDontTellSuggestions as ShowDontTellSuggestions) || { suggestions: [] },
       consistencyIssues: (consistencyIssues as ConsistencyIssues) || { issues: [] },
       subtextAnalyses: (subtextAnalyses as SubtextAnalyses) || { analyses: [] },
-      emotionalTones: (emotionalTones as EmotionalToneAnalysisResult) || { tones: [] },
+      emotionalTones: emotionalTones || [],
       soundEffects: null, // Temporarily disabled
       errors,
     };
@@ -319,7 +320,13 @@ export async function getCharacterResponse(
 export async function getBiasedStory(storyText: string, bias: { startBias: string; endBias: string }): Promise<string> {
     console.log('Calling getBiasedStory action...');
     try {
-      const result = await applyNarratorBiasFlow({ storyText, bias: bias as { startBias: string; endBias: string } });
+      const result = await applyNarratorBiasFlow({ 
+        storyText, 
+        bias: {
+          startBias: bias.startBias as "Neutral" | "Jealous of Main Character" | "Secretly the Villain" | "Admires Main Character" | "Completely Unreliable" | "Hides a Key Fact",
+          endBias: bias.endBias as "Neutral" | "Jealous of Main Character" | "Secretly the Villain" | "Admires Main Character" | "Completely Unreliable" | "Hides a Key Fact"
+        }
+      });
       return result.biasedStoryText;
     } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : 'Failed to apply narrator bias';
