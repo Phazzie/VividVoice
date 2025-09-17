@@ -1,9 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 // Mock the ElevenLabs client at the module level
-vi.mock('@elevenlabs/elevenlabs-js', () => ({
-  ElevenLabsClient: vi.fn(),
-}));
+vi.mock('@elevenlabs/elevenlabs-js', () => {
+  const mockTextToSpeech = {
+    convert: vi.fn()
+  };
+  
+  const MockElevenLabsClient = vi.fn().mockImplementation(() => ({
+    textToSpeech: mockTextToSpeech
+  }));
+  
+  return {
+    ElevenLabsClient: MockElevenLabsClient,
+  };
+});
 
 // Helper to re-import the module under test after setting env vars and mocks
 const loadModule = async () => {
@@ -22,40 +33,53 @@ describe('generateElevenLabsTTS', () => {
     delete process.env.ELEVENLABS_API_KEY;
   });
 
-  it('should return placeholder audio data uri (current implementation)', async () => {
-    // Arrange
-    const convertMock = vi.fn();
+  it('should return audio data uri when API key is present', async () => {
+    // Mock successful audio stream with proper ReadableStream
+    const mockAudioData = new Uint8Array([1, 2, 3, 4]);
+    const mockStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(mockAudioData);
+        controller.close();
+      }
+    });
+
+    const convertMock = vi.fn().mockResolvedValue(mockStream);
     (ElevenLabsClient as unknown as vi.Mock).mockImplementation(() => ({
       textToSpeech: { convert: convertMock },
     }));
+    
     const generateElevenLabsTTS = await loadModule();
 
-    // Act
     const result = await generateElevenLabsTTS({ text: 'hello', voiceId: 'voice1' });
 
-    // Assert - Currently returns placeholder
-    expect(result.audioDataUri).toBe('data:audio/mpeg;base64,placeholder');
+    expect(result.audioDataUri).toMatch(/^data:audio\/mpeg;base64,/);
+    expect(convertMock).toHaveBeenCalledWith(
+      'voice1',
+      {
+        text: 'hello',
+      }
+    );
   });
 
   it('should handle missing API key gracefully', async () => {
-    // Arrange
     delete process.env.ELEVENLABS_API_KEY;
     const generateElevenLabsTTS = await loadModule();
 
-    // Act & Assert
     await expect(
       generateElevenLabsTTS({ text: 'test', voiceId: 'voice1' })
-    ).rejects.toThrow('ElevenLabs API key not found in environment variables.');
+    ).rejects.toThrow('ElevenLabs API key not configured');
   });
 
-  it('should handle errors properly', async () => {
-    // Arrange - no need to mock ElevenLabs since current implementation just returns placeholder
+  it('should handle API errors properly', async () => {
+    const convertMock = vi.fn().mockRejectedValue(new Error('API Error'));
+    (ElevenLabsClient as unknown as vi.Mock).mockImplementation(() => ({
+      textToSpeech: { convert: convertMock },
+    }));
+    
     const generateElevenLabsTTS = await loadModule();
 
-    // Act - the function should work without throwing for basic cases
-    const result = await generateElevenLabsTTS({ text: 'test', voiceId: 'voice1' });
-
-    // Assert - should return placeholder safely
-    expect(result.audioDataUri).toBe('data:audio/mpeg;base64,placeholder');
+    await expect(
+      generateElevenLabsTTS({ text: 'test', voiceId: 'voice1' })
+    ).rejects.toThrow('Failed to generate TTS audio');
   });
 });

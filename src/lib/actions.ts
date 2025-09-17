@@ -13,6 +13,14 @@ import {
 import {
   type DialogueSegment as ImportedDialogueSegment,
   type Character as ImportedCharacter,
+  type DialogueDynamics,
+  type LiteraryDevices,
+  type Pacing,
+  type Tropes,
+  type ShowDontTellSuggestions,
+  type ConsistencyIssues,
+  type SubtextAnalyses,
+  type EmotionalTone as ImportedEmotionalTone,
 } from '@/ai/schemas';
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
@@ -180,14 +188,14 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
       segments: segmentsWithEmotions,
       characters,
       characterPortraits: (characterPortraits as CharacterPortrait[]) || [],
-      dialogueDynamics: (dialogueDynamics as any) || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
-      literaryDevices: (literaryDevices as any) || { devices: [] },
-      pacing: (pacing as any) || { segments: [] },
-      tropes: (tropes as any) || { tropes: [] },
-      showDontTellSuggestions: (showDontTellSuggestions as any) || { suggestions: [] },
-      consistencyIssues: (consistencyIssues as any) || { issues: [] },
-      subtextAnalyses: (subtextAnalyses as any) || { analyses: [] },
-      emotionalTones: (emotionalTones as any) || { tones: [] },
+      dialogueDynamics: (dialogueDynamics as DialogueDynamics) || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
+      literaryDevices: (literaryDevices as LiteraryDevices) || { devices: [] },
+      pacing: (pacing as Pacing) || { segments: [] },
+      tropes: (tropes as Tropes) || { tropes: [] },
+      showDontTellSuggestions: (showDontTellSuggestions as ShowDontTellSuggestions) || { suggestions: [] },
+      consistencyIssues: (consistencyIssues as ConsistencyIssues) || { issues: [] },
+      subtextAnalyses: (subtextAnalyses as SubtextAnalyses) || { analyses: [] },
+      emotionalTones: (emotionalTones as EmotionalToneAnalysisResult) || { tones: [] },
       soundEffects: null, // Temporarily disabled
       errors,
     };
@@ -311,10 +319,11 @@ export async function getCharacterResponse(
 export async function getBiasedStory(storyText: string, bias: { startBias: string; endBias: string }): Promise<string> {
     console.log('Calling getBiasedStory action...');
     try {
-      const result = await applyNarratorBiasFlow({ storyText, bias: bias as any });
+      const result = await applyNarratorBiasFlow({ storyText, bias: bias as { startBias: string; endBias: string } });
       return result.biasedStoryText;
-    } catch (e: any) {
-        console.error('Error in getBiasedStory action:', { error: e });
+    } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : 'Failed to apply narrator bias';
+        console.error('Error in getBiasedStory action:', { error: errorMessage });
         throw new Error('Failed to apply narrator bias.');
     }
 }
@@ -403,8 +412,9 @@ export async function generateElevenLabsAudio(text: string, voiceId: string): Pr
   try {
     const result = await generateElevenLabsTTSFlow({ text, voiceId });
     return result.audioDataUri;
-  } catch (e: any) {
-    console.error('Error in generateElevenLabsAudio action:', { error: e });
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : 'Failed to generate audio with ElevenLabs';
+    console.error('Error in generateElevenLabsAudio action:', { error: errorMessage });
     throw new Error('Failed to generate audio with ElevenLabs.');
   }
 }
