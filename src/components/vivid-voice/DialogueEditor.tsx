@@ -349,7 +349,7 @@ export function DialogueEditor({
                 <ActorStudio characters={characters} storyText={storyText} />
                     </TabsContent>
                     <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />
+                        <UnreliableNarrator storyText={storyText} />
                     </TabsContent>
                     <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <ShowDontTell suggestions={showDontTellSuggestions} onApplySuggestion={handleApplySuggestion} error={analysisErrors.showDontTell} />

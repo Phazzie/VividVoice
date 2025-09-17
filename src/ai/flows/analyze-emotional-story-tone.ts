@@ -31,7 +31,7 @@ const emotionalStoryTonePrompt = ai.definePrompt({
 **Story Text:**
 {{storyText}}
 
-**Emotional Tones:`
+**Emotional Tones:**`
 });
 
 export async function analyzeEmotionalStoryTone(input: AnalyzeEmotionalStoryToneInput): Promise<AnalyzeEmotionalStoryToneOutput> {

@@ -1,6 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Readable } from 'stream';
-import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 // Mock the ElevenLabs client at the module level
 vi.mock('@elevenlabs/elevenlabs-js', () => ({

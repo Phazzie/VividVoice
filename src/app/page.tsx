@@ -289,7 +289,6 @@ const CHUNK_THRESHOLD = 10000;
              consistencyIssues={fullAnalysis.consistencyIssues?.issues || []}
              subtextAnalyses={fullAnalysis.subtextAnalyses?.analyses || []}
              emotionalTones={fullAnalysis.emotionalTones?.tones || []}
-             soundEffects={fullAnalysis.soundEffects || []}
              analysisErrors={analysisErrors}
              onGenerateAudio={handleGenerateAudio}
              isLoading={appState === ('generating' as AppState)}

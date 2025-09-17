@@ -43,7 +43,7 @@ export function EmotionalToneAnalysis({ analysis, error }: { analysis: Emotional
                             <CardHeader>
                                 <CardTitle className="text-accent">{tone.emotion}</CardTitle>
                                 <CardDescription className="font-body italic text-base pt-2">
-                                   "{tone.quote}"
+                                   &ldquo;{tone.quote}&rdquo;
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>

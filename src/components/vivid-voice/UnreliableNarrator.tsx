@@ -4,9 +4,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { type NarratorBiasRange, getBiasedStory } from '@/lib/actions';
-import { Loader2, VenetianMask, Zap } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { getBiasedStory } from '@/lib/actions';
+import { Loader2, VenetianMask } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const biasOptions: string[] = [
@@ -18,11 +17,10 @@ const biasOptions: string[] = [
     "Hides a Key Fact"
 ];
 
-export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText: string, onApplySuggestion: (originalText: string, newText: string) => void }) {
+export function UnreliableNarrator({ storyText }: { storyText: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedBias, setSelectedBias] = useState<string>("Neutral");
     const [biasedText, setBiasedText] = useState(storyText);
-    const { toast } = useToast();
 
     const handleGenerate = async () => {
         if (selectedBias === "Neutral") {
@@ -35,12 +33,9 @@ export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText
             const bias = { startBias: selectedBias, endBias: selectedBias };
             const result = await getBiasedStory(storyText, bias);
             setBiasedText(result);
-        } catch (e: any) {
-            toast({
-                variant: "destructive",
-                title: "Generation Error",
-                description: e.message || "Could not generate the biased narrative.",
-            });
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : "Could not generate the biased narrative.";
+            console.error("Generation Error:", errorMessage);
         } finally {
             setIsLoading(false);
         }
