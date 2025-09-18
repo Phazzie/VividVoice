@@ -13,6 +13,14 @@ import {
 import {
   type DialogueSegment as ImportedDialogueSegment,
   type Character as ImportedCharacter,
+  type DialogueDynamics as ImportedDialogueDynamics,
+  type LiteraryDevice,
+  type PacingAnalysis,
+  type Trope,
+  type ShowDontTellSuggestion,
+  type ConsistencyIssue,
+  type SubtextAnalysis,
+  type EmotionalTone as ImportedEmotionalTone,
 } from '@/ai/schemas';
 import {
   generateCharacterPortraits as generateCharacterPortraitsFlow
@@ -31,6 +39,8 @@ import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-persp
 // import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
+import { analyzeEmotionalStoryTone as analyzeEmotionalStoryToneFlow } from '@/ai/flows/analyze-emotional-story-tone';
+import { type StorySettings } from '@/types/settings';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -45,10 +55,20 @@ import {
   type Perspective as ImportedPerspective,
   type SoundEffect as ImportedSoundEffect,
   type TranscriptSegment as ImportedTranscriptSegment,
+  type EmotionalTone as ImportedEmotionalTone,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
 export type DialogueSegment = ImportedDialogueSegment;
+export type EmotionalTone = ImportedEmotionalTone;
+export type DialogueDynamics = ImportedDialogueDynamics;
+export type LiteraryDevices = LiteraryDevice[];
+export type Pacing = PacingAnalysis;
+export type Tropes = Trope[];
+export type ShowDontTellSuggestions = ShowDontTellSuggestion[];
+export type ConsistencyIssues = ConsistencyIssue[];
+export type SubtextAnalyses = SubtextAnalysis[];
+export type DialogueDynamics = ImportedDialogueDynamics;
 export type Character = ImportedCharacter;
 export type CharacterPortrait = { name: string; portraitDataUri: string };
 export type LiteraryDevice = ImportedLiteraryDevice;
@@ -72,9 +92,10 @@ export type SoundEffectWithUrl = SoundEffect & { soundUrl: string };
  * Parses the dialogue from a story text. This is the first critical step in the story
  * processing pipeline. It now generates rich character profiles upfront.
  * @param storyText The raw story text.
+ * @param settings The story settings including time period and magic level.
  * @returns A promise resolving to the parsed segments and characters.
  */
-export async function getFullStoryAnalysis(storyText: string): Promise<{
+export async function getFullStoryAnalysis(storyText: string, settings?: StorySettings): Promise<{
   segments: DialogueSegment[];
   characters: Character[];
   characterPortraits: CharacterPortrait[];
@@ -85,6 +106,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
   showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
   consistencyIssues: { issues: ConsistencyIssue[] };
   subtextAnalyses: { analyses: SubtextAnalysis[] };
+  emotionalTones: { tones: EmotionalTone[] };
   soundEffects: SoundEffectWithUrl[] | null;
   errors: Record<string, string>;
 }> {
@@ -97,7 +119,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
 
   try {
     // 1. Get the foundational parsed story
-    const parsedStory = await getParsedStory(storyText);
+    const parsedStory = await getParsedStory(storyText, settings);
     if (!parsedStory || !parsedStory.segments || parsedStory.segments.length === 0) {
       const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
       console.error({ action: 'getFullStoryAnalysis', error: errorMsg });
@@ -128,6 +150,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       getShowDontTellSuggestionsFlow({ storyText }),
       findInconsistenciesFlow({ storyText }),
       analyzeSubtextFlow({ storyText }),
+      analyzeEmotionalStoryToneFlow({ storyText }),
       // getSoundDesign(storyText), // Temporarily disabled - missing flow
     ]);
 
@@ -140,6 +163,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       showDontTellSuggestionsResult,
       consistencyIssuesResult,
       subtextAnalysesResult,
+      emotionalTonesResult,
       // soundEffects, // Temporarily disabled
     ] = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
@@ -151,6 +175,7 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     const showDontTellSuggestions = showDontTellSuggestionsResult;
     const consistencyIssues = consistencyIssuesResult;
     const subtextAnalyses = subtextAnalysesResult;
+    const emotionalTones = emotionalTonesResult;
 
     const errors: Record<string, string> = {};
     if (results[0].status === 'rejected') errors.characterPortraits = results[0].reason.message;
@@ -161,7 +186,8 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
     if (results[5].status === 'rejected') errors.showDontTell = results[5].reason.message;
     if (results[6].status === 'rejected') errors.consistency = results[6].reason.message;
     if (results[7].status === 'rejected') errors.subtext = results[7].reason.message;
-    // if (results[8].status === 'rejected') errors.soundEffects = results[8].reason.message; // Temporarily disabled
+    if (results[8].status === 'rejected') errors.emotionalTone = results[8].reason.message;
+    // if (results[9].status === 'rejected') errors.soundEffects = results[9].reason.message; // Temporarily disabled
 
     console.log('Full story analysis successful.');
 
@@ -170,13 +196,14 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
       segments: segmentsWithEmotions,
       characters,
       characterPortraits: (characterPortraits as CharacterPortrait[]) || [],
-      dialogueDynamics: (dialogueDynamics as any) || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
-      literaryDevices: (literaryDevices as any) || { devices: [] },
-      pacing: (pacing as any) || { segments: [] },
-      tropes: (tropes as any) || { tropes: [] },
-      showDontTellSuggestions: (showDontTellSuggestions as any) || { suggestions: [] },
-      consistencyIssues: (consistencyIssues as any) || { issues: [] },
-      subtextAnalyses: (subtextAnalyses as any) || { analyses: [] },
+      dialogueDynamics: (dialogueDynamics as DialogueDynamics) || { summary: '', powerBalance: [], pacing: { overallWordsPerTurn: 0, characterPacing: [] } },
+      literaryDevices: (literaryDevices as LiteraryDevices) || { devices: [] },
+      pacing: (pacing as Pacing) || { segments: [] },
+      tropes: (tropes as Tropes) || { tropes: [] },
+      showDontTellSuggestions: (showDontTellSuggestions as ShowDontTellSuggestions) || { suggestions: [] },
+      consistencyIssues: { issues: (consistencyIssues as ConsistencyIssue[]) || [] },
+      subtextAnalyses: { analyses: (subtextAnalyses as SubtextAnalysis[]) || [] },
+      emotionalTones: { tones: (emotionalTones as EmotionalTone[]) || [] },
       soundEffects: null, // Temporarily disabled
       errors,
     };
@@ -190,9 +217,10 @@ export async function getFullStoryAnalysis(storyText: string): Promise<{
  * Parses the dialogue from a story text. This is the first critical step in the story
  * processing pipeline. It now generates rich character profiles upfront.
  * @param storyText The raw story text.
+ * @param settings Optional story settings for context.
  * @returns A promise resolving to the parsed segments and characters.
  */
-export async function getParsedStory(storyText: string): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
+export async function getParsedStory(storyText: string, settings?: StorySettings): Promise<{ segments: DialogueSegment[], characters: Character[] }> {
     console.log('Starting story parsing and comprehensive character profile generation...');
      if (!storyText.trim()) {
         const errorMsg = 'Validation Error: Story text cannot be empty.';
@@ -201,7 +229,12 @@ export async function getParsedStory(storyText: string): Promise<{ segments: Dia
     }
 
     try {
-        const parsedResult = await parseDialogueFlow({ storyText });
+        // Pass settings to the dialogue flow for context-aware parsing
+        const parsedResult = await parseDialogueFlow({ 
+            storyText,
+            timePeriod: settings?.timePeriod || 'modern',
+            magicLevel: settings?.magicLevel || 0
+        });
          if (!parsedResult || !parsedResult.segments || parsedResult.segments.length === 0) {
             const errorMsg = 'Parsing Error: Could not parse any dialogue from the provided text.';
             console.error({ action: 'getParsedStory', error: errorMsg });
@@ -294,10 +327,17 @@ export async function getCharacterResponse(
 export async function getBiasedStory(storyText: string, bias: { startBias: string; endBias: string }): Promise<string> {
     console.log('Calling getBiasedStory action...');
     try {
-      const result = await applyNarratorBiasFlow({ storyText, bias: bias as any });
+      const result = await applyNarratorBiasFlow({ 
+        storyText, 
+        bias: {
+          startBias: bias.startBias as "Neutral" | "Jealous of Main Character" | "Secretly the Villain" | "Admires Main Character" | "Completely Unreliable" | "Hides a Key Fact",
+          endBias: bias.endBias as "Neutral" | "Jealous of Main Character" | "Secretly the Villain" | "Admires Main Character" | "Completely Unreliable" | "Hides a Key Fact"
+        }
+      });
       return result.biasedStoryText;
-    } catch (e: any) {
-        console.error('Error in getBiasedStory action:', { error: e });
+    } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : 'Failed to apply narrator bias';
+        console.error('Error in getBiasedStory action:', { error: errorMessage });
         throw new Error('Failed to apply narrator bias.');
     }
 }
@@ -386,8 +426,9 @@ export async function generateElevenLabsAudio(text: string, voiceId: string): Pr
   try {
     const result = await generateElevenLabsTTSFlow({ text, voiceId });
     return result.audioDataUri;
-  } catch (e: any) {
-    console.error('Error in generateElevenLabsAudio action:', { error: e });
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : 'Failed to generate audio with ElevenLabs';
+    console.error('Error in generateElevenLabsAudio action:', { error: errorMessage });
     throw new Error('Failed to generate audio with ElevenLabs.');
   }
 }

@@ -6,7 +6,7 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { getFullStoryAnalysis, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment, type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from "@/lib/actions";
+import { getFullStoryAnalysis, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment, type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl, type EmotionalTone } from "@/lib/actions";
 import { getStoryById } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 import { chunkTextByParagraph } from "@/lib/chunking";
+import { type StorySettings } from "@/types/settings";
 
 type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
 type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
@@ -30,6 +31,7 @@ interface FullAnalysis {
   showDontTellSuggestions: { suggestions: ShowDontTellSuggestion[] };
   consistencyIssues: { issues: ConsistencyIssue[] };
   subtextAnalyses: { analyses: SubtextAnalysis[] };
+  emotionalTones: { tones: EmotionalTone[] };
   soundEffects: SoundEffectWithUrl[];
 }
 
@@ -55,7 +57,7 @@ function StagingStoriesPageContent() {
         try {
           const story = await getStoryById(storyIdToLoad);
           if (story && story.userId === user.uid) {
-            await handleFullAnalysis(story.storyText, story.id);
+            await handleFullAnalysis(story.storyText, { timePeriod: 'modern', magicLevel: 2 }, story.id);
           } else {
             toast({ variant: 'destructive', title: 'Error', description: 'Could not find the specified story or you do not have permission to view it.'});
             setAppState('initial');
@@ -71,10 +73,10 @@ function StagingStoriesPageContent() {
   }, [storyIdToLoad, user]);
 
 const CHUNK_THRESHOLD = 10000;
-  const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
+  const handleFullAnalysis = async (newStoryText: string, settings: StorySettings, existingStoryId: string | null = null) => {
     const isProUser = false; // Temporarily disabled pro features during merge
     if (isProUser && newStoryText.length > CHUNK_THRESHOLD) {
-      return handleFullAnalysisChunked(newStoryText, existingStoryId);
+      return handleFullAnalysisChunked(newStoryText, settings, existingStoryId);
     }
 
     setAppState('analyzing');
@@ -85,7 +87,7 @@ const CHUNK_THRESHOLD = 10000;
     setTranscript([]);
 
     try {
-      const analysisResult = await getFullStoryAnalysis(newStoryText);
+      const analysisResult = await getFullStoryAnalysis(newStoryText, settings);
 
       // Ensure soundEffects is always an array
       const normalizedResult = {
@@ -128,7 +130,7 @@ const CHUNK_THRESHOLD = 10000;
     }
   };
 
-  const handleFullAnalysisChunked = async (newStoryText: string, existingStoryId: string | null = null) => {
+  const handleFullAnalysisChunked = async (newStoryText: string, settings: StorySettings, existingStoryId: string | null = null) => {
     setAppState('analyzing');
     setError(null);
     setStoryId(existingStoryId);
@@ -149,12 +151,13 @@ const CHUNK_THRESHOLD = 10000;
         showDontTellSuggestions: { suggestions: [] },
         consistencyIssues: { issues: [] },
         subtextAnalyses: { analyses: [] },
+        emotionalTones: { tones: [] },
         soundEffects: [],
       };
       let combinedErrors: Record<string, string> = {};
 
       for (const chunk of chunks) {
-        const analysisResult = await getFullStoryAnalysis(chunk);
+        const analysisResult = await getFullStoryAnalysis(chunk, settings);
         combinedAnalysis.segments.push(...analysisResult.segments);
         combinedAnalysis.characters.push(...analysisResult.characters);
         combinedAnalysis.characterPortraits.push(...analysisResult.characterPortraits);
@@ -164,6 +167,7 @@ const CHUNK_THRESHOLD = 10000;
         combinedAnalysis.showDontTellSuggestions.suggestions.push(...analysisResult.showDontTellSuggestions.suggestions);
         combinedAnalysis.consistencyIssues.issues.push(...analysisResult.consistencyIssues.issues);
         combinedAnalysis.subtextAnalyses.analyses.push(...analysisResult.subtextAnalyses.analyses);
+        combinedAnalysis.emotionalTones.tones.push(...analysisResult.emotionalTones.tones);
         combinedAnalysis.soundEffects.push(...(analysisResult.soundEffects || []));
         Object.assign(combinedErrors, analysisResult.errors);
       }
@@ -284,7 +288,8 @@ const CHUNK_THRESHOLD = 10000;
              showDontTellSuggestions={fullAnalysis.showDontTellSuggestions?.suggestions || []}
              consistencyIssues={fullAnalysis.consistencyIssues?.issues || []}
              subtextAnalyses={fullAnalysis.subtextAnalyses?.analyses || []}
-             soundEffects={fullAnalysis.soundEffects || []}
+             emotionalTones={fullAnalysis.emotionalTones?.tones || []}
+             soundEffects={[]}
              analysisErrors={analysisErrors}
              onGenerateAudio={handleGenerateAudio}
              isLoading={appState === ('generating' as AppState)}
@@ -327,7 +332,7 @@ const CHUNK_THRESHOLD = 10000;
               "lg:col-span-2 lg:sticky lg:top-8 space-y-8 transition-all duration-700 animate-in fade-in slide-in-from-left-8",
               (appState !== 'initial' && !isLoading) && "lg:opacity-50 lg:pointer-events-none"
             )}>
-              <StoryForm onSubmit={(text) => handleFullAnalysis(text)} isLoading={isLoading} />
+              <StoryForm onSubmit={(text, settings) => handleFullAnalysis(text, settings)} isLoading={isLoading} />
             </div>
             
             <div className="lg:col-span-3 min-h-[60vh]">

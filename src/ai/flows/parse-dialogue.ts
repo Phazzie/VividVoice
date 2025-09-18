@@ -23,6 +23,8 @@ const availableVoices = [
 
 const ParseDialogueInputSchema = z.object({
   storyText: z.string().describe('The complete text of the story to parse.'),
+  timePeriod: z.string().optional().describe('The time period setting for the story.'),
+  magicLevel: z.number().optional().describe('The magic level in the story (0-5).'),
 });
 export type ParseDialogueInput = z.infer<typeof ParseDialogueInputSchema>;
 
@@ -43,9 +45,19 @@ const parseDialoguePrompt = ai.definePrompt({
   output: {schema: ParseDialogueOutputSchema},
   prompt: `You are an expert in literary analysis and a casting director for a major film studio. Your task is to process a story script, identify all characters, create detailed casting profiles for them, and then break the script into a clean, ordered list of dialogue and narration segments.
 
+{{#if timePeriod}}**STORY CONTEXT:**
+- Time Period: {{timePeriod}}
+{{/if}}
+{{#if magicLevel}}
+- Magic Level: {{magicLevel}}/5 (0=mundane, 5=pure magic)
+{{/if}}
+
 **PART 1: CHARACTER ANALYSIS & CASTING**
 
 First, read the entire story text to understand the plot, characters, and overall tone. Based on this holistic understanding, compile a list of all unique characters mentioned.
+{{#if timePeriod}}
+Consider the time period ({{timePeriod}}) when developing character descriptions and speaking styles.
+{{/if}}
 
 For each character (including the 'Narrator'), provide:
 1.  A rich, detailed 'description' that can serve as an actor's brief. This should synthesize all available information from the text (dialogue, actions, narrator descriptions) to cover:

@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { type DialogueSegment, type CharacterPortrait, type Character, shiftPerspective, generateElevenLabsAudio } from '@/lib/actions';
 import { saveStory } from '@/lib/data';
-import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
+import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users, Smile } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,8 +45,10 @@ import { CharacterArchetypes } from './CharacterArchetypes';
 import { PlotStructure } from './PlotStructure';
 import { PacingVisualizer } from './PacingVisualizer';
 import { CompareToClassics } from './CompareToClassics';
+import { EmotionalToneAnalysis } from './EmotionalToneAnalysis';
 
-import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
+import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl, type EmotionalTone } from '@/lib/actions';
+import { CREATIVE_EMOTIONS } from '@/types/settings';
 
 type DialogueEditorProps = {
   storyId: string | null;
@@ -61,6 +63,7 @@ type DialogueEditorProps = {
   showDontTellSuggestions: ShowDontTellSuggestion[];
   consistencyIssues: ConsistencyIssue[];
   subtextAnalyses: SubtextAnalysis[];
+  emotionalTones: EmotionalTone[];
   soundEffects: SoundEffectWithUrl[];
   analysisErrors: Record<string, string>;
   onGenerateAudio: (segments: DialogueSegment[]) => void;
@@ -68,9 +71,7 @@ type DialogueEditorProps = {
   onStorySave: (id: string) => void;
 };
 
-export const emotionOptions = [
-  "Neutral", "Happy", "Sad", "Angry", "Anxious", "Excited", "Intrigued", "Sarcastic", "Whispering", "Shouting", "Fearful", "Amused", "Serious", "Playful"
-];
+export const emotionOptions = CREATIVE_EMOTIONS;
 
 export function DialogueEditor({
   storyId,
@@ -85,6 +86,7 @@ export function DialogueEditor({
   showDontTellSuggestions,
   consistencyIssues,
   subtextAnalyses,
+  emotionalTones,
   soundEffects,
   analysisErrors,
   onGenerateAudio,
@@ -127,19 +129,42 @@ export function DialogueEditor({
   const handleSubmit = async () => {
     if (ttsEngine === 'elevenlabs') {
       setSegments(segments.map(s => ({ ...s, isGenerating: true })));
-      const audioPromises = segments.map(async (segment) => {
-        if (segment.dialogue.trim() === '') {
-          return { ...segment, audioDataUri: '', isGenerating: false };
-        }
-        // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
-        const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice
-        const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
-        return { ...segment, audioDataUri, isGenerating: false };
-      });
+      
+      try {
+        const audioPromises = segments.map(async (segment) => {
+          if (segment.dialogue.trim() === '') {
+            return { ...segment, audioDataUri: '', isGenerating: false };
+          }
+          
+          try {
+            // This is a simplified approach. In a real app, you'd want to get the voice ID from the character
+            const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Default voice
+            const audioDataUri = await generateElevenLabsAudio(segment.dialogue, voiceId);
+            return { ...segment, audioDataUri, isGenerating: false };
+          } catch (error) {
+            console.error(`Failed to generate audio for segment: ${segment.dialogue}`, error);
+            toast({ 
+              variant: 'destructive', 
+              title: 'Audio Generation Failed', 
+              description: `Failed to generate audio for: "${segment.dialogue.substring(0, 50)}..."`
+            });
+            return { ...segment, audioDataUri: '', isGenerating: false };
+          }
+        });
 
-      const newSegments = await Promise.all(audioPromises);
-      setSegments(newSegments);
-      // We are not calling onGenerateAudio here because we are handling the audio generation in the component
+        const newSegments = await Promise.all(audioPromises);
+        setSegments(newSegments);
+        // We are not calling onGenerateAudio here because we are handling the audio generation in the component
+      } catch (error) {
+        console.error('Failed to generate audio for segments:', error);
+        toast({ 
+          variant: 'destructive', 
+          title: 'Audio Generation Error', 
+          description: 'Failed to generate audio. Please try again.'
+        });
+        // Reset generating state
+        setSegments(segments.map(s => ({ ...s, isGenerating: false })));
+      }
     } else {
       onGenerateAudio(segments);
     }
@@ -239,6 +264,7 @@ export function DialogueEditor({
               <TabsTrigger value="literaryAnalysis" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><FlaskConical className="mr-2"/>Literary Devices</TabsTrigger>
               <TabsTrigger value="dialogueDynamics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BarChart3 className="mr-2"/>Dialogue Dynamics</TabsTrigger>
               <TabsTrigger value="pacing" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><AreaChart className="mr-2"/>Pacing</TabsTrigger>
+              <TabsTrigger value="emotionalTone" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Smile className="mr-2"/>Emotional Tone</TabsTrigger>
               <TabsTrigger value="tropeInverter" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Wand2 className="mr-2"/>Trope Inverter</TabsTrigger>
               <TabsTrigger value="actorStudio" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Users className="mr-2"/>Actor's Studio</TabsTrigger>
               <TabsTrigger value="unreliableNarrator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><VenetianMask className="mr-2"/>Unreliable Narrator</TabsTrigger>
@@ -313,6 +339,9 @@ export function DialogueEditor({
                     <TabsContent value="pacing" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <PacingAnalysis pacing={pacing} error={analysisErrors.pacing} />
                     </TabsContent>
+                    <TabsContent value="emotionalTone" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <EmotionalToneAnalysis analysis={emotionalTones} error={analysisErrors.emotionalTone} />
+                    </TabsContent>
                     <TabsContent value="tropeInverter" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <TropeInverter tropes={tropes} error={analysisErrors.tropes} />
                     </TabsContent>
@@ -320,7 +349,7 @@ export function DialogueEditor({
                 <ActorStudio characters={characters} storyText={storyText} />
                     </TabsContent>
                     <TabsContent value="unreliableNarrator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
-                        <UnreliableNarrator storyText={storyText} onApplySuggestion={handleApplySuggestion} />
+                        <UnreliableNarrator storyText={storyText} />
                     </TabsContent>
                     <TabsContent value="showDontTell" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <ShowDontTell suggestions={showDontTellSuggestions} onApplySuggestion={handleApplySuggestion} error={analysisErrors.showDontTell} />

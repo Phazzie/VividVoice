@@ -68,7 +68,7 @@ export default function DashboardPage() {
                     <p className="text-muted-foreground">Manage your saved narratives here.</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <ThemeToggle onThemeChange={setTheme} />
+                    <ThemeToggle currentTheme={theme as any} onThemeChange={setTheme as any} />
                     {theme === 'skeptical-wombat' && <SkepticismToggle />}
                     <Button asChild>
                         <Link href="/"><PlusCircle className="mr-2"/> New Story</Link>

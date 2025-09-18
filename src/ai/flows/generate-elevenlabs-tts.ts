@@ -33,8 +33,39 @@ const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsClient({
 }) : null;
 
 export async function generateElevenLabsTTS(input: GenerateElevenLabsTTSInput): Promise<GenerateElevenLabsTTSOutput> {
-    // Temporarily disabled during merge resolution
-    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. Please update API usage.');
+    if (!elevenlabsClient) {
+        throw new Error('ElevenLabs API key not configured. Please set ELEVENLABS_API_KEY environment variable.');
+    }
+
+    try {
+        const audioStream = await elevenlabsClient.textToSpeech.convert(
+            input.voiceId,
+            {
+                text: input.text,
+            }
+        );
+
+        // Convert stream to buffer and then to data URI
+        const chunks: Buffer[] = [];
+        const reader = audioStream.getReader();
+        
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(Buffer.from(value));
+            }
+        } finally {
+            reader.releaseLock();
+        }
+        const audioBuffer = Buffer.concat(chunks);
+        const audioDataUri = `data:audio/mpeg;base64,${audioBuffer.toString('base64')}`;
+
+        return { audioDataUri };
+    } catch (error) {
+        console.error('ElevenLabs TTS generation failed:', error);
+        throw new Error('Failed to generate TTS audio');
+    }
 }
 
 const generateElevenLabsTTSFlow = ai.defineFlow(
