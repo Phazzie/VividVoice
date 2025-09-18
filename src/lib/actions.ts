@@ -201,9 +201,9 @@ export async function getFullStoryAnalysis(storyText: string, settings?: StorySe
       pacing: (pacing as Pacing) || { segments: [] },
       tropes: (tropes as Tropes) || { tropes: [] },
       showDontTellSuggestions: (showDontTellSuggestions as ShowDontTellSuggestions) || { suggestions: [] },
-      consistencyIssues: (consistencyIssues as ConsistencyIssues) || { issues: [] },
-      subtextAnalyses: (subtextAnalyses as SubtextAnalyses) || { analyses: [] },
-      emotionalTones: emotionalTones || [],
+      consistencyIssues: { issues: (consistencyIssues as ConsistencyIssue[]) || [] },
+      subtextAnalyses: { analyses: (subtextAnalyses as SubtextAnalysis[]) || [] },
+      emotionalTones: { tones: (emotionalTones as EmotionalTone[]) || [] },
       soundEffects: null, // Temporarily disabled
       errors,
     };
