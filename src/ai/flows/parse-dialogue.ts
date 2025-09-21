@@ -10,15 +10,22 @@
  * - ParseDialogueOutput - The return type for the parseDialogue function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import { CharacterSchema, DialogueSegmentSchema } from '@/ai/schemas';
 
 // A predefined list of available high-quality voices for the AI to choose from.
 const availableVoices = [
-  'en-US-Standard-A', 'en-US-Standard-B', 'en-US-Standard-C', 
-  'en-US-Standard-D', 'en-US-Standard-E', 'en-US-Standard-F',
-  'en-US-Standard-G', 'en-US-Standard-H', 'en-US-Standard-I', 'en-US-Standard-J'
+  'en-US-Standard-A',
+  'en-US-Standard-B',
+  'en-US-Standard-C',
+  'en-US-Standard-D',
+  'en-US-Standard-E',
+  'en-US-Standard-F',
+  'en-US-Standard-G',
+  'en-US-Standard-H',
+  'en-US-Standard-I',
+  'en-US-Standard-J',
 ];
 
 const ParseDialogueInputSchema = z.object({
@@ -27,20 +34,22 @@ const ParseDialogueInputSchema = z.object({
 export type ParseDialogueInput = z.infer<typeof ParseDialogueInputSchema>;
 
 const ParseDialogueOutputSchema = z.object({
-    segments: z.array(DialogueSegmentSchema),
-    characters: z.array(CharacterSchema)
+  segments: z.array(DialogueSegmentSchema),
+  characters: z.array(CharacterSchema),
 });
 
 export type ParseDialogueOutput = z.infer<typeof ParseDialogueOutputSchema>;
 
-export async function parseDialogue(input: ParseDialogueInput): Promise<ParseDialogueOutput> {
+export async function parseDialogue(
+  input: ParseDialogueInput
+): Promise<ParseDialogueOutput> {
   return parseDialogueFlow(input);
 }
 
 const parseDialoguePrompt = ai.definePrompt({
   name: 'parseDialoguePrompt',
-  input: {schema: ParseDialogueInputSchema},
-  output: {schema: ParseDialogueOutputSchema},
+  input: { schema: ParseDialogueInputSchema },
+  output: { schema: ParseDialogueOutputSchema },
   prompt: `You are an expert in literary analysis and a casting director for a major film studio. Your task is to process a story script, identify all characters, create detailed casting profiles for them, and then break the script into a clean, ordered list of dialogue and narration segments.
 
 **PART 1: CHARACTER ANALYSIS & CASTING**
@@ -145,8 +154,8 @@ const parseDialogueFlow = ai.defineFlow(
     inputSchema: ParseDialogueInputSchema,
     outputSchema: ParseDialogueOutputSchema,
   },
-  async input => {
-    const {output} = await parseDialoguePrompt(input);
+  async (input) => {
+    const { output } = await parseDialoguePrompt(input);
     return output!;
   }
 );

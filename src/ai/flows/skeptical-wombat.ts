@@ -9,7 +9,9 @@ const SkepticalWombatInputSchema = z.object({
 export type SkepticalWombatInput = z.infer<typeof SkepticalWombatInputSchema>;
 
 const SkepticalWombatOutputSchema = z.object({
-  commentary: z.string().describe('The Skeptical Wombat\'s witty and jaded commentary.'),
+  commentary: z
+    .string()
+    .describe("The Skeptical Wombat's witty and jaded commentary."),
 });
 export type SkepticalWombatOutput = z.infer<typeof SkepticalWombatOutputSchema>;
 
@@ -22,10 +24,12 @@ const skepticalWombatPrompt = ai.definePrompt({
 **Story Text:**
 {{storyText}}
 
-**Your Witty Commentary:**`
+**Your Witty Commentary:**`,
 });
 
-export async function skepticalWombat(input: SkepticalWombatInput): Promise<SkepticalWombatOutput> {
+export async function skepticalWombat(
+  input: SkepticalWombatInput
+): Promise<SkepticalWombatOutput> {
   return skepticalWombatFlow(input);
 }
 

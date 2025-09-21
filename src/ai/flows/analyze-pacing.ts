@@ -2,14 +2,14 @@
 
 /**
  * @fileOverview Implements an AI agent that analyzes the pacing of a story.
- * 
+ *
  * - analyzeStoryPacing - A function that handles the story pacing analysis.
  * - AnalyzePacingInput - The input type for the function.
  * - AnalyzePacingOutput - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import { PacingSegmentSchema } from '@/ai/schemas';
 
 const AnalyzePacingInputSchema = z.object({
@@ -18,13 +18,14 @@ const AnalyzePacingInputSchema = z.object({
 export type AnalyzePacingInput = z.infer<typeof AnalyzePacingInputSchema>;
 
 const AnalyzePacingOutputSchema = z.object({
-    segments: z.array(PacingSegmentSchema),
+  segments: z.array(PacingSegmentSchema),
 });
 export type AnalyzePacingOutput = z.infer<typeof AnalyzePacingOutputSchema>;
 
-
-export async function analyzeStoryPacing(input: AnalyzePacingInput): Promise<AnalyzePacingOutput> {
-    return analyzePacingFlow(input);
+export async function analyzeStoryPacing(
+  input: AnalyzePacingInput
+): Promise<AnalyzePacingOutput> {
+  return analyzePacingFlow(input);
 }
 
 const analyzePacingFlow = ai.defineFlow(
@@ -36,8 +37,8 @@ const analyzePacingFlow = ai.defineFlow(
   async (input) => {
     const prompt = ai.definePrompt({
       name: 'pacingAnalysisPrompt',
-      input: {schema: AnalyzePacingInputSchema},
-      output: {schema: AnalyzePacingOutputSchema},
+      input: { schema: AnalyzePacingInputSchema },
+      output: { schema: AnalyzePacingOutputSchema },
       prompt: `You are a story structure analyst. Your task is to analyze the provided story text and break it down into segments to visualize its pacing.
 
 Go through the text and identify contiguous blocks of 'Dialogue' and 'Narration'. For each block, provide:
@@ -89,8 +90,8 @@ Return the results as a JSON object with a single key 'segments' containing an a
 \`\`\`
 `,
     });
-    
-    const {output} = await prompt(input);
+
+    const { output } = await prompt(input);
     return output!;
   }
 );

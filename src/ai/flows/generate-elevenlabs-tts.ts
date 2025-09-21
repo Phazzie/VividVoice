@@ -16,25 +16,37 @@ const GenerateElevenLabsTTSInputSchema = z.object({
   text: z.string().describe('The text to be converted to speech.'),
   voiceId: z.string().describe('The ElevenLabs voice ID to use.'),
 });
-export type GenerateElevenLabsTTSInput = z.infer<typeof GenerateElevenLabsTTSInputSchema>;
+export type GenerateElevenLabsTTSInput = z.infer<
+  typeof GenerateElevenLabsTTSInputSchema
+>;
 
 const GenerateElevenLabsTTSOutputSchema = z.object({
   audioDataUri: z.string().describe('The data URI of the generated audio.'),
 });
-export type GenerateElevenLabsTTSOutput = z.infer<typeof GenerateElevenLabsTTSOutputSchema>;
+export type GenerateElevenLabsTTSOutput = z.infer<
+  typeof GenerateElevenLabsTTSOutputSchema
+>;
 
 const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
 if (!elevenLabsApiKey) {
-  console.warn('ElevenLabs API key not found in environment variables. TTS generation will fail.');
+  console.warn(
+    'ElevenLabs API key not found in environment variables. TTS generation will fail.'
+  );
 }
 
-const elevenlabsClient = elevenLabsApiKey ? new ElevenLabsClient({
-  apiKey: elevenLabsApiKey,
-}) : null;
+const elevenlabsClient = elevenLabsApiKey
+  ? new ElevenLabsClient({
+      apiKey: elevenLabsApiKey,
+    })
+  : null;
 
-export async function generateElevenLabsTTS(input: GenerateElevenLabsTTSInput): Promise<GenerateElevenLabsTTSOutput> {
-    // Temporarily disabled during merge resolution
-    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. Please update API usage.');
+export async function generateElevenLabsTTS(
+  input: GenerateElevenLabsTTSInput
+): Promise<GenerateElevenLabsTTSOutput> {
+  // Temporarily disabled during merge resolution
+  throw new Error(
+    'ElevenLabs TTS generation temporarily disabled during merge resolution. Please update API usage.'
+  );
 }
 
 const generateElevenLabsTTSFlow = ai.defineFlow(
@@ -47,8 +59,10 @@ const generateElevenLabsTTSFlow = ai.defineFlow(
     const { text, voiceId } = input;
 
     // TODO: Fix ElevenLabs API usage after merge
-    throw new Error('ElevenLabs TTS generation temporarily disabled during merge resolution. API usage needs to be updated.');
-    
+    throw new Error(
+      'ElevenLabs TTS generation temporarily disabled during merge resolution. API usage needs to be updated.'
+    );
+
     /* 
     if (!elevenlabsClient) {
       throw new Error('ElevenLabs API key not found in environment variables.');
