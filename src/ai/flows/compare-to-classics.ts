@@ -6,18 +6,28 @@ import { z } from 'genkit';
 const CompareToClassicsInputSchema = z.object({
   storyText: z.string().describe('The story text to be analyzed.'),
 });
-export type CompareToClassicsInput = z.infer<typeof CompareToClassicsInputSchema>;
+export type CompareToClassicsInput = z.infer<
+  typeof CompareToClassicsInputSchema
+>;
 
 const ComparisonSchema = z.object({
   classicStory: z.string().describe('The classic story being compared to.'),
-  similarities: z.array(z.string()).describe('The similarities between the two stories.'),
-  differences: z.array(z.string()).describe('The differences between the two stories.'),
+  similarities: z
+    .array(z.string())
+    .describe('The similarities between the two stories.'),
+  differences: z
+    .array(z.string())
+    .describe('The differences between the two stories.'),
 });
 
 const CompareToClassicsOutputSchema = z.object({
-  comparisons: z.array(ComparisonSchema).describe('The list of comparisons to classic stories.'),
+  comparisons: z
+    .array(ComparisonSchema)
+    .describe('The list of comparisons to classic stories.'),
 });
-export type CompareToClassicsOutput = z.infer<typeof CompareToClassicsOutputSchema>;
+export type CompareToClassicsOutput = z.infer<
+  typeof CompareToClassicsOutputSchema
+>;
 
 const compareToClassicsPrompt = ai.definePrompt({
   name: 'compareToClassicsPrompt',
@@ -28,10 +38,12 @@ const compareToClassicsPrompt = ai.definePrompt({
 **Story Text:**
 {{storyText}}
 
-**Comparisons to Classic Stories:**`
+**Comparisons to Classic Stories:**`,
 });
 
-export async function compareToClassics(input: CompareToClassicsInput): Promise<CompareToClassicsOutput> {
+export async function compareToClassics(
+  input: CompareToClassicsInput
+): Promise<CompareToClassicsOutput> {
   return compareToClassicsFlow(input);
 }
 

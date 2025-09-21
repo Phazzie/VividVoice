@@ -214,3 +214,28 @@ export const TranscriptSegmentSchema = z.object({
   endTime: z.number(),
 });
 export type TranscriptSegment = z.infer<typeof TranscriptSegmentSchema>;
+
+/**
+ * Defines the schema for supernatural story generation input.
+ */
+export const SupernaturalStoryInputSchema = z.object({
+  prompt: z.string().describe('The story prompt or concept to generate from.'),
+  spiceLevel: z.number().min(1).max(5).describe('The spice level (1-5) for romantic content intensity.'),
+  creatureType: z.enum(['vampire', 'werewolf', 'fairy', 'mixed']).describe('The supernatural creature type to focus on.'),
+  episodeLength: z.enum(['short', 'medium', 'long']).default('medium').describe('Desired story length.'),
+  tone: z.enum(['dark', 'playful', 'mysterious', 'passionate']).default('mysterious').describe('Overall story tone.'),
+});
+export type SupernaturalStoryInput = z.infer<typeof SupernaturalStoryInputSchema>;
+
+/**
+ * Defines the schema for a generated supernatural story.
+ */
+export const GeneratedSupernaturalStorySchema = z.object({
+  title: z.string().describe('A compelling title for the story.'),
+  storyText: z.string().describe('The complete story text in proper audio format.'),
+  spiceLevel: z.number().describe('The actual spice level achieved.'),
+  wordCount: z.number().describe('Total word count of the story.'),
+  creatureElements: z.array(z.string()).describe('List of supernatural elements included.'),
+  serialHooks: z.array(z.string()).describe('Unresolved elements for potential continuation.'),
+});
+export type GeneratedSupernaturalStory = z.infer<typeof GeneratedSupernaturalStorySchema>;

@@ -31,6 +31,7 @@ import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-persp
 // import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
+import { generateSupernaturalStory as generateSupernaturalStoryFlow } from '@/ai/flows/generate-supernatural-story';
 
 import {
   type LiteraryDevice as ImportedLiteraryDevice,
@@ -45,6 +46,8 @@ import {
   type Perspective as ImportedPerspective,
   type SoundEffect as ImportedSoundEffect,
   type TranscriptSegment as ImportedTranscriptSegment,
+  type SupernaturalStoryInput as ImportedSupernaturalStoryInput,
+  type GeneratedSupernaturalStory as ImportedGeneratedSupernaturalStory,
 } from '@/ai/schemas';
 
 // Re-exporting types for easy use in client components, maintaining a single source of truth.
@@ -61,6 +64,8 @@ export type SubtextAnalysis = ImportedSubtextAnalysis;
 export type Perspective = ImportedPerspective;
 export type SoundEffect = ImportedSoundEffect;
 export type TranscriptSegment = ImportedTranscriptSegment;
+export type SupernaturalStoryInput = ImportedSupernaturalStoryInput;
+export type GeneratedSupernaturalStory = ImportedGeneratedSupernaturalStory;
 export type { ChatMessage, NarratorBiasRange };
 
 /**
@@ -389,5 +394,34 @@ export async function generateElevenLabsAudio(text: string, voiceId: string): Pr
   } catch (e: any) {
     console.error('Error in generateElevenLabsAudio action:', { error: e });
     throw new Error('Failed to generate audio with ElevenLabs.');
+  }
+}
+
+/**
+ * Generates a supernatural romance story with sophisticated prose and audio format support.
+ * @param input The story generation parameters including prompt, spice level, creature type, etc.
+ * @returns A promise resolving to the generated story with metadata.
+ */
+export async function generateSupernaturalStory(input: SupernaturalStoryInput): Promise<GeneratedSupernaturalStory> {
+  console.log('Calling generateSupernaturalStory action...', { input });
+  
+  if (!input.prompt?.trim()) {
+    const errorMsg = 'Validation Error: Story prompt cannot be empty.';
+    console.error({ action: 'generateSupernaturalStory', error: errorMsg });
+    throw new Error(errorMsg);
+  }
+
+  if (input.spiceLevel < 1 || input.spiceLevel > 5) {
+    const errorMsg = 'Validation Error: Spice level must be between 1 and 5.';
+    console.error({ action: 'generateSupernaturalStory', error: errorMsg });
+    throw new Error(errorMsg);
+  }
+
+  try {
+    const result = await generateSupernaturalStoryFlow(input);
+    return result.story;
+  } catch (e: any) {
+    console.error('Error in generateSupernaturalStory action:', { error: e, input });
+    throw new Error('Failed to generate supernatural story.');
   }
 }

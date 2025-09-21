@@ -138,7 +138,7 @@ const CHUNK_THRESHOLD = 10000;
 
     try {
       const chunks = chunkTextByParagraph(newStoryText);
-      let combinedAnalysis: FullAnalysis = {
+      const combinedAnalysis: FullAnalysis = {
         segments: [],
         characters: [],
         characterPortraits: [],
@@ -151,7 +151,7 @@ const CHUNK_THRESHOLD = 10000;
         subtextAnalyses: { analyses: [] },
         soundEffects: [],
       };
-      let combinedErrors: Record<string, string> = {};
+      const combinedErrors: Record<string, string> = {};
 
       for (const chunk of chunks) {
         const analysisResult = await getFullStoryAnalysis(chunk);

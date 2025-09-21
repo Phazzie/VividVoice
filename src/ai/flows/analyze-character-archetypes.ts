@@ -6,18 +6,30 @@ import { z } from 'genkit';
 const AnalyzeCharacterArchetypesInputSchema = z.object({
   storyText: z.string().describe('The story text to be analyzed.'),
 });
-export type AnalyzeCharacterArchetypesInput = z.infer<typeof AnalyzeCharacterArchetypesInputSchema>;
+export type AnalyzeCharacterArchetypesInput = z.infer<
+  typeof AnalyzeCharacterArchetypesInputSchema
+>;
 
 const CharacterArchetypeSchema = z.object({
   characterName: z.string().describe('The name of the character.'),
-  archetype: z.string().describe('The archetype of the character (e.g., Hero, Mentor, Trickster).'),
-  justification: z.string().describe('The justification for assigning this archetype.'),
+  archetype: z
+    .string()
+    .describe(
+      'The archetype of the character (e.g., Hero, Mentor, Trickster).'
+    ),
+  justification: z
+    .string()
+    .describe('The justification for assigning this archetype.'),
 });
 
 const AnalyzeCharacterArchetypesOutputSchema = z.object({
-  characterArchetypes: z.array(CharacterArchetypeSchema).describe('The list of character archetypes.'),
+  characterArchetypes: z
+    .array(CharacterArchetypeSchema)
+    .describe('The list of character archetypes.'),
 });
-export type AnalyzeCharacterArchetypesOutput = z.infer<typeof AnalyzeCharacterArchetypesOutputSchema>;
+export type AnalyzeCharacterArchetypesOutput = z.infer<
+  typeof AnalyzeCharacterArchetypesOutputSchema
+>;
 
 const analyzeCharacterArchetypesPrompt = ai.definePrompt({
   name: 'analyzeCharacterArchetypesPrompt',
@@ -28,10 +40,12 @@ const analyzeCharacterArchetypesPrompt = ai.definePrompt({
 **Story Text:**
 {{storyText}}
 
-**Character Archetypes:**`
+**Character Archetypes:**`,
 });
 
-export async function analyzeCharacterArchetypes(input: AnalyzeCharacterArchetypesInput): Promise<AnalyzeCharacterArchetypesOutput> {
+export async function analyzeCharacterArchetypes(
+  input: AnalyzeCharacterArchetypesInput
+): Promise<AnalyzeCharacterArchetypesOutput> {
   return analyzeCharacterArchetypesFlow(input);
 }
 

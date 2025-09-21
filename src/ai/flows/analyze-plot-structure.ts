@@ -6,17 +6,27 @@ import { z } from 'genkit';
 const AnalyzePlotStructureInputSchema = z.object({
   storyText: z.string().describe('The story text to be analyzed.'),
 });
-export type AnalyzePlotStructureInput = z.infer<typeof AnalyzePlotStructureInputSchema>;
+export type AnalyzePlotStructureInput = z.infer<
+  typeof AnalyzePlotStructureInputSchema
+>;
 
 const PlotStructureSchema = z.object({
-  plotStructure: z.string().describe('The plot structure of the story (e.g., Freytag\'s Pyramid, Three-Act Structure).'),
+  plotStructure: z
+    .string()
+    .describe(
+      "The plot structure of the story (e.g., Freytag's Pyramid, Three-Act Structure)."
+    ),
   analysis: z.string().describe('The analysis of the plot structure.'),
 });
 
 const AnalyzePlotStructureOutputSchema = z.object({
-  plotStructure: PlotStructureSchema.describe('The plot structure of the story.'),
+  plotStructure: PlotStructureSchema.describe(
+    'The plot structure of the story.'
+  ),
 });
-export type AnalyzePlotStructureOutput = z.infer<typeof AnalyzePlotStructureOutputSchema>;
+export type AnalyzePlotStructureOutput = z.infer<
+  typeof AnalyzePlotStructureOutputSchema
+>;
 
 const analyzePlotStructurePrompt = ai.definePrompt({
   name: 'analyzePlotStructurePrompt',
@@ -27,10 +37,12 @@ const analyzePlotStructurePrompt = ai.definePrompt({
 **Story Text:**
 {{storyText}}
 
-**Plot Structure Analysis:**`
+**Plot Structure Analysis:**`,
 });
 
-export async function analyzePlotStructure(input: AnalyzePlotStructureInput): Promise<AnalyzePlotStructureOutput> {
+export async function analyzePlotStructure(
+  input: AnalyzePlotStructureInput
+): Promise<AnalyzePlotStructureOutput> {
   return analyzePlotStructureFlow(input);
 }
 

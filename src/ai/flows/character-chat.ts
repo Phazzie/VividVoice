@@ -4,7 +4,7 @@
  * @fileOverview An AI agent that allows a user to "interview" a character from their story.
  * This flow has been updated to use the rich, pre-generated character description from the
  * main parsing flow, making it more efficient.
- * 
+ *
  * - characterChat - A function that handles chatting with a character.
  * - CharacterChatInput - The input type for the function.
  * - CharacterChatOutput - The return type for the function.
@@ -22,9 +22,15 @@ const CharacterChatInputSchema = z.object({
   character: CharacterSchema.describe(
     "The character object, containing a detailed description which serves as the actor's brief."
   ),
-  history: z.array(ChatMessageSchema).describe('The history of the conversation so far.'),
-  userMessage: z.string().describe("The user's latest message to the character."),
-  storyText: z.string().describe('The full text of the story for context retrieval.'),
+  history: z
+    .array(ChatMessageSchema)
+    .describe('The history of the conversation so far.'),
+  userMessage: z
+    .string()
+    .describe("The user's latest message to the character."),
+  storyText: z
+    .string()
+    .describe('The full text of the story for context retrieval.'),
 });
 export type CharacterChatInput = z.infer<typeof CharacterChatInputSchema>;
 
@@ -85,7 +91,9 @@ Now, provide the character's response. It must be consistent with their personal
 `,
 });
 
-export async function characterChat(input: CharacterChatInput): Promise<CharacterChatOutput> {
+export async function characterChat(
+  input: CharacterChatInput
+): Promise<CharacterChatOutput> {
   return characterChatFlow(input);
 }
 
@@ -110,11 +118,13 @@ const characterChatFlow = ai.defineFlow(
         chunkOverlap: 200,
       });
       const allDocs = await textSplitter.createDocuments([storyText], [], {
-        chunkHeader: "CHAPTER_HEADER",
+        chunkHeader: 'CHAPTER_HEADER',
         appendChunkOverlapHeader: true,
       });
 
-      const characterDocs = allDocs.filter(doc => doc.pageContent.includes(character.name));
+      const characterDocs = allDocs.filter((doc) =>
+        doc.pageContent.includes(character.name)
+      );
 
       if (characterDocs.length === 0) {
         // If no specific documents for the character, use all documents
@@ -139,9 +149,16 @@ const characterChatFlow = ai.defineFlow(
 
     const retriever = vectorStore.asRetriever({ k: 3 });
     const relevantDocs = await retriever.invoke(userMessage);
-    const storyContext = relevantDocs.map((doc) => doc.pageContent).join('\n\n') || 'No relevant context found in the story.';
+    const storyContext =
+      relevantDocs.map((doc) => doc.pageContent).join('\n\n') ||
+      'No relevant context found in the story.';
 
-    const { output } = await characterChatPrompt({ character, history, userMessage, storyContext });
+    const { output } = await characterChatPrompt({
+      character,
+      history,
+      userMessage,
+      storyContext,
+    });
     return output!;
   }
 );

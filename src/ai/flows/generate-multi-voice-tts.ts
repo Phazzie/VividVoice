@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -12,27 +11,43 @@
  * - GenerateMultiVoiceTTSOutput - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import wav from 'wav';
 import SsmlBuilder from 'ssml-builder';
-import { DialogueSegmentSchema, CharacterSchema, TranscriptSegmentSchema } from '@/ai/schemas';
+import {
+  DialogueSegmentSchema,
+  CharacterSchema,
+  TranscriptSegmentSchema,
+} from '@/ai/schemas';
 
 const GenerateMultiVoiceTTSInputSchema = z.object({
-  segments: z.array(DialogueSegmentSchema).describe('An array of dialogue segments for a scene.'),
-  characters: z.array(CharacterSchema).describe('A list of unique character objects with voice assignments.'),
+  segments: z
+    .array(DialogueSegmentSchema)
+    .describe('An array of dialogue segments for a scene.'),
+  characters: z
+    .array(CharacterSchema)
+    .describe('A list of unique character objects with voice assignments.'),
 });
-export type GenerateMultiVoiceTTSInput = z.infer<typeof GenerateMultiVoiceTTSInputSchema>;
+export type GenerateMultiVoiceTTSInput = z.infer<
+  typeof GenerateMultiVoiceTTSInputSchema
+>;
 
 const GenerateMultiVoiceTTSOutputSchema = z.object({
   audioDataUri: z
     .string()
     .describe('The audio data URI of the generated speech in WAV format.'),
-  transcript: z.array(TranscriptSegmentSchema).describe('A detailed transcript with word-level timings.'),
+  transcript: z
+    .array(TranscriptSegmentSchema)
+    .describe('A detailed transcript with word-level timings.'),
 });
-export type GenerateMultiVoiceTTSOutput = z.infer<typeof GenerateMultiVoiceTTSOutputSchema>;
+export type GenerateMultiVoiceTTSOutput = z.infer<
+  typeof GenerateMultiVoiceTTSOutputSchema
+>;
 
-export async function generateMultiVoiceTTS(input: GenerateMultiVoiceTTSInput): Promise<GenerateMultiVoiceTTSOutput> {
+export async function generateMultiVoiceTTS(
+  input: GenerateMultiVoiceTTSInput
+): Promise<GenerateMultiVoiceTTSOutput> {
   return generateMultiVoiceTTSFlow(input);
 }
 
@@ -44,17 +59,17 @@ const generateMultiVoiceTTSFlow = ai.defineFlow(
   },
   async ({ segments, characters }) => {
     const characterVoiceMap = new Map<string, string>();
-     characters.forEach(char => {
-        if (char.voiceId) {
-            characterVoiceMap.set(char.name, char.voiceId);
-        }
+    characters.forEach((char) => {
+      if (char.voiceId) {
+        characterVoiceMap.set(char.name, char.voiceId);
+      }
     });
     // Ensure Narrator has a default voice if not assigned.
     if (!characterVoiceMap.has('Narrator')) {
-        characterVoiceMap.set('Narrator', 'en-US-Standard-A');
+      characterVoiceMap.set('Narrator', 'en-US-Standard-A');
     }
 
-    let ssml = new SsmlBuilder({ root: true });
+    const ssml = new SsmlBuilder({ root: true });
     segments.forEach((segment, index) => {
       // Add a slight pause between segments for better pacing.
       ssml.pause('150ms');
@@ -62,38 +77,44 @@ const generateMultiVoiceTTSFlow = ai.defineFlow(
       // Use a <mark> tag to associate parts of the SSML with our original segments
       const markName = `seg_${index}`;
       ssml.mark({ name: markName });
-      
+
       // We pass the emotion in parenthesis to the TTS model for expressive performance.
       const ssmlText = `(${segment.emotion}) ${segment.dialogue}`;
       const voice = characterVoiceMap.get(segment.character);
-      
+
       if (voice) {
         // Use the AI-selected voice for the character
-        const voiceElement = ssml.voice({name: voice});
-        voiceElement.prosody({
+        const voiceElement = ssml.voice({ name: voice });
+        voiceElement.prosody(
+          {
             rate: 'medium', // We can adjust rate/pitch later if needed
-            pitch: 'medium'
-        }, ssmlText);
+            pitch: 'medium',
+          },
+          ssmlText
+        );
       } else {
         // Fallback for any character without a voice
-         ssml.prosody({
+        ssml.prosody(
+          {
             rate: 'medium',
-            pitch: 'medium'
-        }, ssmlText);
+            pitch: 'medium',
+          },
+          ssmlText
+        );
       }
     });
 
     const ssmlString = ssml.toString();
-    
+
     const response = await ai.generate({
       model: 'googleai/gemini-2.5-flash-preview-tts',
-      config: { 
+      config: {
         // Request both AUDIO and a TRANSCRIPT with timing information
         responseModalities: ['AUDIO', 'TRANSCRIPT'],
       },
       prompt: ssmlString,
     });
-    
+
     const media = response.media;
     const ttsTranscript = (response as any).transcript;
 
@@ -110,11 +131,10 @@ const generateMultiVoiceTTSFlow = ai.defineFlow(
 
     // Process the raw TTS transcript to align with our original segments for highlighting
     const finalTranscript = processTranscript(ttsTranscript, segments);
-    
-    return {audioDataUri, transcript: finalTranscript };
+
+    return { audioDataUri, transcript: finalTranscript };
   }
 );
-
 
 /**
  * Converts raw PCM audio data into a Base64-encoded WAV format string.
@@ -132,7 +152,7 @@ async function toWav(
       bitDepth: sampleWidth * 8,
     });
 
-    let bufs = [] as any[];
+    const bufs = [] as any[];
     writer.on('error', reject);
     writer.on('data', function (d) {
       bufs.push(d);
@@ -153,44 +173,51 @@ async function toWav(
  * @param segments The original dialogue segments sent to the API.
  * @returns A structured transcript aligned with the original segments.
  */
-function processTranscript(rawTranscript: any[], segments: z.infer<typeof DialogueSegmentSchema>[]): z.infer<typeof TranscriptSegmentSchema>[] {
-    // First, create a map of all the <mark> tags and their start times.
-    const markTimings: { [key: string]: number } = {};
-    rawTranscript.forEach(item => {
-        if (item.markName) {
-            markTimings[item.markName] = item.startTime;
-        }
+function processTranscript(
+  rawTranscript: any[],
+  segments: z.infer<typeof DialogueSegmentSchema>[]
+): z.infer<typeof TranscriptSegmentSchema>[] {
+  // First, create a map of all the <mark> tags and their start times.
+  const markTimings: { [key: string]: number } = {};
+  rawTranscript.forEach((item) => {
+    if (item.markName) {
+      markTimings[item.markName] = item.startTime;
+    }
+  });
+
+  // Create a time range for each of our original segments using the mark timings.
+  const segmentTimings = segments.map((_, index) => {
+    const startTime = markTimings[`seg_${index}`] || 0;
+    // The end time is the start time of the *next* segment.
+    const nextStartTime = markTimings[`seg_${index + 1}`] || Infinity;
+    return { index, startTime, endTime: nextStartTime };
+  });
+
+  const finalTranscript: z.infer<typeof TranscriptSegmentSchema>[] = [];
+  segmentTimings.forEach(({ index, startTime, endTime }) => {
+    // Filter the raw transcript to get only the words that fall within this segment's time range.
+    const wordsForSegment = rawTranscript.filter(
+      (item) =>
+        item.word && item.startTime >= startTime && item.startTime < endTime
+    );
+
+    // The true end time of the segment is the end time of its last word.
+    const segmentEndTime =
+      wordsForSegment.length > 0
+        ? wordsForSegment[wordsForSegment.length - 1].endTime
+        : startTime;
+
+    finalTranscript.push({
+      segmentIndex: index,
+      words: wordsForSegment.map((w) => ({
+        word: w.word,
+        startTime: w.startTime,
+        endTime: w.endTime,
+      })),
+      startTime: startTime,
+      endTime: segmentEndTime,
     });
+  });
 
-    // Create a time range for each of our original segments using the mark timings.
-    const segmentTimings = segments.map((_, index) => {
-        const startTime = markTimings[`seg_${index}`] || 0;
-        // The end time is the start time of the *next* segment.
-        const nextStartTime = markTimings[`seg_${index + 1}`] || Infinity;
-        return { index, startTime, endTime: nextStartTime };
-    });
-
-    const finalTranscript: z.infer<typeof TranscriptSegmentSchema>[] = [];
-    segmentTimings.forEach(({ index, startTime, endTime }) => {
-        // Filter the raw transcript to get only the words that fall within this segment's time range.
-        const wordsForSegment = rawTranscript.filter(item => 
-            item.word && item.startTime >= startTime && item.startTime < endTime
-        );
-
-        // The true end time of the segment is the end time of its last word.
-        const segmentEndTime = wordsForSegment.length > 0 ? wordsForSegment[wordsForSegment.length - 1].endTime : startTime;
-        
-        finalTranscript.push({
-            segmentIndex: index,
-            words: wordsForSegment.map(w => ({
-                word: w.word,
-                startTime: w.startTime,
-                endTime: w.endTime,
-            })),
-            startTime: startTime,
-            endTime: segmentEndTime,
-        });
-    });
-
-    return finalTranscript;
+  return finalTranscript;
 }

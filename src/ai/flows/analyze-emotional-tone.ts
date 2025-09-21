@@ -13,18 +13,29 @@ import { z } from 'genkit';
 
 const AnalyzeEmotionalToneInputSchema = z.object({
   dialogue: z.string().describe('The line of dialogue to analyze.'),
-  context: z.string().describe('The surrounding lines of dialogue and narration for context.'),
+  context: z
+    .string()
+    .describe('The surrounding lines of dialogue and narration for context.'),
 });
-export type AnalyzeEmotionalToneInput = z.infer<typeof AnalyzeEmotionalToneInputSchema>;
+export type AnalyzeEmotionalToneInput = z.infer<
+  typeof AnalyzeEmotionalToneInputSchema
+>;
 
 const AnalyzeEmotionalToneOutputSchema = z.object({
-  emotion: z.string().describe('The inferred emotion of the dialogue. This can be a common emotion or a more nuanced, invented one.'),
+  emotion: z
+    .string()
+    .describe(
+      'The inferred emotion of the dialogue. This can be a common emotion or a more nuanced, invented one.'
+    ),
 });
-export type AnalyzeEmotionalToneOutput = z.infer<typeof AnalyzeEmotionalToneOutputSchema>;
+export type AnalyzeEmotionalToneOutput = z.infer<
+  typeof AnalyzeEmotionalToneOutputSchema
+>;
 
-
-export async function analyzeEmotionalTone(input: AnalyzeEmotionalToneInput): Promise<AnalyzeEmotionalToneOutput> {
-    return analyzeEmotionalToneFlow(input);
+export async function analyzeEmotionalTone(
+  input: AnalyzeEmotionalToneInput
+): Promise<AnalyzeEmotionalToneOutput> {
+  return analyzeEmotionalToneFlow(input);
 }
 
 const analyzeEmotionalToneFlow = ai.defineFlow(
@@ -35,10 +46,10 @@ const analyzeEmotionalToneFlow = ai.defineFlow(
   },
   async (input) => {
     const prompt = ai.definePrompt({
-        name: 'emotionalTonePrompt',
-        input: {schema: AnalyzeEmotionalToneInputSchema},
-        output: {schema: AnalyzeEmotionalToneOutputSchema},
-        prompt: `You are an emotionally intelligent script analyst and psychologist. Your task is to determine the precise emotional tone of a line of dialogue based on the text and its context.
+      name: 'emotionalTonePrompt',
+      input: { schema: AnalyzeEmotionalToneInputSchema },
+      output: { schema: AnalyzeEmotionalToneOutputSchema },
+      prompt: `You are an emotionally intelligent script analyst and psychologist. Your task is to determine the precise emotional tone of a line of dialogue based on the text and its context.
 
 **CRITICAL INSTRUCTIONS:**
 - Do not be constrained by a simple list of emotions. Your analysis should be nuanced.

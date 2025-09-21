@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { type DialogueSegment, type CharacterPortrait, type Character, shiftPerspective, generateElevenLabsAudio } from '@/lib/actions';
 import { saveStory } from '@/lib/data';
-import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users } from 'lucide-react';
+import { Wand2, Loader2, Edit, Save, BookText, FlaskConical, BarChart3, VenetianMask, MessageSquareQuote, Shuffle, Eye, ShieldCheck, AreaChart, Users, Sparkles } from 'lucide-react';
 import { cn, getCharacterColor } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,6 +45,7 @@ import { CharacterArchetypes } from './CharacterArchetypes';
 import { PlotStructure } from './PlotStructure';
 import { PacingVisualizer } from './PacingVisualizer';
 import { CompareToClassics } from './CompareToClassics';
+import { SupernaturalStoryGenerator } from './SupernaturalStoryGenerator';
 
 import { type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from '@/lib/actions';
 
@@ -251,6 +252,7 @@ export function DialogueEditor({
               <TabsTrigger value="plotStructure" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BookText className="mr-2"/>Plot Structure</TabsTrigger>
               <TabsTrigger value="pacingVisualizer" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><AreaChart className="mr-2"/>Pacing Visualizer</TabsTrigger>
               <TabsTrigger value="compareToClassics" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><BookText className="mr-2"/>Compare to Classics</TabsTrigger>
+              <TabsTrigger value="storyGenerator" className="py-3 text-base rounded-none data-[state=active]:bg-primary/20 data-[state=active]:shadow-none flex-shrink-0"><Sparkles className="mr-2"/>Story Generator</TabsTrigger>
           </TabsList>
         </ScrollArea>
         <ScrollArea className="h-[55vh]">
@@ -348,6 +350,15 @@ export function DialogueEditor({
                     </TabsContent>
                     <TabsContent value="compareToClassics" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
                         <CompareToClassics storyText={storyText} />
+                    </TabsContent>
+                    <TabsContent value="storyGenerator" className="p-4 md:p-6 bg-grid bg-[length:30px_30px] bg-card/10">
+                        <SupernaturalStoryGenerator onStoryGenerated={(newStoryText) => {
+                            // When a story is generated, we can optionally replace the current story text
+                            // For now, just trigger the story save callback if available
+                            if (onStorySave) {
+                                onStorySave(newStoryText);
+                            }
+                        }} />
                     </TabsContent>
                 </>
             )}

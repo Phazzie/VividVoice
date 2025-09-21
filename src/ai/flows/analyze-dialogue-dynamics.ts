@@ -2,26 +2,31 @@
 
 /**
  * @fileOverview Implements an AI agent that analyzes dialogue for power dynamics and pacing.
- * 
+ *
  * - analyzeDialogueDynamics - A function that handles the dialogue dynamics analysis.
  * - AnalyzeDialogueDynamicsInput - The input type for the function.
  * - AnalyzeDialogueDynamicsOutput - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import { DialogueDynamicsSchema } from '@/ai/schemas';
 
 const AnalyzeDialogueDynamicsInputSchema = z.object({
   storyText: z.string().describe('The full text of the story to analyze.'),
 });
-export type AnalyzeDialogueDynamicsInput = z.infer<typeof AnalyzeDialogueDynamicsInputSchema>;
+export type AnalyzeDialogueDynamicsInput = z.infer<
+  typeof AnalyzeDialogueDynamicsInputSchema
+>;
 
-export type AnalyzeDialogueDynamicsOutput = z.infer<typeof DialogueDynamicsSchema>;
+export type AnalyzeDialogueDynamicsOutput = z.infer<
+  typeof DialogueDynamicsSchema
+>;
 
-
-export async function analyzeDialogueDynamics(input: AnalyzeDialogueDynamicsInput): Promise<AnalyzeDialogueDynamicsOutput> {
-    return analyzeDialogueDynamicsFlow(input);
+export async function analyzeDialogueDynamics(
+  input: AnalyzeDialogueDynamicsInput
+): Promise<AnalyzeDialogueDynamicsOutput> {
+  return analyzeDialogueDynamicsFlow(input);
 }
 
 const analyzeDialogueDynamicsFlow = ai.defineFlow(
@@ -33,8 +38,8 @@ const analyzeDialogueDynamicsFlow = ai.defineFlow(
   async (input) => {
     const prompt = ai.definePrompt({
       name: 'dialogueDynamicsPrompt',
-      input: {schema: AnalyzeDialogueDynamicsInputSchema},
-      output: {schema: DialogueDynamicsSchema},
+      input: { schema: AnalyzeDialogueDynamicsInputSchema },
+      output: { schema: DialogueDynamicsSchema },
       prompt: `You are an expert script analyst and editor with a background in psychology. Your task is to perform a detailed analysis of the provided story text to understand the power dynamics and pacing of the dialogue.
 
 **CRITICAL INSTRUCTIONS:**
@@ -124,8 +129,8 @@ Now, analyze the following story text using the same method.
 \`\`\`
 `,
     });
-    
-    const {output} = await prompt(input);
+
+    const { output } = await prompt(input);
     return output!;
   }
 );
