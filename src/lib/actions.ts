@@ -28,7 +28,7 @@ import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/
 import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
-// import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
+import { generateSoundDesign as generateSoundDesignFlow } from '@/ai/flows/generate-sound-design';
 import { generateElevenLabsTTS as generateElevenLabsTTSFlow } from '@/ai/flows/generate-elevenlabs-tts';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
 
