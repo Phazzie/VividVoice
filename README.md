@@ -88,3 +88,10 @@ The Wombat's true genius lies in his critical eye. Go beyond simple playback wit
 *   **State Management**: React Hooks
 *   **Authentication & Database**: Firebase
 *   **Hosting**: Firebase App Hosting
+
+## 📚 Documentation
+
+- **[AI Architecture Documentation](./AI_ARCHITECTURE.md)** - Comprehensive guide to how the AI system works, including data flow, all 18 AI tools, and technical details
+- **[AI Tools Quick Reference](./AI_TOOLS_QUICK_REFERENCE.md)** - Quick reference guide for all AI tools with use cases and examples
+- **[Product Requirements](./PRODUCT_REQUIREMENTS.md)** - Full product specifications
+- **[Roadmap](./ROADMAP.md)** - Future development plans
