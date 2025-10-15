@@ -88,3 +88,19 @@ The Wombat's true genius lies in his critical eye. Go beyond simple playback wit
 *   **State Management**: React Hooks
 *   **Authentication & Database**: Firebase
 *   **Hosting**: Firebase App Hosting
+
+## 📚 Documentation
+
+For complete AI system documentation, see **[AI Documentation Index](./AI_DOCUMENTATION_INDEX.md)** which includes:
+
+- **[AI Architecture Documentation](./AI_ARCHITECTURE.md)** - Comprehensive technical guide (37KB)
+- **[AI Tools Quick Reference](./AI_TOOLS_QUICK_REFERENCE.md)** - Fast lookup guide (6.2KB)
+- **[AI System Flow Diagrams](./AI_SYSTEM_FLOW_DIAGRAMS.md)** - Visual flow diagrams (17KB)
+- **[Product Requirements](./PRODUCT_REQUIREMENTS.md)** - Full product specifications
+- **[Roadmap](./ROADMAP.md)** - Future development plans
+
+### Quick Links
+- 🎯 **New to the AI?** Start with [AI Architecture Overview](./AI_ARCHITECTURE.md#overview)
+- 🔍 **Looking for a specific tool?** Check [AI Tools Quick Reference](./AI_TOOLS_QUICK_REFERENCE.md)
+- 📊 **Want to see flows?** View [AI System Flow Diagrams](./AI_SYSTEM_FLOW_DIAGRAMS.md)
+- 🛠️ **Adding new features?** See [Adding New Tools Guide](./AI_TOOLS_QUICK_REFERENCE.md#adding-new-tools)
