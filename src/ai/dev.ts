@@ -25,4 +25,5 @@ import '@/ai/flows/analyze-character-archetypes.ts';
 import '@/ai/flows/analyze-plot-structure.ts';
 import '@/ai/flows/compare-to-classics.ts';
 import '@/ai/flows/generate-elevenlabs-tts.ts';
+import '@/ai/flows/generate-sound-design.ts';
 // Deleting generate-character-brief.ts as it is now redundant.
