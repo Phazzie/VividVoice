@@ -4,7 +4,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { type NarratorBiasRange, getBiasedStory } from '@/lib/actions';
+import { useStoryService } from '@/services/ServiceProvider';
+import type { NarratorBiasRange } from '@/services/contracts';
 import { Loader2, VenetianMask, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,6 +20,7 @@ const biasOptions: string[] = [
 ];
 
 export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText: string, onApplySuggestion: (originalText: string, newText: string) => void }) {
+    const storyService = useStoryService();
     const [isLoading, setIsLoading] = useState(false);
     const [selectedBias, setSelectedBias] = useState<string>("Neutral");
     const [biasedText, setBiasedText] = useState(storyText);
@@ -33,7 +35,7 @@ export function UnreliableNarrator({ storyText, onApplySuggestion }: { storyText
         setIsLoading(true);
         try {
             const bias = { startBias: selectedBias, endBias: selectedBias };
-            const result = await getBiasedStory(storyText, bias);
+            const result = await storyService.applyNarratorBias(storyText, bias);
             setBiasedText(result);
         } catch (e: any) {
             toast({

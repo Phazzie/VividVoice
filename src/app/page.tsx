@@ -6,8 +6,8 @@ import { Sparkles, Wand2 } from "lucide-react";
 import { StoryForm } from "@/components/vivid-voice/StoryForm";
 import { StoryDisplay } from "@/components/vivid-voice/StoryDisplay";
 import { DialogueEditor } from "@/components/vivid-voice/DialogueEditor";
-import { getFullStoryAnalysis, generateMultiVoiceSceneAudio, type CharacterPortrait, type Character, type TranscriptSegment, type DialogueDynamics, type LiteraryDevice, type PacingSegment, type Trope, type ShowDontTellSuggestion, type ConsistencyIssue, type SubtextAnalysis, type SoundEffectWithUrl } from "@/lib/actions";
-import { getStoryById } from "@/lib/data";
+import { useStoryService, useAudioService, useCharacterService, useDataService } from "@/services/ServiceProvider";
+import type { CharacterPortrait, Character, TranscriptSegment, DialogueDynamics, LiteraryDevice, PacingSegment, Trope, ShowDontTellSuggestion, ConsistencyIssue, SubtextAnalysis } from "@/services/contracts";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +17,16 @@ import { useSearchParams } from "next/navigation";
 import { chunkTextByParagraph } from "@/lib/chunking";
 
 type AppState = 'initial' | 'loadingStory' | 'analyzing' | 'editing' | 'generating' | 'displaying';
-type DialogueSegment = any; // Assuming DialogueSegment is defined elsewhere, or replace with a more specific type.
+
+// Import DialogueSegment from contracts
+import type { DialogueSegment } from "@/services/contracts";
+
+// Temporary type for sound effects with URL
+type SoundEffectWithUrl = {
+  soundUrl: string;
+  timestamp: number;
+  description: string;
+};
 
 interface FullAnalysis {
   segments: DialogueSegment[];
@@ -38,6 +47,12 @@ function StagingStoriesPageContent() {
   const searchParams = useSearchParams();
   const storyIdToLoad = searchParams.get('storyId');
 
+  // Use services from the service provider
+  const storyService = useStoryService();
+  const audioService = useAudioService();
+  const characterService = useCharacterService();
+  const dataService = useDataService();
+
   const [appState, setAppState] = useState<AppState>('initial');
   const [storyId, setStoryId] = useState<string | null>(storyIdToLoad);
   const [storyText, setStoryText] = useState<string>('');
@@ -53,7 +68,7 @@ function StagingStoriesPageContent() {
       const loadStory = async () => {
         setAppState('loadingStory');
         try {
-          const story = await getStoryById(storyIdToLoad);
+          const story = await dataService.getStoryById(storyIdToLoad);
           if (story && story.userId === user.uid) {
             await handleFullAnalysis(story.storyText, story.id);
           } else {
@@ -68,7 +83,7 @@ function StagingStoriesPageContent() {
       loadStory();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storyIdToLoad, user]);
+  }, [storyIdToLoad, user, dataService]);
 
 const CHUNK_THRESHOLD = 10000;
   const handleFullAnalysis = async (newStoryText: string, existingStoryId: string | null = null) => {
@@ -85,12 +100,17 @@ const CHUNK_THRESHOLD = 10000;
     setTranscript([]);
 
     try {
-      const analysisResult = await getFullStoryAnalysis(newStoryText);
+      // Use storyService to analyze the story
+      const analysisResult = await storyService.analyzeStory(newStoryText);
+
+      // Generate character portraits using characterService
+      const characterPortraits = await characterService.generatePortraits(analysisResult.characters);
 
       // Ensure soundEffects is always an array
       const normalizedResult = {
         ...analysisResult,
-        soundEffects: analysisResult.soundEffects || []
+        characterPortraits,
+        soundEffects: [] as SoundEffectWithUrl[]  // TODO: Implement sound effects
       };
 
       setFullAnalysis(normalizedResult);
@@ -107,7 +127,7 @@ const CHUNK_THRESHOLD = 10000;
       }
 
       // Non-critical warning if some portraits failed
-      if (!analysisResult.characterPortraits || analysisResult.characterPortraits.length < (analysisResult.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
+      if (!characterPortraits || characterPortraits.length < (analysisResult.characters.filter(c => c.name.toLowerCase() !== 'narrator').length)) {
          toast({
             variant: "default",
             title: "Portrait Generation Note",
@@ -154,25 +174,26 @@ const CHUNK_THRESHOLD = 10000;
       let combinedErrors: Record<string, string> = {};
 
       for (const chunk of chunks) {
-        const analysisResult = await getFullStoryAnalysis(chunk);
+        // Use storyService to analyze each chunk
+        const analysisResult = await storyService.analyzeStory(chunk);
         combinedAnalysis.segments.push(...analysisResult.segments);
         combinedAnalysis.characters.push(...analysisResult.characters);
-        combinedAnalysis.characterPortraits.push(...analysisResult.characterPortraits);
         combinedAnalysis.literaryDevices.devices.push(...analysisResult.literaryDevices.devices);
         combinedAnalysis.pacing.segments.push(...analysisResult.pacing.segments);
         combinedAnalysis.tropes.tropes.push(...analysisResult.tropes.tropes);
         combinedAnalysis.showDontTellSuggestions.suggestions.push(...analysisResult.showDontTellSuggestions.suggestions);
         combinedAnalysis.consistencyIssues.issues.push(...analysisResult.consistencyIssues.issues);
         combinedAnalysis.subtextAnalyses.analyses.push(...analysisResult.subtextAnalyses.analyses);
-        combinedAnalysis.soundEffects.push(...(analysisResult.soundEffects || []));
         Object.assign(combinedErrors, analysisResult.errors);
       }
 
-      // De-duplicate characters and portraits
+      // De-duplicate characters
       const uniqueCharacters = Array.from(new Map(combinedAnalysis.characters.map(char => [char.name, char])).values());
       combinedAnalysis.characters = uniqueCharacters;
-      const uniquePortraits = Array.from(new Map(combinedAnalysis.characterPortraits.map(p => [p.name, p])).values());
-      combinedAnalysis.characterPortraits = uniquePortraits;
+      
+      // Generate portraits for all unique characters
+      const characterPortraits = await characterService.generatePortraits(uniqueCharacters);
+      combinedAnalysis.characterPortraits = characterPortraits;
 
       setFullAnalysis(combinedAnalysis);
       setStoryText(newStoryText);
@@ -195,9 +216,9 @@ const CHUNK_THRESHOLD = 10000;
     setError(null);
     
     try {
-      // Pass the rich character objects to the audio generation flow.
+      // Use audioService to generate multi-voice audio
       const characters = fullAnalysis?.characters || [];
-      const { audioDataUri, transcript } = await generateMultiVoiceSceneAudio(editedSegments, characters);
+      const { audioDataUri, transcript } = await audioService.generateMultiVoiceAudio(editedSegments, characters);
       setSceneAudioUri(audioDataUri);
       setTranscript(transcript);
       setAppState('displaying');

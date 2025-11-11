@@ -1,14 +1,13 @@
 
 "use client";
 
-"use client";
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getStoriesForUser, type Story } from "@/lib/data";
+import { useDataService } from "@/services/ServiceProvider";
+import type { Story } from "@/services/contracts";
 import { Loader2, PlusCircle, BookOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -19,6 +18,7 @@ import { SkepticismToggle } from "@/components/ui/SkepticismToggle";
 export default function DashboardPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
+    const dataService = useDataService();
     const [stories, setStories] = useState<Story[]>([]);
     const [loadingStories, setLoadingStories] = useState(true);
     const { toast } = useToast();
@@ -33,7 +33,7 @@ export default function DashboardPage() {
     useEffect(() => {
         if (user) {
             setLoadingStories(true);
-            getStoriesForUser(user.uid)
+            dataService.getStoriesForUser(user.uid)
                 .then(setStories)
                 .catch(err => {
                     toast({
@@ -44,7 +44,7 @@ export default function DashboardPage() {
                 })
                 .finally(() => setLoadingStories(false));
         }
-    }, [user, toast]);
+    }, [user, toast, dataService]);
 
     const isLoading = authLoading || loadingStories;
 
