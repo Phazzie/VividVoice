@@ -13,6 +13,7 @@ import type {
   ShowDontTellSuggestion,
   ConsistencyIssue,
   SubtextAnalysis,
+  Perspective,
 } from './types';
 
 export interface ParsedStory {
@@ -97,4 +98,22 @@ export interface IStoryService {
   analyzeSubtext(
     storyText: string
   ): Promise<{ analyses: SubtextAnalysis[] }>;
+
+  /**
+   * Shift story perspective to a different character
+   */
+  shiftPerspective(
+    storyText: string,
+    characterName: string,
+    role: 'Protagonist' | 'Antagonist',
+    format?: 'summary' | 'diaryEntry' | 'letter' | 'policeStatement'
+  ): Promise<Perspective>;
+
+  /**
+   * Apply narrator bias to create unreliable narrator effect
+   */
+  applyNarratorBias(
+    storyText: string,
+    bias: { startBias: string; endBias: string }
+  ): Promise<string>;
 }

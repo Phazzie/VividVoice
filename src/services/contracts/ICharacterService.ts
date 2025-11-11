@@ -26,4 +26,14 @@ export interface ICharacterService {
     character: Character,
     messages: ChatMessage[]
   ): Promise<ChatMessage>;
+
+  /**
+   * Get character response in the context of a story
+   */
+  getCharacterResponse(
+    character: Character,
+    history: ChatMessage[],
+    userMessage: string,
+    storyText: string
+  ): Promise<string>;
 }

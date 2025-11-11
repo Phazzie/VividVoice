@@ -222,4 +222,25 @@ export class MockStoryService implements IStoryService {
       ],
     };
   }
+
+  async shiftPerspective(
+    storyText: string,
+    characterName: string,
+    role: 'Protagonist' | 'Antagonist',
+    format: 'summary' | 'diaryEntry' | 'letter' | 'policeStatement' = 'summary'
+  ): Promise<any> {
+    return {
+      characterName,
+      role,
+      format,
+      newPerspective: `Mock perspective shift for ${characterName} as ${role}`,
+    };
+  }
+
+  async applyNarratorBias(
+    storyText: string,
+    bias: { startBias: string; endBias: string }
+  ): Promise<string> {
+    return `Mock biased story with ${bias.startBias} transitioning to ${bias.endBias}`;
+  }
 }

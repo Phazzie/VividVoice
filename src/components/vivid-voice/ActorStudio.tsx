@@ -4,7 +4,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { type Character, type ChatMessage, getCharacterResponse } from '@/lib/actions';
+import { useCharacterService } from '@/services/ServiceProvider';
+import type { Character, ChatMessage } from '@/services/contracts';
 import { Loader2, Send, Users, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,6 +21,7 @@ interface ActorStudioProps {
 }
 
 export function ActorStudio({ characters, storyText }: ActorStudioProps) {
+    const characterService = useCharacterService();
     const [isLoading, setIsLoading] = useState(false);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -43,7 +45,7 @@ export function ActorStudio({ characters, storyText }: ActorStudioProps) {
         setIsLoading(true);
 
         try {
-            const response = await getCharacterResponse(selectedCharacter, newHistory, currentMessage, storyText);
+            const response = await characterService.getCharacterResponse(selectedCharacter, newHistory as any, currentMessage, storyText);
             setChatHistory(prev => [...prev, { isUser: false, message: response }]);
         } catch (e: any) {
             toast({

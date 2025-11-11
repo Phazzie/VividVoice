@@ -14,6 +14,7 @@ import type {
   ShowDontTellSuggestion,
   ConsistencyIssue,
   SubtextAnalysis,
+  Perspective,
 } from '../contracts';
 
 import { parseDialogue as parseDialogueFlow } from '@/ai/flows/parse-dialogue';
@@ -25,6 +26,8 @@ import { getShowDontTellSuggestions as getShowDontTellSuggestionsFlow } from '@/
 import { findInconsistencies as findInconsistenciesFlow } from '@/ai/flows/consistency-guardian';
 import { analyzeSubtext as analyzeSubtextFlow } from '@/ai/flows/analyze-subtext';
 import { analyzeEmotionalTone as analyzeEmotionalToneFlow } from '@/ai/flows/analyze-emotional-tone';
+import { shiftPerspective as shiftPerspectiveFlow } from '@/ai/flows/shift-perspective';
+import { applyNarratorBias as applyNarratorBiasFlow } from '@/ai/flows/unreliable-narrator';
 
 export class RealStoryService implements IStoryService {
   async parseStory(storyText: string): Promise<ParsedStory> {
@@ -205,5 +208,34 @@ export class RealStoryService implements IStoryService {
     storyText: string
   ): Promise<{ analyses: SubtextAnalysis[] }> {
     return await analyzeSubtextFlow({ storyText });
+  }
+
+  async shiftPerspective(
+    storyText: string,
+    characterName: string,
+    role: 'Protagonist' | 'Antagonist',
+    format: 'summary' | 'diaryEntry' | 'letter' | 'policeStatement' = 'summary'
+  ): Promise<Perspective> {
+    console.log('RealStoryService: Shifting perspective...');
+    try {
+      return await shiftPerspectiveFlow({ storyText, characterName, role, format });
+    } catch (error) {
+      console.error('RealStoryService: Error during shiftPerspective:', error);
+      throw new Error('Failed to shift perspective.');
+    }
+  }
+
+  async applyNarratorBias(
+    storyText: string,
+    bias: { startBias: string; endBias: string }
+  ): Promise<string> {
+    console.log('RealStoryService: Applying narrator bias...');
+    try {
+      const result = await applyNarratorBiasFlow({ storyText, bias: bias as any });
+      return result.biasedStoryText;
+    } catch (error) {
+      console.error('RealStoryService: Error during applyNarratorBias:', error);
+      throw new Error('Failed to apply narrator bias.');
+    }
   }
 }

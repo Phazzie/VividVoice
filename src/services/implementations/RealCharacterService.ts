@@ -61,4 +61,35 @@ export class RealCharacterService implements ICharacterService {
       throw new Error('Failed to chat with character.');
     }
   }
+
+  async getCharacterResponse(
+    character: Character,
+    history: ChatMessage[],
+    userMessage: string,
+    storyText: string
+  ): Promise<string> {
+    console.log('RealCharacterService: Getting character response in story context...');
+
+    if (!character || !userMessage) {
+      throw new Error('Character and user message are required');
+    }
+
+    try {
+      const result = await characterChatFlow({
+        character,
+        history,
+        userMessage,
+        storyText,
+      } as any);
+
+      console.log('RealCharacterService: Character response successful.');
+      return result.response || result.content || '';
+    } catch (error) {
+      console.error(
+        'RealCharacterService: Error during getCharacterResponse:',
+        error
+      );
+      throw new Error('Failed to get character response.');
+    }
+  }
 }

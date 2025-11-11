@@ -3,7 +3,8 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { type Perspective, type Character, shiftPerspective } from '@/lib/actions';
+import { useStoryService } from '@/services/ServiceProvider';
+import type { Perspective, Character } from '@/services/contracts';
 import { Loader2, Shuffle, AlertCircle, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -17,6 +18,7 @@ interface PerspectiveShifterProps {
 }
 
 export function PerspectiveShifter({ characters, storyText }: PerspectiveShifterProps) {
+    const storyService = useStoryService();
     const [isLoading, setIsLoading] = useState(false);
     const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
     const [selectedRole, setSelectedRole] = useState<'Protagonist' | 'Antagonist'>('Protagonist');
@@ -34,7 +36,7 @@ export function PerspectiveShifter({ characters, storyText }: PerspectiveShifter
         setResult(null);
         setError(null);
         try {
-            const analysisResult = await shiftPerspective(storyText, selectedCharacter, selectedRole);
+            const analysisResult = await storyService.shiftPerspective(storyText, selectedCharacter, selectedRole);
             setResult(analysisResult);
         } catch (e: any) {
             const errorMessage = e.message || "An unexpected error occurred during analysis.";

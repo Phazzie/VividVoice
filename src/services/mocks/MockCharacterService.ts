@@ -46,4 +46,17 @@ export class MockCharacterService implements ICharacterService {
       content: `Mock response from ${character.name}: I understand you said "${lastMessage.content}". This is a test response.`,
     };
   }
+
+  async getCharacterResponse(
+    character: Character,
+    history: ChatMessage[],
+    userMessage: string,
+    storyText: string
+  ): Promise<string> {
+    if (!character || !userMessage) {
+      throw new Error('Character and user message are required');
+    }
+
+    return `Mock response from ${character.name} in story context: "${userMessage}"`;
+  }
 }
