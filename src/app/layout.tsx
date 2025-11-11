@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Header } from '@/components/vivid-voice/Header';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ServiceProvider } from '@/services/ServiceProvider';
 // import { Belleza, Alegreya } from 'next/font/google';
 
 // const belleza = Belleza({
@@ -53,11 +54,13 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="antialiased min-h-screen bg-background text-foreground">
         <ErrorBoundary>
-          <AuthProvider>
-            <Header />
-            <main>{children}</main>
-            <Toaster />
-          </AuthProvider>
+          <ServiceProvider mode="real">
+            <AuthProvider>
+              <Header />
+              <main>{children}</main>
+              <Toaster />
+            </AuthProvider>
+          </ServiceProvider>
         </ErrorBoundary>
       </body>
     </html>
